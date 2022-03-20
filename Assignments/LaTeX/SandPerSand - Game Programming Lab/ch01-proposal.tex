@@ -1,0 +1,574 @@
+\chapter{Formal Project Proposal}
+
+\begin{TempText}
+	(Max 10 pages)
+\end{TempText}
+
+\begin{TempText}
+	@Note: Use this chapter for Rough Draft Proposal/Final Proposal 
+\end{TempText}
+
+\begin{TempText}
+	@Note: A formal game proposal makes up the first chapter of your project notebook. The game proposal describes your game idea, provides a detailed development schedule, and gives a qualitative assessment of your project. The proposal should be professionally prepared, expressive, grammatically sound, illustrative of your efforts and process, and easy to understand. A good design effort can easily be hampered by a poor communication of what was done	
+\end{TempText}
+
+% ====================================================================================
+
+\section{Game Description}
+
+\subsection{Overview}
+
+\begin{TempText}
+	@Note: What is the genre of your game? Is it a 2D or 3D game? Is it a single player or multiplayer game? Explain the main goal of the game and/or the main purpose to be achieved by players. 
+\end{TempText}
+
+\begin{TempText}
+	@Important: You need to design a project whose complexity fits the timeline of the course and the skills of your group.
+\end{TempText}
+
+\begin{TempText}
+	@Important: Your game needs to really stand out in one way, but not all ways. Doing one aspect of it well will get you a better grade than doing a mediocre job on a lot of things.
+\end{TempText}
+
+We are developing a 2D, round-based, local multiplayer, semi-cooperative platformer race game. The main goal of the game is to navigate a maze-like decrepit tower structure and escape the rapidly rising mountain of quicksand piling up at the below. The game is round-based where the rounds are fast-paced bursts of cooperation, betrayal, and action. A player wins after a culmination of rounds by obtaining the highest score via escapes and collectibles overall.
+
+A player who is too slow to climb or stands on the rising sand for a time, gets stuck in it and is engulfed. That player loses the round and joins the game again at the start of the next round.
+
+The players are engaged in a race to the top as escaping first is the main objective of each round and gives the player the bonus of first-choice in an in-between-round item shop. While there are items to collect during the level, these have relatively minor effects/power ups/buffs compared to those which are found in the round-shop.
+
+Each item can be used both cooperatively and/or adversarially. For example, with a ``chain-fling'' item, a player can prevent another player from reaching the top by pulling them down, or help another player by flinging them up.
+
+Each level has a number of small built-in challenges which require one or more players to complete. They are simple to understand and quick to complete, and have a boon for completing them (e.g., items or currency). The idea being that completing a challenge requires cooperation but can also lead to betrayal by players. For example, one challenge might require a group of players to stand on a specified platform for the platform to activate and quickly move upwards. But if one player jumps off the platform during its accent, the platform breaks, leaving those who chose not to jump off to fall and recover.
+
+\subsection{Background Story}
+
+% \subsubsection{The Opening}
+You, as players, are a group of aliens who really love shopping. This is the fantastic shopping trip to the earth that you have long been dreaming of. However, your spaceship crashed when you were entering the atmosphere. All your hard-earned money flew away from the broken window. And, instead of going to a big city, your spaceship hit in the middle of nowhere in a desert. You picked up the only dollar that happened to fall beside you, with tears rolling in your eyes.
+
+Right at this moment, you heard some sound, it was from two archaeologists passing by, they were heading to an underground ruin. From their conversation, you knew there are full of treasures! Following them, you reached the bottom of the ruin. You stopped to stare at the face of a mummy, they didn't look completely lifeless, did they? Unfortunately, as in every mummies' story, you triggered the trap. The poor archaeologists died there. Sands are gushing out from all directions. Now, all you want to do is to grab every single treasure in your sight and head back to the ground!
+
+Wait, what is that? Shops! It turns out there are shops run by mummies, they are alive! They don't seem to be bothered by the falling apart ruin, after all, they set those traps themselves and had fun watching stupid and greedy humans trying to survive( because they can't leave here and they are so bored). They sell powerful items to you for a more exciting escaping show, first come, first served. The passion for shopping is rekindled in your heart. You as a top shopaholic, would not stand that your buddy reaches to each mummy’s shop before you do— and rap your first chance of picking the items.
+
+% \subsubsection{Connection to the Gameplay}
+
+
+
+\begin{TempText}
+    
+    
+    
+	@Note: Describe any background or storyline associated with the game.
+\end{TempText}
+
+\subsection{Design Decisions}
+
+This section goes in detail about the various important components of our game. We first describe the general structure of the game and for what purpose it is designed. After that we go over the central external force in the game, the sand, and how we plan to implement it and how we expect it to behave. We quickly note on Player Death since it is tied to the Sand. We then elaborate on he general level design and the structure of a general level in the game. Then, we go over an element of the level design, the \emph{Challenges} and their role in the player dynamic. We then describe the planned \empg{Items} for the game ad how they will function and interact with the players, as well as rudimentary inventory mechanics. We explain the purpose and function and rules regarding the \emph{end-of-round Shop}. Once this is laid out, we propose a control scheme for the game as well as the expected player state machine as well as some of the more intricate state within it.
+
+\subsubsection{Winning Condition and Game Structure}
+
+The game is designed to be played as a group of 2-6 players using gamepad controllers as the input method.
+
+The game is a series of rounds where the number of rounds the game lasts is given before the game is played. Each round is played on a new/reset level.
+
+The winning condition for any player is to have the most number of first-escapes (explained later) and/or collectibles after X rounds have passed. A first-escape occurs when a player finishes the round first.
+
+If two players are tied in the number of first escapes, the next metric is the number of collectibles they have at that moment.
+
+\subsubsection{Round End}
+Each round ends 10 seconds after the first player reaches the goal at the top of the level. A countdown appears to indicate the time left. Players who reach the end of the level are admitted to the end of round shop.
+
+
+\begin{figure}
+    \centering
+    \includegraphics{figures/topmeifyoucan_concept.jpg}
+    \caption{Concept of four players racing to the top with one falling due to sand, and others using an item cooperatively.}
+    \label{fig:concept}
+\end{figure}
+
+\subsubsection{Sand}
+
+The core mechanic of our game is the rising sand-mountain which acts as the main antagonistic force, swallowing players as they fall into it. 
+
+When the rising sand catches up with a player they start sinking into it and become \emph{trapped}. In order to escape the sand, the player needs to spam the jump button (as explained in the Player State Machine). If a player falls into the sand from considerable height, or while \emph{staggered}, they get swallowed by it immediately. 
+
+When a player dies in this way, they lose their items and a portion of their gems and gold. This forces the players to keep moving upwards and makes trying to loot the entire tower impossible, thereby putting pressure on the players when making decisions.
+
+The sand is falling from the top of the tower, flowing along platforms and interacting with the players. This will be implemented as a separate object from the \emph{rising sand} mound itself. We project that this will be some form of a \textbf{cellular automaton} with a grid of a higher resolution than that of the overall level. This dynamically simulated sand will be player-interactable; it will push on players in the direction of flow. Player will be able to stand on this sand as it lays on platforms. Using some \emph{major items} player will be able to both create and/or destroy this kind of sand in the level during play.
+
+\subsubsection{Player Death}
+Player death can only occur when a player is trapped by the rising sand for the required duration or collides with it at high speed. Player death is temporary, a player who has died enters a countdown. After the countdown has completed, the player is respawned in the last position below the current last player
+
+Player death erases the player's inventory, major and minor item included, and erases a percentage of collectibles they have.
+
+Player death is recorded as a statistic.
+
+
+\subsubsection{Level Design}
+
+The game will have 2D sprite graphics inspired by architectural styles.
+
+The levels will be on a grid with the addition of 45°, $\arctan{0.5}$ (one up, two across), and $\arctan{2}$ (two up, one across) slopes. In this grid two types of platforms will be placed. The first type can be jumped through from the bottom, the second cannot. \emph{Collectibles} will be placed all over the level to reward players for getting to an area first. These act as in-game currency and will also be spawned upon completion of \emph{Challenges}.
+
+\subsubsection{Challenges}
+
+The purpose of challenges is to slow players down and give them opportunities to interact and make decisions. As such they are not in themselves especially challenging, but rather a conduit for interesting social play between the players.
+\par
+A few challenges we will consider implementing are:
+
+\begin{itemize}
+    \item A lever which opens a door the player themselves cannot necessarily reach.
+    \item Two buttons two players need to stand on to be dropped down a trap door into a room with rewards.
+    \item A fast elevator which only starts when two players are inside it. If a player jumps off, it slows down significantly and traps the remaining player(s).
+    \item Two buttons which starts a button mashing contest between two players standing on them. The winner gets a treasure chest dropped down to them.
+\end{itemize}
+
+\subsubsection{Items}
+
+Items are added to the game to give the players ways to overcome obstacles, provide further opportunities for cooperation and betrayals, and to add variety to the game play. There are two types of items, but first we must describe an important input method we plan to use with the majority of items. 
+
+\par
+\textbf{Directional Selection}
+\label{sec:dir-sel}
+\\
+Some Items (marked with a “D”) are selection directional. These items can target another player and apply effects to them, or if no player is selected when the item button is released, the item effects are applied to self (marked with an "S") or a random player (marked with an "R") depending on the item.
+\par
+A player with such an Item should press and hold the trigger corresponding to said item. While the trigger is held, the other trigger is disabled. The player can use the right control stick to choose another nearby player. This will be indicated via an outline of that player in the selecting player’s color as well as a line from the selecting player to the selected player in the selecting player’s color.
+\par
+When the player enters the selection state, the default selection is themselves. Pointing the right stick in the general direction of another player switches the selection to that player. If the stick is untouched, the default behavior for the item (self, random, or no effect) is performed.
+
+\textbf{Picking Items Up}
+
+If a player does not carry a minor item, and they walk over or collide with one, then they automatically pick that item up. On the other hand, once a player is carrying an item, they get the choice of swapping the item they are carrying with the item they walk over using the interact button.
+
+The same is true for major items. When buying a major item in the end-of-round shop while one is already carried, the carried item is lost and replaced by the newly bought one.
+
+
+\par
+\textbf{Minor Items}
+\\
+A minor item can be picked up during play in the level. A player can only hold on to one minor item simultaneously. Minor power-ups should have relatively small effects and are always single use and expire at the end of the level. Minor Items act as reward during play; they are incentives to reach higher and/or solve cooperative challenges which likely require cooperation.
+\par
+The following is a breakdown of the minor items in the game.
+
+\begin{itemize}
+    \item Freeze Player (D/S)\\
+This directional minor item freezes the selected player in place and makes them enter the trapped state. The trapped player is trapped for 7 seconds, or until they reach the trapped exit condition. If the player selects themselves, the item affects them.
+    \item Control swap (R/D)\\
+This random or directional item inverts the controls of a selected player, or if no player was selected, or a random player (excluding the player who activated the item). The inverted controls are indicated to the affected player via an aura around their sprite or on icon. The inversion lasts for 7 seconds.
+    \item Temporary speed-up / Slow-down (D/S)\\
+This directional item slows or speeds up a selected player or self. After the selection, the next input from the right stick indicates if a speed-up or slow-down is to be applied. While a player is sped up or slowed down, they retain real-time control, i.e., their inputs are not buffered or slowed. This would make certain jumps in the level easier if slowed, or make a longer jump possible. The maximum jump height of the affected player is adjusted accordingly (slightly increased or decreased, respectively). The effect lasts for 7 seconds.
+    \item Double Jump (D/S)\\
+A player who activates this item is granted one double jump. This is indicated to the player via an aura or an icon. They are allowed to jump once more while in the air. Once the jump is executed, the aura disappears, as does their ability to execute a double jump.
+\end{itemize}
+
+\par
+\textbf{Major Items}
+\\
+Major items can only be obtained from the end-of-round shop. A player can only hold on to one major power-up at a time. Major items can have a large effect on the game and/or the players.
+\par
+The following is a breakdown of the major items in the game.
+
+\begin{itemize}
+    \item Player Position Swap (D/R)\\
+The player who activates this item selects another player to swap position, and linear momentum with, essentially swapping the players. If no directional selection was carried out, a random player is selected for the swap.
+    \item Rope of Binding (D)\\
+A player latches themselves to another via a rope of fixed length. Thereby, the two players cannot be farther than the rope’s length from each other.
+The rope does not interact with level platforms.
+After a delay, either player can choose to cut the rope, indicated by the rope changing color.
+A player can be suspended, hanging from the rope, and swing while in such a state.
+    \item Create sand - Punch a hole in the wall\\
+When a player activates this item, they punch a hole in the back wall in their current position. Sand begins to flow from that point (that grid cell and an area of cells become sand source cells). 
+    \item Remove sand\\
+A player can activate this item, and any sand in an area around them is destroyed. This includes source cells. This way, the player can change the flow of the game, literally.
+    \item Slow Motion Time\\
+When a player activates this item it globally slows down time for a duration of time.
+\end{itemize}
+
+\subsubsection{End-of-Round Shop}
+At the end of each round, the players who finished the round get to access the shop. This shop will have a different selection of major items for varying prices for sale each round. The players access the shop in the same order they finished the level, so the fastest player gets first pick. However, if the first player to finish does not have enough collectibles/currency, they might not be able to buy the item they want. This detail, we feel, will encourage tactical play instead of the game being purely about getting to the top of the level fastest.
+
+\subsubsection{Controls}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/game_controls.png}
+    \caption{Control map during play.}
+    \label{fig:game_controls}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.93\textwidth]{figures/menu_controls.png}
+    \caption{Control map for UI and Menus.}
+    \label{fig:menu_controls}
+\end{figure}
+
+See the proposed control maps in Figure \ref{fig:game_controls} and Figure \ref{fig:menu_controls}.
+Controls of our game follow conventions found in other platformer games. The shoulder buttons are used for the respective items (major/minor) and the right analog stick is used for directional selection (see Items section). 
+
+\subsubsection{Player State Machine}
+
+We expect the player state machine to have the states and state transitions shown in Figure \ref{fig:state_machine}. Of important note are the \emph{Coyote Time}, \emph{Trapped}, and \emph{Staggered} states.
+
+A Player enters the \emph{Coyote Time} state if they run off of a platform of the platform disappears below them. In either case, the player is airborne without executing a jump. We would like to allow the player to execute a jump in this state for some number of frames, therefore being more forgiving to non-frame perfect input. This state will last 5 frames and during it the player can execute a jump as if they are grounded.
+
+A Player enters the \emph{Trapped} state when they either stand on the rising sand for a duration or have an item which induces this state used on them. In this state, the player ceases to be able to control their movement and instead is forced to bottom mash the jump button in order to fill a meter which depletes as a constant speed, before it becomes empty. If the meter is filled quickly enough, the player exist the sate, Otherwise, when the meter runs out, the player enters the \emph{Staggered} state.
+
+In the \emph{Staggered} state the player is unable to move or make other inputs. They are susceptible to any sand flow and will be carries with greater speed than usual by it. The state lasts for a duration. If a player touches the rising sand while in this state, they instantly are submerged and die, and wait to be respawned. 
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{figures/state_diag.png}
+    \caption{Player State Machine diagram.}
+    \label{fig:state_machine}
+\end{figure}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/topmeifyoucan_concept_rope_coop.png}
+    \caption{Concept of two players using an item cooperatively.}
+    \label{fig:concept-coop}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/topmeifyoucan_concept_rope_betrayal.png}
+    \caption{Concept of a player using an item adversarially. One player releases the chain to fling the other into a downward sand stream.}
+    \label{fig:concept-betrayal}
+\end{figure}
+
+% ====================================================================================
+
+\section{"Big Idea" Bullseye}
+
+\begin{TempText}
+	@Note: Highlight the primary, central, most important conceptual idea of your game, as well as the central, supporting, extra-special and impressive technical component. Your entire team should agree upon and buy into these two concepts during the design phase so that everything that goes into the project is focused and aligned around a common and unified goal. It sounds a bit obvious, but it's a powerful tool.
+\end{TempText}
+
+\begin{TempText}
+	@Note: Include a graphic big idea bullseye in your game proposal. The primary and secondary drives should be short, direct, and to the point.
+\end{TempText}
+
+The bullseye of our game is the social aspect we are trying to achieve. The game will give tools for the player to cooperate and play against one another while ultimately only allowing one winner. Therefore we are expecting alliances of varying durations to from during the game only to be broken at the latest by the end of the game.
+\par
+The technical components facilitating this will be mini challenges strewn throughout the levels which require multiple players to overcome, but provide ample opportunities for betrayal, as well as the collection of small items and power ups and the input-control design.
+
+% ====================================================================================
+
+\section{Technical Achievement}
+
+\begin{TempText}
+	@Note: Your game should include at least one core technical item. This technical element should help your game stand out in an innovative way by providing an element that goes beyond the normal functionalities. This is your chance to select a concept from another course or something that you have always been interested in and implement it in the context of your game. Try to impress us, while still ensuring that the concepts you target fit within the scope of the course.
+\end{TempText}
+
+\begin{TempText}
+	@Note: This section should detail the core technical item you plan to include. You are free to present more than one idea, but remember that it's better to be super successful at one item than to try to include many and fail.
+\end{TempText}
+
+We plan on the technical achievement of our game to be a Dynamic Sand Simulation. Since the sand plays such a central role in our game design and ties our game to the theme, we will make sure this feature stands out as a technically impressive and well-polished feature of the game. We believe this is an appropriate challenge and that there are several ways we could choose to implement this which proves a sliding scale as to how challenging we want it to be.
+
+% ====================================================================================
+
+\section{Development Schedule}
+
+\begin{TempText}
+	@Note: The development schedule is crucial and should contain two basic parts. First, you must provide a layered development description of your game that divides the development schedule into five categories based on how crucial each element is. Second, you must provide a timeline for the course including major milestones and deliverables.
+\end{TempText}
+
+\begin{TempText}
+	@Note: Structure your development so that you complete each layer before going on to the next. Plan exactly what is entailed in each layer, and which team member is going to do each component. Include this layered description in your proposal.
+\end{TempText}
+
+\subsection{Layered Task Breakdown}
+
+\begin{TempText}
+	@Note: You can't accurately anticipate how long each step in your project is going to take. Consequently, you need to make a detailed development schedule that is layered.
+\end{TempText}
+
+The following list presents the different targets that our team aims to achieve, and gives a short description of what each of them contains. We are still in the process of breaking some of these down into concrete work packets.
+
+\subsubsection{Functional Minimum}
+
+\begin{TempText}
+	@Note: Minimal items to make something that you might call a game. You'd be embarrassed if you only got this far, but at least it'd be something.
+\end{TempText}
+
+The functional minimum is a single-player platforming experience. It includes at least one level where the player jumps from platform to platform. The controls and the collision detection need to be implemented.
+
+\subsubsection{Low Target}
+
+\begin{TempText}
+	@Note: Your target for what you want to get done--the least possible to feel sort-of OK about the result.
+\end{TempText}
+
+The low target is a local multiplayer game, which uses gamepads. The game is expected to be played by a group of friends at a party, so the rounds will be kept up to at most 4-5 minutes long.
+    
+The aim of the players is to race to the top of the level, while sand is rising from the bottom. Touching the sand kills the players. The first player to reach the top wins the round.
+    
+Unlike the functional minimum, the players will be animated. This will improve the visual aesthetic of the game and make it more appealing.
+
+\subsubsection{Desired Target}
+
+\begin{TempText}
+	@Note: This is what you're aiming for, if things go reasonably well.
+\end{TempText}
+
+In addition to winning the round, the desired target will include conditions to win the game overall. This can be the conclusion of the overarching story of the game, with the winner being clearly shown and congratulated for their achievement by a win screen.
+
+The game will involve buying of items between rounds. Those items will be bought by players with money that will be collected during the level and at the end of each round based on the order in which they finish. Those items can be used to more easily win subsequent rounds, such as speed boosts, power boosts and so on.
+
+The game will additional have small challenges in the rounds. Those challenges would involve a simple puzzle that may require the collaboration of more than one players. Those challenges will not be mandatory to complete the round, but will give the player additional coins or items.
+
+\subsubsection{High Target}
+
+\begin{TempText}
+	@Note: It might be possible to get this much done, if all goes extremely well.
+\end{TempText}
+
+The high target will further include breakable sand platforms, which will break after a given set of seconds upon standing on them.
+
+Each round will begin with a starting challenge, that needs to be completed by all players in collaboration before the sand starts rising and the timed part of the game commences.
+
+Additionally, a ranking for the players and statistics for each round will be shown in the end.
+
+The shop will further include additional items to buy.
+
+\subsubsection{Extras}
+
+\begin{TempText}
+	@Note: Stuff that you know you can't get done this semester, but you might add later if you decide your game is cool enough to keep working on after the class is over, just for fun.
+\end{TempText}
+
+Additional rubber banding for the weakest players, so that they continue playing and having fun.
+
+Additionally, sand will be falling from the top to the bottom throughout the levels, which will interact with the player and slow them down or kill them.
+
+A player can trap another player via the cage item. The player can stay close to the cage they have dropped in order to make it last longer.
+
+A binding mechanic which allows players to attach to each other and help with the completion of the levels. The players can choose to detach themselves from each other after a given period of time has passed.
+
+Mini boss fights inside the rounds, in which the players are forced to collaborate in order to succeed.
+
+Items can hit the players while they race to the top, which slows them down or kill them.
+
+\subsection{Task List}
+
+% draw art assets, 
+% animation,
+% level design,
+% audio,
+% player control,
+% game engine,
+
+% \begin{itemize}
+%     \item 12.03.2022
+%     \begin{enumerate}
+%         \item Report chapter 1 - Project proposal (Final formal version)
+        
+%         6 people - All
+%     \end{enumerate}
+    
+%     \item 19.03.2022
+%     \begin{enumerate}
+%         \item Report chapter 2 - Prototype
+        
+%         4 People - Todor, Yuchen, Clemens and David
+%         \item Game Engine
+        
+%         2 People - Jasper and Rik
+%     \end{enumerate}
+    
+%     \item 26.03.2022
+%     \begin{enumerate}
+%         \item Game release 1 - First playable demo (Minimum Target)
+%         \item One level
+        
+%         2 People - Yuchen, Clemens
+        
+%         \item Controls
+        
+%         2 Person - David, Todor
+        
+%         \item Improving the Game Engine
+        
+%         2 People - Jasper, Rik
+%     \end{enumerate}
+    
+%     \item 02.04.2022
+%     \begin{enumerate}
+%         \item Sand
+        
+%         3 People - Jasper, Todor, David
+%         \item Local Multiplayer
+        
+%         3 People - Yuchen, Rik, Clemens
+%     \end{enumerate}
+    
+%     \item 09.04.2022
+%     \begin{enumerate}
+%         \item Sand
+        
+%         3 People - Jasper, Todor, David
+%         \item Winning Condition
+        
+%         3 People - Rik, Yuchen, Clemens
+%     \end{enumerate}
+    
+%     \item 16.04.2022
+%     \begin{enumerate}
+%         \item Sound
+        
+%         1 Person - David
+%         \item GUI
+        
+%         2 People - Yuchen, Clemens
+%         \item Optimising everything and QA testing
+        
+%         3 People - Todor, Jasper, Rik
+%     \end{enumerate}
+    
+%     \item 23.04.2022
+%     \begin{enumerate}
+%         \item Report chapter 3 - Interim report.
+        
+%         3 People - David, Clemens, Yuchen
+%         \item Game release 2 - Interim demos (Low Target)
+        
+%         3 People - Jasper, Todor, Rik
+%     \end{enumerate}
+    
+%     \item 30.04.2022
+%     \begin{enumerate}
+%         \item Items on the level to be picked up (Coins)
+        
+%         2 Person - Todor, David
+        
+%         \item Simple Shop
+        
+%         2 People - Rik, Yuchen
+        
+%         \item Challenge
+        
+%         2 People - Jasper, Clemens
+%     \end{enumerate}
+    
+%     \item 07.05.2022
+%     \begin{enumerate}
+%         \item Report chapter 4 - Alpha release.
+        
+%         3 People - David, Clemens, Yuchen
+%         \item Game release 3 - Alpha demo (Desired Target)
+        
+%         3 People - Jasper, Todor, Rik
+%     \end{enumerate}
+    
+   
+    
+%     \item 14.05.2022
+%     \begin{enumerate}
+%         \item Report chapter 5 - Playtest.
+        
+%         3 People - David, Clemens, Yuchen
+%         \item Game release 4 - Final version for Gobo
+        
+%         3 People - Jasper, Todor, Rik
+%     \end{enumerate}
+    
+%     \item 21.05.2022
+%     \begin{enumerate}
+%         \item Feature Freeze / Improvements / QA
+%     \end{enumerate}
+    
+%     \item 28.05.2022
+%     \begin{enumerate}
+%         \item Game release 5 - Version for final presentation (Things from High Target)
+%     \end{enumerate}
+    
+%     \item 04.06.2022
+%     \begin{enumerate}
+%         \item Report chapter 6 - Conclusion.
+        
+%         2 People - David, ???
+%         \item Demo Video
+        
+%         4 People - Rik, Todor, ???, ???
+%     \end{enumerate}
+    
+%     % \item 11.06.2022
+    
+%     % \item 18.06.2022
+    
+% \end{itemize}
+\begingroup
+\small
+\begin{tabular}{|l|l|l|l|} 
+\hline
+Task                                                          & start date & due date & Responsibility  \\ 
+\hline
+Report chapter 1 - Project proposal (Final formal version)    & 5.3.22     & 12.3.22  & all             \\
+Report chapter 2 - Prototype                                  & 12.3.22    & 19.3.22  & T, Y, C, D      \\
+Game Engine                                                   & 12.3.22    & 19.3.22  & J,R             \\
+Game release 1 - First playable demo (Minimum Target)         & 19.3.22    & 26.3.22  & all             \\
+One level                                                     & 19.3.22    & 26.3.22  & Y,C             \\
+Controls                                                      & 19.3.22    & 26.3.22  & D,T             \\
+Improving the Game Engine                                     & 19.3.22    & 26.3.22  & J,R             \\
+Sand                                                          & 26.3.22    & 2.4.22   & J,T,D           \\
+Local Multiplayer                                             & 26.3.22    & 2.4.22   & Y,R,C           \\
+Sand 2                                                        & 2.4.22     & 9.4.22   & J,T,D           \\
+Winning Condition                                             & 2.4.22     & 9.4.22   & Y,R,C           \\
+Sound                                                         & 9.4.22     & 16.4.22  & D               \\
+GUI                                                           & 9.4.22     & 16.4.22  & Y,C             \\
+Optimising everything and QA testing                          & 9.4.22     & 16.4.22  & T,D,J           \\
+Report chapter 3 - Interim report.                            & 16.4.22    & 23.4.22  & D,C,Y           \\
+Game release 2 - Interim demos (Low Target)                   & 16.4.22    & 23.4.22  & J,T,R           \\
+Items on the level to be picked up (Coins)                    & 23.4.22    & 30.4.22  & T,D             \\
+Simple Shop                                                   & 23.4.22    & 30.4.22  & R,Y             \\
+Challenge                                                     & 23.4.22    & 30.4.22  & J,C             \\
+Report chapter 4 - Alpha release.                             & 30.4.22    & 7.5.22   & D,C,Y           \\
+Game release 3 - Alpha demo (Desired Target)                  & 30.4.22    & 7.5.22   & J,T,R           \\
+Report chapter 5 - Playtest                                   & 7.5.22     & 14.5.22  & D,C,Y           \\
+Game release 4 - Final version for Gobo                       & 7.5.22     & 14.5.22  & J,T,R           \\
+Feature Freeze / Improvements / QA                            & 14.5.22    & 21.5.22  & -               \\
+Game release 5 - Version for final presentation (High Target) & 21.5.22    & 28.5.22  & -               \\
+Report chapter 6 - Conclusion                                 & 28.5.22    & 4.6.22   & D               \\
+Demo Video                                                    & 28.5.22    & 4.6.22   & R,T             \\
+\hline
+\end{tabular}
+\endgroup
+
+\subsection{Timeline}
+
+\includegraphics[width=\textwidth]{figures/GANTT_chart.pdf}
+
+% ====================================================================================
+
+\section{Assessment}
+
+
+
+\begin{TempText}
+	@Note: Tell us what the main strength of the game will be. What part is going to be the coolest? Who might want to play this game? What do they do in the game? What virtual world should the system simulate? Basically, you are setting up a world view for your subsequent design. What criteria should be used to judge if your design is a success or not?
+\end{TempText}
+
+\subsection{Fun-factor}
+The main fun-factor of our game is the unpredictability of each round. the forming and breaking
+of alliances will keep the players on the edge of their seats as they scramble to reach the top.
+While the platforming action is the main appeal, the game also provides abundant opportunities
+for planning. “Do I just rush past these coins and get ahead, or spend time collecting then for
+a better item which will help me later in the game?” Of course, other players can and will put
+and end to your plans which adds depth to the concept.
+
+
+\subsection{Feasibility}
+Our planned game is quite ambitious and we believe that we can make this work.
+
+There are many interconnected parts, such as the platforms, sand, items, challenges and the shop.
+In addition to that, we need to balance the individual parts to reach a state where the players actually need to consider cooperation vs. betrayal.
+
+On the other hand, we limit ourselves to a 2D game which reduces the required effort considerably.
+There are many libraries available for MonoGame that solve or simplify certain aspects of our game.
+And most importantly, our team consists of motivated members with a wide variety of relevant experience, ranging from game programming to art design and sounds.
+Some members already helped producing games or worked on their own game.
+
