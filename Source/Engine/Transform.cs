@@ -167,7 +167,7 @@ namespace Engine
 
         private void UpdateLocalToParentOnDemand()
         {
-            if (!this.dirty.HasFlag(DirtyFlags.LocalToParent))
+            if((this.dirty & DirtyFlags.LocalToParent) == 0)
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace Engine
 
         private void UpdateLocalToWorldOnDemand()
         {
-            if (!this.dirty.HasFlag(DirtyFlags.LocalToWorld))
+            if((this.dirty & DirtyFlags.LocalToWorld) == 0)
             {
                 return;
             }
@@ -187,7 +187,7 @@ namespace Engine
 
             if (this.parent != null)
             {
-                this.localToWorld = this.localToParent * this.parent.LocalToWorld;
+                this.localToWorld = this.parent.LocalToWorld * this.localToParent;
             }
             else
             {
@@ -200,13 +200,13 @@ namespace Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void MarkLocalToParentDirty()
         {
-            this.dirty = DirtyFlags.Both;
+            this.dirty = DirtyFlags.LocalToParent;
             this.MarkLocalToWorldDirty();
         }
 
         private void MarkLocalToWorldDirty()
         {
-            if (this.dirty.HasFlag(DirtyFlags.LocalToWorld))
+            if((this.dirty & DirtyFlags.LocalToWorld) != 0)
             {
                 // Can stop recursive marking, as children must be dirty already.
                 return;

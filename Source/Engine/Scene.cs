@@ -9,6 +9,10 @@ namespace Engine
     {
         private readonly List<GameObject> allObjects = new List<GameObject>();
 
+        private readonly List<GameObject> objectsToAdd = new List<GameObject>();
+
+        private readonly List<GameObject> objectsToRemove = new List<GameObject>();
+
         public string Name { get; set; }
 
         public bool IsLoaded => SceneManager.OpenScenes.Contains(this);

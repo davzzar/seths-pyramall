@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using JetBrains.Annotations;
 
 namespace Engine
 {
@@ -112,6 +113,7 @@ namespace Engine
             }
         }
 
+        [NotNull]
         public T AddComponent<T>() where T : Component, new()
         {
             if (!this.IsAlive && SceneManager.IsReady)
@@ -127,17 +129,17 @@ namespace Engine
             {
                 this.behaviors.Add(b);
 
-                if (SceneManager.IsReady)
+                if (SceneManager.IsReady && this.state != GameObjectState.Awakening)
                 {
                     b.OnAwakeInternal();
 
-                    if (this.IsEnabledInHierarchy && b.IsActive)
+                    if (this.IsEnabledInHierarchy && b.IsActive && this.state != GameObjectState.Enabling)
                     {
                         b.OnEnableInternal();
                     }
                 }
             }
-            else if(SceneManager.IsReady)
+            else if(SceneManager.IsReady && this.state != GameObjectState.Awakening)
             {
                 t.OnAwakeInternal();
             }
@@ -145,6 +147,7 @@ namespace Engine
             return t;
         }
         
+        [CanBeNull]
         public T GetComponent<T>() where T : Component
         {
             foreach (var c in this.components)
@@ -156,6 +159,19 @@ namespace Engine
             }
 
             return null;
+        }
+
+        [NotNull]
+        public T GetOrAddComponent<T>() where T : Component, new()
+        {
+            var result = this.GetComponent<T>();
+
+            if (result == null)
+            {
+                result = this.AddComponent<T>();
+            }
+
+            return result;
         }
 
         public void Destroy()

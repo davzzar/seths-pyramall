@@ -25,10 +25,8 @@ namespace SandPerSand
             textComp.Depth = 0f;
 
             var cameraGo = new GameObject();
-            cameraGo.Transform.LocalPosition = new Vector2(-2f, 0);
-            cameraGo.Transform.LocalRotation = MathHelper.Pi * 0.25f;
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 5;
+            cameraComp.Height = 10;
             //cameraGo.AddComponent<SwayComponent>();
 
             var gridGo = new GameObject();
@@ -36,12 +34,27 @@ namespace SandPerSand
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
 
-            var smileyGo = new GameObject();
-            smileyGo.Transform.LossyScale = new Vector2(2, 1);
-            var smiley = smileyGo.AddComponent<SpriteRenderer>();
-            smiley.LoadFromContent("Smiley");
-            smiley.Depth = 1f;
-            smileyGo.AddComponent<SwayComponent>();
+            const int count = 1;
+
+            var smileyParent = new GameObject();
+            var parentSway = smileyParent.AddComponent<SwayComponent>();
+
+            for (var i = 0; i < count; i++)
+            {
+                var smileyGo = new GameObject();
+                smileyGo.Transform.Parent = smileyParent.Transform;
+                smileyGo.Transform.LocalPosition = Vector2.UnitX;
+                smileyGo.Transform.LossyScale = new Vector2(2, 1);
+                var smiley = smileyGo.AddComponent<SpriteRenderer>();
+                smiley.LoadFromContent("Smiley");
+                smiley.Depth = 1f;
+                var smileySway = smileyGo.AddComponent<SwayComponent>();
+                smileySway.SwaySpeed *= 1f + i / (float)count;
+            }
+
+            var fpsGo = new GameObject();
+            fpsGo.Transform.Position = new Vector2(-2f, 3f);
+            fpsGo.AddComponent<FpsCounterComponent>();
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -60,7 +73,6 @@ namespace SandPerSand
         /// <inheritdoc />
         public override void Draw()
         {
-            Gizmos.DrawRect(Vector2.Zero, Vector2.One, 0f, Color.Gray);
             Gizmos.DrawLine(-Vector2.UnitX, Vector2.UnitX, Color.Blue);
             Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitY * 0.05f, Color.Blue);
             Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitX * 0.1f, Color.Blue);

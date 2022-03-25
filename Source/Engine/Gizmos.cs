@@ -11,7 +11,7 @@ namespace Engine
 {
     public static class Gizmos
     {
-        private const byte GizmosAlpha = (byte)(0.25 * byte.MaxValue + 0.5);
+        private const float GizmosAlpha = 0.5f;
 
         private static CommandEntry[] data;
 
@@ -38,20 +38,25 @@ namespace Engine
             DrawLine(in point1, distance, angle, color);
         }
 
-        public static void DrawLine(in Vector2 from, in float distance, in float rotation, Color color)
+        public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color)
         {
             GrowBufferOnDemand();
             
-            color.A = GizmosAlpha;
+            //color *= GizmosAlpha;
             data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, 1f));
             numEntries++;
         }
 
-        public static void DrawRect(in Vector2 center, in Vector2 size, in float rotation, Color color)
+        public static void DrawRect(in Vector2 center, in Vector2 size, float rotation, Color color)
+        {
+
+        }
+
+        public static void FillRect(in Vector2 center, in Vector2 size, float rotation, Color color)
         {
             GrowBufferOnDemand();
 
-            color.A = GizmosAlpha;
+            color *= GizmosAlpha;
             var pos = center + new Vector2(-size.X, size.Y) / 2f;
             data[numEntries] = new CommandEntry(CommandType.Rect, in color, in pos, in rotation, in size);
             numEntries++;

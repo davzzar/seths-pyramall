@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace Engine
@@ -23,9 +24,17 @@ namespace Engine
 
         private bool isExiting;
 
+        private Stopwatch timer = new Stopwatch();
+
         internal RenderPipeline RenderPipeline { get; }
 
         internal GraphicsDeviceManager GraphicsDeviceManager { get; }
+
+        public bool VSync
+        {
+            get => this.GraphicsDeviceManager.SynchronizeWithVerticalRetrace;
+            set => this.GraphicsDeviceManager.SynchronizeWithVerticalRetrace = value;
+        }
 
         public GameEngine()
         {
@@ -42,6 +51,8 @@ namespace Engine
             this.Content.RootDirectory = "Content";
             this.Window.AllowUserResizing = true;
             this.GraphicsDeviceManager.PreferMultiSampling = true;
+
+            this.IsFixedTimeStep = false;
 
             Graphics.Init();
         }
@@ -71,13 +82,23 @@ namespace Engine
         protected override void Update(GameTime gameTime)
         {
             Time.StartNextFrame(gameTime.ElapsedGameTime.TotalSeconds);
+            this.timer.Restart();
+
             SceneManager.DoUpdate();
+
+            this.timer.Stop();
+            Time.OnFrameUpdateFinished(this.timer.Elapsed);
         }
 
         /// <inheritdoc />
         protected override void Draw(GameTime gameTime)
         {
+            this.timer.Restart();
+
             this.RenderPipeline.Render();
+            
+            this.timer.Stop();
+            Time.OnFrameDrawFinished(this.timer.Elapsed);
         }
 
         /// <inheritdoc />
