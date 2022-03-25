@@ -24,8 +24,10 @@ namespace SandPerSand
             textComp.Transform.LossyScale = Vector2.One * 0.2f;
 
             var cameraGo = new GameObject();
+            cameraGo.Transform.LocalPosition = new Vector2(-2f, 0);
+            cameraGo.Transform.LocalRotation = MathHelper.Pi * 0.25f;
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 4;
+            cameraComp.Height = 5;
 
             var gridGo = new GameObject();
             var gridComp = gridGo.AddComponent<DrawGridComponent>();

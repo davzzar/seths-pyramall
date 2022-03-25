@@ -32,7 +32,12 @@ namespace Engine
         {
             get
             {
-                return Matrix3x3.CreateTRS(this.Transform.Position + Vector2.One * 0.5f, this.Transform.Rotation, new Vector2(this.AspectRatio / this.height, -1f / this.height));
+                var scale = new Vector2(this.AspectRatio / this.height, -1f / this.height);
+                return Matrix3x3.CreateScale(scale) *
+                       Matrix3x3.CreateTranslation(Vector2.One / scale * 0.5f) *
+                       Matrix3x3.CreateRotation(-this.Transform.Rotation) *
+                       Matrix3x3.CreateTranslation(-this.Transform.Position);
+                //return Matrix3x3.CreateTRS(-this.Transform.Position + Vector2.One * 0.5f, -this.Transform.Rotation, new Vector2(this.AspectRatio / this.height, -1f / this.height));
             }
         }
 
