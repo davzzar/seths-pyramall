@@ -34,6 +34,10 @@ namespace SandPerSand
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
 
+            var tileMapGo = new GameObject();
+            var tileMapComp = tileMapGo.AddComponent<TileMap>();
+            tileMapComp.LoadFromContent("test_map", "sandpersand");
+
             const int count = 1;
 
             var smileyParent = new GameObject();
