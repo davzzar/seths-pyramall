@@ -1,8 +1,6 @@
 using System;
-using System.Windows.Forms.Design.Behavior;
 using Engine;
 using Microsoft.Xna.Framework;
-using tainicom.Aether.Physics2D.Common;
 
 namespace SandPerSand
 {
@@ -24,18 +22,26 @@ namespace SandPerSand
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
             textComp.Transform.LossyScale = Vector2.One * 0.2f;
+            textComp.Depth = 0f;
 
             var cameraGo = new GameObject();
             cameraGo.Transform.LocalPosition = new Vector2(-2f, 0);
             cameraGo.Transform.LocalRotation = MathHelper.Pi * 0.25f;
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 5;
+            //cameraGo.AddComponent<SwayComponent>();
 
             var gridGo = new GameObject();
             var gridComp = gridGo.AddComponent<DrawGridComponent>();
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
-            //var gridSwayComp = cameraGo.AddComponent<SwayComponent>();
+
+            var smileyGo = new GameObject();
+            smileyGo.Transform.LossyScale = new Vector2(2, 1);
+            var smiley = smileyGo.AddComponent<SpriteRenderer>();
+            smiley.LoadFromContent("Smiley");
+            smiley.Depth = 1f;
+            smileyGo.AddComponent<SwayComponent>();
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -54,9 +60,16 @@ namespace SandPerSand
         /// <inheritdoc />
         public override void Draw()
         {
-            Gizmos.DrawRect(Vector2.Zero, Vector2.One * 2, 0f, Color.Gray);
+            Gizmos.DrawRect(Vector2.Zero, Vector2.One, 0f, Color.Gray);
             Gizmos.DrawLine(-Vector2.UnitX, Vector2.UnitX, Color.Blue);
+            Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitY * 0.05f, Color.Blue);
+            Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitX * 0.1f, Color.Blue);
+            Gizmos.DrawLine(Vector2.UnitX + Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitX * 0.1f, Color.Blue);
+
             Gizmos.DrawLine(-Vector2.UnitY, Vector2.UnitY, Color.Red);
+            Gizmos.DrawLine(Vector2.UnitY - Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitX * 0.05f, Color.Red);
+            Gizmos.DrawLine(Vector2.UnitY - Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitY * 0.1f, Color.Red);
+            Gizmos.DrawLine(Vector2.UnitY + Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitY * 0.1f, Color.Red);
         }
     }
 }

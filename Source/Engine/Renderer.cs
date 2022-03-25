@@ -4,6 +4,14 @@ namespace Engine
 {
     public abstract class Renderer : Behaviour
     {
+        private float depth;
+
+        public float Depth
+        {
+            get => this.depth;
+            set => this.depth = MathHelper.Clamp(value, 0f, 1f);
+        }
+
         public abstract void Draw();
 
         /// <inheritdoc />

@@ -11,11 +11,15 @@ namespace Engine
 {
     public static class Gizmos
     {
+        private const byte GizmosAlpha = (byte)(0.25 * byte.MaxValue + 0.5);
+
         private static CommandEntry[] data;
 
         private static int numEntries;
 
         private static Texture2D pixel;
+
+        internal static int CommandBufferCount => numEntries;
 
         static Gizmos()
         {
@@ -38,7 +42,8 @@ namespace Engine
         {
             GrowBufferOnDemand();
             
-            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, 4f));
+            color.A = GizmosAlpha;
+            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, 1f));
             numEntries++;
         }
 
@@ -46,14 +51,17 @@ namespace Engine
         {
             GrowBufferOnDemand();
 
+            color.A = GizmosAlpha;
             var pos = center + new Vector2(-size.X, size.Y) / 2f;
-            data[numEntries] = new CommandEntry(CommandType.Rect, in color, pos, in rotation, in size);
+            data[numEntries] = new CommandEntry(CommandType.Rect, in color, in pos, in rotation, in size);
             numEntries++;
         }
 
         internal static void OnRender()
         {
             InitRenderCache();
+
+            var thicknessScale = Graphics.CurrentCamera.Height / Graphics.GraphicsDevice.Viewport.Height;
 
             for (var i = 0; i < numEntries; i++)
             {
@@ -65,7 +73,7 @@ namespace Engine
                 {
                     case CommandType.Line:
                         var scale = entry.Scale;
-                        scale.Y /= Graphics.GraphicsDevice.Viewport.Height;
+                        scale.Y *= thicknessScale;
                         matrix = Matrix3x3.CreateTRS(in entry.Position, in entry.Rotation, in scale);
                         break;
                     case CommandType.Rect:
@@ -75,7 +83,7 @@ namespace Engine
                         throw new ArgumentOutOfRangeException();
                 }
 
-                Graphics.Draw(pixel, entry.Color, ref matrix);
+                Graphics.Draw(pixel, entry.Color, ref matrix, 0f);
             }
 
             numEntries = 0;
@@ -85,7 +93,7 @@ namespace Engine
         {
             if (pixel == null || pixel.IsDisposed)
             {
-                pixel = new Texture2D(Graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                pixel = new Texture2D(Graphics.GraphicsDevice, 1, 1);
                 pixel.Name = "Pixel";
                 pixel.SetData(new[] {Color.White});
             }

@@ -93,7 +93,7 @@ namespace Engine
         {
             if (this.canRender)
             {
-                Graphics.DrawText(this.Font, this.Text, this.Color, ref this.Transform.LocalToWorld);
+                Graphics.DrawText(this.Font, this.Text, this.Color, ref this.Transform.LocalToWorld, this.Depth);
             }
         }
 

@@ -31,23 +31,23 @@ namespace Engine
         private Graphics()
         { }
 
-        public static void Draw(Texture2D texture, Color color, ref Matrix3x3 matrix)
+        public static void Draw(Texture2D texture, Color color, ref Matrix3x3 matrix, float depth)
         {
             var viewSpace = instance.currentWorldToView * matrix;
             viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
             scale.X /= texture.Width;
             scale.Y /= texture.Height;
-            instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, SpriteEffects.None, 0);
+            instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
         }
 
-        public static void DrawText(SpriteFont font, string text, Color color, ref Matrix3x3 matrix)
+        public static void DrawText(SpriteFont font, string text, Color color, ref Matrix3x3 matrix, float depth)
         {
             var viewSpace = instance.currentWorldToView * matrix;
             viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
             var height = FontManager.GetFontInfo(font).Height;
             scale /= height;
             instance.spriteBatch.DrawString(font, text, position, color, radians, Vector2.Zero, scale,
-                SpriteEffects.None, 0);
+                SpriteEffects.None, depth);
         }
 
         public static void Init() { }
@@ -70,10 +70,7 @@ namespace Engine
                 instance.spriteBatch = new SpriteBatch(GraphicsDevice);
             }
 
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
             instance.isRendering = true;
-            instance.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
             instance.currentCamera = camera;
             instance.currentWorldToView =
@@ -88,7 +85,6 @@ namespace Engine
                 throw new InvalidOperationException("Can't call EndRender without calling BeginRender first.");
             }
 
-            instance.spriteBatch.End();
             instance.currentCamera = null;
             instance.isRendering = false;
         }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine
 {
@@ -92,7 +94,7 @@ namespace Engine
             }
 
             Debug.Assert(this.renderers.Contains(renderer));
-            renderers.RemoveSwapBack(renderer);
+            this.renderers.RemoveSwapBack(renderer);
         }
 
         internal void Render()
@@ -102,13 +104,25 @@ namespace Engine
             foreach (var camera in this.cameras)
             {
                 Graphics.BeginRender(camera);
+                Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+
+                Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
                 foreach (var renderer in this.renderers)
                 {
                     renderer.Draw();
                 }
 
-                Gizmos.OnRender();
+                Graphics.SpriteBatch.End();
+
+                // Draw Gizmos if needed, don't sort draw calls
+                if (Gizmos.CommandBufferCount > 0)
+                {
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+                    Gizmos.OnRender();
+                    Graphics.SpriteBatch.End();
+                }
+
                 Graphics.EndRender();
             }
 
