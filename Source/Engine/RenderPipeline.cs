@@ -108,6 +108,7 @@ namespace Engine
                     renderer.Draw();
                 }
 
+                Gizmos.OnRender();
                 Graphics.EndRender();
             }
 

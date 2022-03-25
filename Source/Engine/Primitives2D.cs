@@ -396,7 +396,7 @@ namespace Engine
 				CreateThePixel(Graphics.SpriteBatch);
 			}
 
-            var matrix = Matrix3x3.CreateTRS(point, angle, new Vector2(length, thickness));
+			var matrix = Matrix3x3.CreateTRS(point, angle, new Vector2(length, thickness));
             Graphics.Draw(pixel, color, ref matrix);
 		}
 

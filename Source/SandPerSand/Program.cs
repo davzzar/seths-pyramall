@@ -1,6 +1,8 @@
 using System;
+using System.Windows.Forms.Design.Behavior;
 using Engine;
 using Microsoft.Xna.Framework;
+using tainicom.Aether.Physics2D.Common;
 
 namespace SandPerSand
 {
@@ -33,6 +35,7 @@ namespace SandPerSand
             var gridComp = gridGo.AddComponent<DrawGridComponent>();
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
+            //var gridSwayComp = cameraGo.AddComponent<SwayComponent>();
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -51,8 +54,9 @@ namespace SandPerSand
         /// <inheritdoc />
         public override void Draw()
         {
-            Primitives2D.DrawLine(-Vector2.UnitX, Vector2.UnitX, Color.Blue, this.Thickness);
-            Primitives2D.DrawLine(-Vector2.UnitY, Vector2.UnitY, Color.Red, this.Thickness);
+            Gizmos.DrawRect(Vector2.Zero, Vector2.One * 2, 0f, Color.Gray);
+            Gizmos.DrawLine(-Vector2.UnitX, Vector2.UnitX, Color.Blue);
+            Gizmos.DrawLine(-Vector2.UnitY, Vector2.UnitY, Color.Red);
         }
     }
 }

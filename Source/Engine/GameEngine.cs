@@ -41,6 +41,7 @@ namespace Engine
 
             this.Content.RootDirectory = "Content";
             this.Window.AllowUserResizing = true;
+            this.GraphicsDeviceManager.PreferMultiSampling = true;
 
             Graphics.Init();
         }

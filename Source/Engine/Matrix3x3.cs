@@ -251,7 +251,7 @@ namespace Engine
                 0, 0, 1);
         }
 
-        public static Matrix3x3 CreateTRS(in Vector2 position, float radians, in Vector2 scale)
+        public static Matrix3x3 CreateTRS(in Vector2 position, in float radians, in Vector2 scale)
         {
             return CreateTranslation(position) * CreateRotation(radians) * CreateScale(scale);
         }

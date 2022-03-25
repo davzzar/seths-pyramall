@@ -73,7 +73,7 @@ namespace Engine
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             instance.isRendering = true;
-            instance.spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend);
+            instance.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
 
             instance.currentCamera = camera;
             instance.currentWorldToView =
