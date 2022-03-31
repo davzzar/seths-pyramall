@@ -40,6 +40,16 @@ namespace Engine
             instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
         }
 
+        public static void DrawTile(Texture2D texture, Rectangle source, Color color, ref Matrix3x3 matrix, float depth)
+        {
+            // matrix carry the information of LocalToWord, (LocalToWord,currentWorldToView) -> position on view
+            var viewSpace = instance.currentWorldToView * matrix;
+            viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
+            scale.X /= texture.Width;
+            scale.Y /= texture.Height;
+            instance.spriteBatch.Draw(texture, position, source, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
+        }
+
         public static void DrawText(SpriteFont font, string text, Color color, ref Matrix3x3 matrix, float depth)
         {
             var viewSpace = instance.currentWorldToView * matrix;

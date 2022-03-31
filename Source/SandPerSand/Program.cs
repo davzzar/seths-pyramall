@@ -36,7 +36,9 @@ namespace SandPerSand
 
             var tileMapGo = new GameObject();
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
-            tileMapComp.LoadFromContent("test_map", "sandpersand");
+            tileMapComp.LoadFromContent("test_map");
+            var mapRenderer = tileMapGo.AddComponent<MapRenderer>();
+            mapRenderer.LoadFromContent();
 
             const int count = 1;
 
