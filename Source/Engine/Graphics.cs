@@ -45,8 +45,8 @@ namespace Engine
             // matrix carry the information of LocalToWord, (LocalToWord,currentWorldToView) -> position on view
             var viewSpace = instance.currentWorldToView * matrix;
             viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
-            scale.X /= texture.Width;
-            scale.Y /= texture.Height;
+            scale.X /= source.Width;
+            scale.Y /= source.Height;
             instance.spriteBatch.Draw(texture, position, source, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
         }
 

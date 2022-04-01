@@ -26,7 +26,7 @@ namespace SandPerSand
 
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 10;
+            cameraComp.Height = 50;
             //cameraGo.AddComponent<SwayComponent>();
 
             var gridGo = new GameObject();
@@ -35,6 +35,7 @@ namespace SandPerSand
             gridComp.Thickness = 0.05f;
 
             var tileMapGo = new GameObject();
+
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
             tileMapComp.LoadFromContent("test_map");
             var mapRenderer = tileMapGo.AddComponent<MapRenderer>();

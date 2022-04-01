@@ -71,7 +71,6 @@ namespace Engine
                 Tile newTile = new Tile();
 
                 int gridId = baseLayer.data[gridItr];
-                //TODO Could this happen????
                 if (gridId <= 0)
                     continue;
 
@@ -111,17 +110,12 @@ namespace Engine
         {
             foreach(Tile tile in baseTiles)
             {
-                var matrix = this.Transform.LocalToWorld * Matrix3x3.CreateTranslation(new Vector2(-0.5f, 0.5f));
-                
-                if (tile.Texture != null)
-                {
-                    Graphics.DrawTile(tile.Texture, tile.SourceRectangle, color, ref matrix, depth);
-                }
-                else
-                {
-                    Console.WriteLine("tile.Texture == null,tileGridId:" + tile.GridId);
-                }
-                
+                if (tile.GridId <= 0)
+                    continue;
+                Matrix3x3 tileToMap = Matrix3x3.CreateTranslation(new Vector2(tile.X,tile.Y));
+                var matrix = this.Transform.LocalToWorld * tileToMap * Matrix3x3.CreateTranslation(new Vector2(-0.5f, 0.5f));
+                matrix.DecomposeTRS(out _, out _, out var scale);
+                Graphics.DrawTile(tile.Texture, tile.SourceRectangle, color, ref matrix, depth);
             }
         }
 
