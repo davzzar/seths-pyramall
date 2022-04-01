@@ -98,7 +98,7 @@ namespace Engine
 
                 // tile 1->1 CoordinatesOnLayer
                 int x = gridItr % baseLayer.width;
-                int y = gridItr / baseLayer.height;
+                int y =  - gridItr / baseLayer.height + baseLayer.height - 1;
                 Console.WriteLine("new Tile(texture:" + texture);
                 baseTiles[x, y] = new Tile(texture, tiledS,sourceRectangle,x,y,gridId,firstGridId);
             }

@@ -26,7 +26,8 @@ namespace SandPerSand
 
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 50;
+            cameraComp.Height = 20;
+            cameraGo.Transform.Position = new Vector2(10,9.5f);
             //cameraGo.AddComponent<SwayComponent>();
 
             var gridGo = new GameObject();
