@@ -12,8 +12,22 @@ namespace SandPerSand
         private TextRenderer textRenderer;
 
         private float avgDeltaTime;
+        private float fontSize;
 
         public float Fps { get; private set; }
+
+        public float FontSize
+        {
+            get => this.fontSize;
+            set
+            {
+                this.fontSize = value;
+
+                if (this.textRenderer != null)
+                {
+                }
+            }
+        }
 
         /// <inheritdoc />
         protected override void Update()

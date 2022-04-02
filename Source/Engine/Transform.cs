@@ -75,6 +75,7 @@ namespace Engine
         {
             get
             {
+                // TODO: FIX SHIT
                 this.UpdateLocalToParentOnDemand();
                 return ref this.localToParent;
             }
@@ -153,6 +154,8 @@ namespace Engine
             }
         }
 
+        public IReadOnlyList<Transform> Children => this.children.AsReadOnly();
+
         public int ChildCount => this.children.Count;
 
         public Transform GetChild(int index)
@@ -221,7 +224,7 @@ namespace Engine
         }
 
         [Flags]
-        private enum DirtyFlags
+        private enum DirtyFlags : int
         {
             LocalToParent = 1 << 0,
             LocalToWorld = 1 << 1,

@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Engine;
 using Microsoft.Xna.Framework;
 
@@ -12,9 +13,35 @@ namespace SandPerSand
         [STAThread]
         static void Main()
         {
-            var engine = new GameEngine();
+            var engine = new GameEngine(); 
 
             // Initialize the scene by adding some game objects and components
+            CreateCamera();
+            CreateOriginMarker();
+            CreateMap();
+            //CreateFpsText();
+            //CreatePerformanceTest(10000);
+            CreatePhysicsTest(30, 20);
+
+            // Start the engine, this call blocks until the game is closed
+            //engine.VSync = false;
+            //engine.IsFixedTimeStep = false;
+            
+            engine.Run();
+        }
+
+        private static void CreateCamera()
+        {
+            var cameraGo = new GameObject();
+            var cameraComp = cameraGo.AddComponent<Camera>();
+            cameraComp.Height = 50;
+            var cameraSway = cameraGo.AddComponent<SwayComponent>();
+            cameraSway.MaxSway = MathF.PI * 0.25f;
+            cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
+        }
+
+        private static void CreateOriginMarker()
+        {
             var textGo = new GameObject();
             textGo.Transform.LocalPosition = new Vector2(0.1f, -0.1f);
             
@@ -22,28 +49,26 @@ namespace SandPerSand
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
             textComp.Transform.LossyScale = Vector2.One * 0.2f;
-            textComp.Depth = 0f;
-
-            var cameraGo = new GameObject();
-            var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 20;
-            cameraGo.Transform.Position = new Vector2(10,9.5f);
-            //cameraGo.AddComponent<SwayComponent>();
-
             var gridGo = new GameObject();
             var gridComp = gridGo.AddComponent<DrawGridComponent>();
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
-
+        }
+        private static void CreateMap()
+        {
             var tileMapGo = new GameObject();
 
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
             tileMapComp.LoadFromContent("test_map");
             var mapRenderer = tileMapGo.AddComponent<MapRenderer>();
             mapRenderer.LoadFromContent();
+        }
 
-            const int count = 1;
 
+
+
+        private static void CreatePerformanceTest(int count)
+        {
             var smileyParent = new GameObject();
             var parentSway = smileyParent.AddComponent<SwayComponent>();
 
@@ -52,44 +77,45 @@ namespace SandPerSand
                 var smileyGo = new GameObject();
                 smileyGo.Transform.Parent = smileyParent.Transform;
                 smileyGo.Transform.LocalPosition = Vector2.UnitX;
-                smileyGo.Transform.LossyScale = new Vector2(2, 1);
+                smileyGo.Transform.LossyScale = new Vector2(1, 1);
                 var smiley = smileyGo.AddComponent<SpriteRenderer>();
                 smiley.LoadFromContent("Smiley");
-                smiley.Depth = 1f;
-                var smileySway = smileyGo.AddComponent<SwayComponent>();
-                smileySway.SwaySpeed *= 1f + i / (float)count;
+                smiley.Depth = 0f;
+                //var smileySway = smileyGo.AddComponent<SwayComponent>();
+                //smileySway.SwaySpeed *= 1f + i / (float)count;
             }
-
-            var fpsGo = new GameObject();
-            fpsGo.Transform.Position = new Vector2(-2f, 3f);
-            fpsGo.AddComponent<FpsCounterComponent>();
-
-            // Start the engine, this call blocks until the game is closed
-            engine.Run();
         }
-    }
 
-    /// <summary>
-    /// Very simple example component that draws a minimalistic grid... In fact, atm. it's more like a cross but it's an example, okay!?
-    /// </summary>
-    public class DrawGridComponent : Renderer
-    {
-        public Color Color { get; set; }
-
-        public float Thickness { get; set; }
-
-        /// <inheritdoc />
-        public override void Draw()
+        private static void CreatePhysicsTest(int countX, int countY)
         {
-            Gizmos.DrawLine(-Vector2.UnitX, Vector2.UnitX, Color.Blue);
-            Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitY * 0.05f, Color.Blue);
-            Gizmos.DrawLine(Vector2.UnitX - Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitX * 0.1f, Color.Blue);
-            Gizmos.DrawLine(Vector2.UnitX + Vector2.UnitY * 0.05f, Vector2.UnitX + Vector2.UnitX * 0.1f, Color.Blue);
+            var groundGo = new GameObject();
+            groundGo.Transform.LocalPosition = new Vector2(0f, -30);
+            groundGo.Transform.LossyScale = new Vector2(60, 60);
 
-            Gizmos.DrawLine(-Vector2.UnitY, Vector2.UnitY, Color.Red);
-            Gizmos.DrawLine(Vector2.UnitY - Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitX * 0.05f, Color.Red);
-            Gizmos.DrawLine(Vector2.UnitY - Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitY * 0.1f, Color.Red);
-            Gizmos.DrawLine(Vector2.UnitY + Vector2.UnitX * 0.05f, Vector2.UnitY + Vector2.UnitY * 0.1f, Color.Red);
+            var groundCol = groundGo.AddComponent<CircleCollider>();
+            groundCol.Radius = 30;
+
+            var groundRndr = groundGo.AddComponent<SpriteRenderer>();
+            groundRndr.LoadFromContent("Smiley");
+            
+            for (var y = 0; y < countY; y++)
+            {
+                for (var i = 0; i < countX; i++)
+                {
+                    var circleGo = new GameObject();
+                    circleGo.Transform.Position = new Vector2(-countX / 2f + i + 0.5f, 1f + y);
+                    circleGo.Transform.LossyScale = Vector2.One * 0.6f;
+
+                    var circleCol = circleGo.AddComponent<CircleCollider>();
+                    circleCol.Radius = 0.3f;
+
+                    var circleRb = circleGo.AddComponent<RigidBody>();
+
+                    var circleRndr = circleGo.AddComponent<SpriteRenderer>();
+                    circleRndr.Depth = 1f;
+                    circleRndr.LoadFromContent("Smiley");
+                }
+            }
         }
     }
 }
