@@ -22,13 +22,35 @@ namespace Engine
         [CanBeNull]
         private Fixture fixture;
 
+        private float density = 1f;
+
+        public float Density
+        {
+            get => this.density;
+            set
+            {
+                if (MathF.Abs(this.density - value) < 1e-5f)
+                {
+                    return;
+                }
+
+                this.density = value;
+
+                if (this.shape != null)
+                {
+                    this.shape.Density = value;
+                }
+            }
+        }
+
         internal Shape Shape
         {
             get
             {
-                if (this.shape == null)
+                if (this.shape == null || this.isShapeDirty)
                 {
                     this.shape = this.GetShape();
+                    this.isShapeDirty = false;
                 }
 
                 return this.shape;
@@ -74,7 +96,7 @@ namespace Engine
                         this.fixture = this.owningRigidBody.Body.CreateFixture(this.Shape);
                     }
                 }
-                else if(this.IsActiveInHierarchy)
+                else if (this.IsActiveInHierarchy)
                 {
                     this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                     Debug.Assert(this.body != null);
@@ -83,8 +105,9 @@ namespace Engine
             }
         }
 
-        internal Collider(){}
-        
+        internal Collider()
+        { }
+
         /// <inheritdoc />
         protected override void OnEnable()
         {
@@ -149,8 +172,21 @@ namespace Engine
         /// </summary>
         protected void InvalidateShape()
         {
+            // Next call to this.Shape will create a fresh shape
             this.isShapeDirty = true;
-            throw new NotImplementedException();
+
+            if (this.shape == null || !this.IsActiveInHierarchy)
+            {
+                return;
+            }
+
+            var bodyInUse = this.owningRigidBody != null ? this.owningRigidBody.Body : this.body;
+
+            Debug.Assert(bodyInUse != null);
+            Debug.Assert(this.fixture != null);
+
+            bodyInUse.Remove(this.fixture);
+            this.fixture = bodyInUse.CreateFixture(this.shape);
         }
     }
 }

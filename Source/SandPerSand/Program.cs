@@ -20,7 +20,7 @@ namespace SandPerSand
             CreateOriginMarker();
             CreateFpsText();
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest(30, 20);
+            CreatePhysicsTest(5, 2);
 
             // Start the engine, this call blocks until the game is closed
             //engine.VSync = false;
@@ -33,7 +33,7 @@ namespace SandPerSand
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 50;
+            cameraComp.Height = 10;
             var cameraSway = cameraGo.AddComponent<SwayComponent>();
             cameraSway.MaxSway = MathF.PI * 0.25f;
             cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -90,7 +90,7 @@ namespace SandPerSand
             groundGo.Transform.LossyScale = new Vector2(60, 60);
 
             var groundCol = groundGo.AddComponent<CircleCollider>();
-            groundCol.Radius = 30;
+            groundCol.Radius = 1;
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
@@ -101,10 +101,10 @@ namespace SandPerSand
                 {
                     var circleGo = new GameObject();
                     circleGo.Transform.Position = new Vector2(-countX / 2f + i + 0.5f, 1f + y);
-                    circleGo.Transform.LossyScale = Vector2.One * 0.6f;
+                    circleGo.Transform.LossyScale = new Vector2(2, 1) * 0.6f;
 
                     var circleCol = circleGo.AddComponent<CircleCollider>();
-                    circleCol.Radius = 0.3f;
+                    circleCol.Radius = 1;
 
                     var circleRb = circleGo.AddComponent<RigidBody>();
 
