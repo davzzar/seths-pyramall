@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace Engine
 {
@@ -74,6 +75,7 @@ namespace Engine
             base.Initialize();
 
             Time.Init();
+            PhysicsManager.Init();
             SceneManager.Init();
             this.RenderPipeline.Init();
         }
@@ -83,8 +85,9 @@ namespace Engine
         {
             Time.StartNextFrame(gameTime.ElapsedGameTime.TotalSeconds);
             this.timer.Restart();
-
+            
             SceneManager.DoUpdate();
+            PhysicsManager.Step();
 
             this.timer.Stop();
             Time.OnFrameUpdateFinished(this.timer.Elapsed);

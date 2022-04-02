@@ -21,8 +21,6 @@ namespace Engine
 
         public Color Color { get; set; } = Color.White;
 
-        
-
         /// <inheritdoc />
         public override void Draw()
         {

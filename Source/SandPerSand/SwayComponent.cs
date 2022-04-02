@@ -36,7 +36,7 @@ namespace SandPerSand
         public float SwaySpeed
         {
             get => swaySpeed;
-            set => swaySpeed = MathHelper.Clamp(value, 0.001f, float.MaxValue);
+            set => swaySpeed = MathHelper.Clamp(value, 0f, float.MaxValue);
         }
 
         public SwayComponent()

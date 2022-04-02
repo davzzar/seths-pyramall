@@ -55,6 +55,8 @@ namespace Engine
             }
         }
 
+        public float FontSize { get; set; }
+
         public Color Color { get; set; }
 
         /// <summary>

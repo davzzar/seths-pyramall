@@ -161,6 +161,38 @@ namespace Engine
             return null;
         }
 
+        [NotNull, ItemNotNull]
+        public T[] GetComponents<T>() where T : Component
+        {
+            var result = new List<T>();
+
+            foreach (var c in this.components)
+            {
+                if (c is T t)
+                {
+                    result.Add(t);
+                }
+            }
+
+            return result.ToArray();
+        }
+
+        public void GetComponents<T>(IList<T> items) where T : Component
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            foreach (var c in this.components)
+            {
+                if (c is T t)
+                {
+                    items.Add(t);
+                }
+            }
+        }
+
         [NotNull]
         public T GetOrAddComponent<T>() where T : Component, new()
         {

@@ -49,7 +49,7 @@ namespace Engine
 
         public static void DrawRect(in Vector2 center, in Vector2 size, float rotation, Color color)
         {
-
+            throw new NotImplementedException();
         }
 
         public static void FillRect(in Vector2 center, in Vector2 size, float rotation, Color color)
