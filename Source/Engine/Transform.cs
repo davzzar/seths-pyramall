@@ -163,6 +163,16 @@ namespace Engine
             return this.children[index];
         }
 
+        public Vector2 TransformPoint(in Vector2 point)
+        {
+            return this.localToWorld.TransformPoint(in point);
+        }
+
+        public Vector2 TransformDirection(in Vector2 point)
+        {
+            return this.localToWorld.TransformDirection(in point);
+        }
+
         internal void SetContainingScene(Scene scene)
         {
             this.containingScene = scene;
