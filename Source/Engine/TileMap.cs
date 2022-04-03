@@ -68,8 +68,6 @@ namespace Engine
 
             for (int gridItr = 0; gridItr < baseLayer.data.Length; ++gridItr)
             {
-                Tile newTile = new Tile();
-
                 int gridId = baseLayer.data[gridItr];
                 if (gridId <= 0)
                     continue;
@@ -114,7 +112,6 @@ namespace Engine
                     continue;
                 Matrix3x3 tileToMap = Matrix3x3.CreateTranslation(new Vector2(tile.X,tile.Y));
                 var matrix = this.Transform.LocalToWorld * tileToMap * Matrix3x3.CreateTranslation(new Vector2(-0.5f, 0.5f));
-                matrix.DecomposeTRS(out _, out _, out var scale);
                 Graphics.DrawTile(tile.Texture, tile.SourceRectangle, color, ref matrix, depth);
             }
         }
