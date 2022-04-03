@@ -118,7 +118,8 @@ namespace SandPerSand
 
                     // The rigidBody allows the game object to be moved around by the physics engine, makes the collider dynamic
                     var circleRb = circleGo.AddComponent<RigidBody>();
-                    circleRb.IsKinematic = y % 2 == 0;
+                    circleRb.IsKinematic = y % 2 == 1;
+                    circleRb.FreezeRotation = y % 3 == 0;
 
                     var circleRndr = circleGo.AddComponent<SpriteRenderer>();
                     circleRndr.Depth = 1f;

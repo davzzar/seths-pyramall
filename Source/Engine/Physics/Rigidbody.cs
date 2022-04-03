@@ -15,6 +15,7 @@ namespace Engine
 
         private readonly List<Collider> colliders = new List<Collider>();
         private bool isKinematic;
+        private bool freezeRotation;
 
         public bool IsKinematic
         {
@@ -31,6 +32,25 @@ namespace Engine
                 if (this.body != null)
                 {
                     this.body.BodyType = this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic;
+                }
+            }
+        }
+
+        public bool FreezeRotation
+        {
+            get => this.freezeRotation;
+            set
+            {
+                if (this.freezeRotation == value)
+                {
+                    return;
+                }
+
+                this.freezeRotation = value;
+
+                if (this.body != null)
+                {
+                    this.body.FixedRotation = this.freezeRotation;
                 }
             }
         }
@@ -93,6 +113,9 @@ namespace Engine
 
             this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation,
                 this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic);
+
+            Debug.Assert(this.body != null);
+            this.body.FixedRotation = this.freezeRotation;
 
             this.Owner.GetComponentsInChildren(this.colliders);
 
