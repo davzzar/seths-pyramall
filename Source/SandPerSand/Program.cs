@@ -19,7 +19,7 @@ namespace SandPerSand
             CreateCamera();
             CreateOriginMarker();
             CreateMap();
-            //CreateFpsText();
+            CreateFpsText();
             //CreatePerformanceTest(10000);
             CreatePhysicsTest2(30, 20);
 
@@ -50,11 +50,21 @@ namespace SandPerSand
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
             textComp.Transform.LossyScale = Vector2.One * 0.2f;
+            textComp.Depth = 1f;
             var gridGo = new GameObject();
             var gridComp = gridGo.AddComponent<DrawGridComponent>();
             gridComp.Color = Color.White;
             gridComp.Thickness = 0.05f;
         }
+
+        private static void CreateFpsText()
+        {
+            var fpsGo = new GameObject();
+            fpsGo.Transform.Position = new Vector2(-2f, 3f);
+            fpsGo.Transform.LossyScale = Vector2.One * 100f;
+            fpsGo.AddComponent<FpsCounterComponent>();
+        }
+
         private static void CreateMap()
         {
             var tileMapGo = new GameObject();
