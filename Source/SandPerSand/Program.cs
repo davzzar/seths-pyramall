@@ -20,7 +20,7 @@ namespace SandPerSand
             //CreateOriginMarker();
             //CreateFpsText();
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest(5, 3);
+            CreatePhysicsTest(5, 6);
             //CreatePhysicsTest2(30, 20);
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
@@ -118,8 +118,8 @@ namespace SandPerSand
 
                     // The rigidBody allows the game object to be moved around by the physics engine, makes the collider dynamic
                     var circleRb = circleGo.AddComponent<RigidBody>();
-                    circleRb.IsKinematic = y % 2 == 1;
-                    circleRb.FreezeRotation = y % 3 == 0;
+                    //circleRb.IsKinematic = y % 2 == 1;
+                    circleRb.FreezeRotation = y % 2 == 0;
 
                     var circleRndr = circleGo.AddComponent<SpriteRenderer>();
                     circleRndr.Depth = 1f;

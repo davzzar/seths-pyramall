@@ -23,6 +23,7 @@ namespace Engine
         private Fixture fixture;
 
         private float density = 1f;
+        private float friction = 0.1f;
 
         public float Density
         {
@@ -39,6 +40,25 @@ namespace Engine
                 if (this.shape != null)
                 {
                     this.shape.Density = value;
+                }
+            }
+        }
+
+        public float Friction
+        {
+            get => this.friction;
+            set
+            {
+                if (MathF.Abs(this.friction - value) < 1e-5f)
+                {
+                    return;
+                }
+
+                this.friction = value;
+
+                if (this.fixture != null)
+                {
+                    this.fixture.Friction = this.friction;
                 }
             }
         }
@@ -129,6 +149,8 @@ namespace Engine
                 if (rigidBody != null && rigidBody.Body != null)
                 {
                     this.fixture = rigidBody.Body.CreateFixture(this.shape);
+                    this.fixture.Friction = this.friction;
+
                     rigidBody.AddCollider(this);
                     this.owningRigidBody = rigidBody;
                 }
@@ -139,6 +161,7 @@ namespace Engine
                 this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                 Debug.Assert(this.body != null);
                 this.fixture = this.body.CreateFixture(this.shape);
+                this.fixture.Friction = this.friction;
             }
         }
 
@@ -187,6 +210,7 @@ namespace Engine
 
             bodyInUse.Remove(this.fixture);
             this.fixture = bodyInUse.CreateFixture(this.shape);
+            this.fixture.Friction = this.friction;
         }
     }
 }
