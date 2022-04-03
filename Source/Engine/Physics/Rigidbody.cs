@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
+using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Collision.Shapes;
 using tainicom.Aether.Physics2D.Dynamics;
 
@@ -13,9 +14,88 @@ namespace Engine
         private Body body;
 
         private readonly List<Collider> colliders = new List<Collider>();
+        private bool isKinematic;
+
+        public bool IsKinematic
+        {
+            get => this.isKinematic;
+            set
+            {
+                if (this.isKinematic == value)
+                {
+                    return;
+                }
+
+                this.isKinematic = value;
+
+                if (this.body != null)
+                {
+                    this.body.BodyType = this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic;
+                }
+            }
+        }
 
         [CanBeNull]
         internal Body Body => this.body;
+
+        public void ApplyAngularImpulse(float impulse)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyAngularImpulse(impulse);
+            }
+        }
+
+        public void ApplyForce(in Vector2 force)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyForce(force);
+            }
+        }
+
+        public void ApplyForce(in Vector2 force, in Vector2 point)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyForce(force, point);
+            }
+        }
+
+        public void ApplyLinearImpulse(in Vector2 impulse)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyLinearImpulse(impulse);
+            }
+        }
+
+        public void ApplyLinearImpulse(in Vector2 impulse, in Vector2 point)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyLinearImpulse(impulse, point);
+            }
+        }
+
+        public void ApplyTorque(float torque)
+        {
+            if (this.body != null)
+            {
+                this.body.ApplyTorque(torque);
+            }
+        }
+
+        public void Move(in Vector2 offset)
+        {
+            var position = this.Transform.Position + offset;
+            this.Transform.Position = position;
+
+            if (this.body != null)
+            {
+                this.body.Position = position;
+            }
+        }
 
         /// <inheritdoc />
         protected override void OnEnable()
@@ -67,9 +147,9 @@ namespace Engine
 
         internal void OnBeforePhysicsStep()
         {
-            Debug.Assert(this.body != null);
-            this.body.Position = this.Transform.Position;
-            this.body.Rotation = this.Transform.Rotation;
+            //Debug.Assert(this.body != null);
+            //this.body.Position = this.Transform.Position;
+            //this.body.Rotation = this.Transform.Rotation;
         }
 
         internal void OnAfterPhysicsStep()

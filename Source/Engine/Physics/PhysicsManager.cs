@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using tainicom.Aether.Physics2D.Dynamics;
 
 namespace Engine
@@ -17,6 +18,11 @@ namespace Engine
 
         public static void Step()
         {
+            if (!Keyboard.GetState().IsKeyDown(Keys.P))
+            {
+                return;
+            }
+
             foreach (var rb in rigidBodies)
             {
                 rb.OnBeforePhysicsStep();

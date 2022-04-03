@@ -17,16 +17,18 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
             CreateCamera();
-            CreateOriginMarker();
-            CreateFpsText();
+            //CreateOriginMarker();
+            //CreateFpsText();
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest2(30, 20);
+            CreatePhysicsTest(5, 3);
+            //CreatePhysicsTest2(30, 20);
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
             //engine.IsFixedTimeStep = false;
             
             // Start the engine, this call blocks until the game is closed
+            Console.ReadKey();
             engine.Run();
         }
 
@@ -34,7 +36,7 @@ namespace SandPerSand
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 50;
+            cameraComp.Height = 10;
             var cameraSway = cameraGo.AddComponent<SwayComponent>();
             cameraSway.MaxSway = MathF.PI * 0.25f;
             cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -154,7 +156,7 @@ namespace SandPerSand
 
                     // The ShapeExampleComponent will create the collider and rigidBody for us, we just need to define the outline
                     var shape = shapeGo.AddComponent<ShapeExampleComponent>();
-                    shape.Color = Color.Cyan;
+                    shape.Color = Color.White;
                     shape.Outline = new[]
                     {
                         new Vector2(-0.5f, -0.5f), 
