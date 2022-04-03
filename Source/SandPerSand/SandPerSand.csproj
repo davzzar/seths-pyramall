@@ -18,7 +18,6 @@
     <None Update="Content\Content.mgcb">
       <Generator>mgcb</Generator>
       <CustomToolNamespace>MonoGame.Content.Builder.Task</CustomToolNamespace>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
     <None Update="Content\test_map.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
