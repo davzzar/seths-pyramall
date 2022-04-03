@@ -18,11 +18,6 @@ namespace Engine
 
         public static void Step()
         {
-            if (!Keyboard.GetState().IsKeyDown(Keys.P))
-            {
-                return;
-            }
-
             foreach (var rb in rigidBodies)
             {
                 rb.OnBeforePhysicsStep();

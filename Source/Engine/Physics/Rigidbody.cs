@@ -85,25 +85,14 @@ namespace Engine
                 this.body.ApplyTorque(torque);
             }
         }
-
-        public void Move(in Vector2 offset)
-        {
-            var position = this.Transform.Position + offset;
-            this.Transform.Position = position;
-
-            if (this.body != null)
-            {
-                this.body.Position = position;
-            }
-        }
-
+        
         /// <inheritdoc />
         protected override void OnEnable()
         {
             PhysicsManager.Add(this);
 
             this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation,
-                BodyType.Dynamic);
+                this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic);
 
             this.Owner.GetComponentsInChildren(this.colliders);
 
@@ -147,9 +136,9 @@ namespace Engine
 
         internal void OnBeforePhysicsStep()
         {
-            //Debug.Assert(this.body != null);
-            //this.body.Position = this.Transform.Position;
-            //this.body.Rotation = this.Transform.Rotation;
+            Debug.Assert(this.body != null);
+            this.body.Position = this.Transform.Position;
+            this.body.Rotation = this.Transform.Rotation;
         }
 
         internal void OnAfterPhysicsStep()

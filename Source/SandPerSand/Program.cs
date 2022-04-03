@@ -28,7 +28,6 @@ namespace SandPerSand
             //engine.IsFixedTimeStep = false;
             
             // Start the engine, this call blocks until the game is closed
-            Console.ReadKey();
             engine.Run();
         }
 
@@ -119,6 +118,7 @@ namespace SandPerSand
 
                     // The rigidBody allows the game object to be moved around by the physics engine, makes the collider dynamic
                     var circleRb = circleGo.AddComponent<RigidBody>();
+                    circleRb.IsKinematic = y % 2 == 0;
 
                     var circleRndr = circleGo.AddComponent<SpriteRenderer>();
                     circleRndr.Depth = 1f;
