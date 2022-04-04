@@ -21,7 +21,7 @@ namespace SandPerSand
             CreateMap();
             CreateFpsText();
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest2(30, 20);
+            CreatePhysicsTest3(10,20,30, 20);
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -71,8 +71,6 @@ namespace SandPerSand
 
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
             tileMapComp.LoadFromContent("test_map");
-            var mapRenderer = tileMapGo.AddComponent<MapRenderer>();
-            mapRenderer.LoadFromContent();
         }
 
 
@@ -178,7 +176,44 @@ namespace SandPerSand
                 }
             }
         }
+        private static void CreatePhysicsTest3(int offsetX, int offsetY, int countX, int countY)
+        {
+            // Create a large smiley as ground, a round ground makes for more interesting collider behavior
+            var groundGo = new GameObject();
+            groundGo.Transform.LocalPosition = new Vector2(0f, -30);
+            groundGo.Transform.LossyScale = new Vector2(60, 60);
+
+            var groundCol = groundGo.AddComponent<CircleCollider>();
+            groundCol.Radius = 1;
+
+            var groundRndr = groundGo.AddComponent<SpriteRenderer>();
+            groundRndr.LoadFromContent("Smiley");
+
+            // Create the rigidBody colliders
+            for (var y = 0; y < countY; y++)
+            {
+                for (var i = 0; i < countX; i++)
+                {
+                    var shapeGo = new GameObject();
+                    shapeGo.Transform.Position = new Vector2(offsetX - countX / 2f + i + 0.5f, offsetY + 1f + y);
+                    shapeGo.Transform.LossyScale = new Vector2(2, 1) * 0.6f;    // Stretch the shape, the collider will adapt
+
+                    // The ShapeExampleComponent will create the collider and rigidBody for us, we just need to define the outline
+                    var shape = shapeGo.AddComponent<ShapeExampleComponent>();
+                    shape.Color = Color.Cyan;
+                    shape.Outline = new[]
+                    {
+                        new Vector2(-0.5f, -0.5f),
+                        //new Vector2(0.5f, -0.5f),
+                        new Vector2(0.5f, 0.5f),
+                        new Vector2(-0.5f, 0.5f)
+                    };
+                }
+            }
+        }
     }
+
+
 
     public class ShapeExampleComponent : Behaviour
     {
