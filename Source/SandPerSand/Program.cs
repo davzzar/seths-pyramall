@@ -17,16 +17,20 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
             CreateCamera();
-            //CreateNightmare();
-            CreateOriginMarker();
-            CreateMap();
             CreateFpsText();
+            CreateMap();
+
+            //CreateNightmare();
+            //CreateOriginMarker();
+
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest3(10,20,30, 20);
+            //CreatePhysicsTest3(10,20,30, 20);
+
+            //var managerGo = new GameObject()
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
-            //engine.VSync = false;
-            //engine.IsFixedTimeStep = false;
+            // engine.VSync = false;
+            // engine.IsFixedTimeStep = false;
             
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -37,9 +41,10 @@ namespace SandPerSand
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
-            var cameraSway = cameraGo.AddComponent<SwayComponent>();
-            cameraSway.MaxSway = MathF.PI * 0.25f;
-            cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
+            var cameraController = cameraGo.AddComponent<CameraController>();
+            //var cameraSway = cameraGo.AddComponent<SwayComponent>();
+            //cameraSway.MaxSway = MathF.PI * 0.25f;
+            //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
         }
 
         private static void CreateOriginMarker()
@@ -240,51 +245,6 @@ namespace SandPerSand
                     };
                 }
             }
-        }
-    }
-
-    
-    
-    public class ShapeExampleComponent : Behaviour
-    {
-        public Vector2[] Outline { get; set; }
-
-        public Color Color { get; set; } = Color.White;
-
-        /// <inheritdoc />
-        protected override void OnAwake()
-        {
-            if (this.Owner.GetComponent<RigidBody>() == null)
-            {
-                this.Owner.AddComponent<RigidBody>();
-            }
-
-            var collider = this.Owner.AddComponent<PolygonCollider>();
-
-            if (this.Outline != null && this.Outline.Length >= 2)
-            {
-                collider.Outline = this.Outline;
-            }
-        }
-
-        protected override void Update()
-        {
-            if (this.Outline == null || this.Outline.Length < 2)
-            {
-                return;
-            }
-
-            var p0 = this.Transform.TransformPoint(this.Outline[0]);
-            var pCur = p0;
-
-            for (var i = 0; i < this.Outline.Length - 1; i++)
-            {
-                var pNext = this.Transform.TransformPoint(this.Outline[i + 1]);
-                Gizmos.DrawLine(pCur, pNext, this.Color);
-                pCur = pNext;
-            }
-
-            Gizmos.DrawLine(pCur, p0, this.Color);
         }
     }
 }
