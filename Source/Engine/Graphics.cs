@@ -48,7 +48,7 @@ namespace Engine
             scale.Y /= texture.Height;
             instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
         }
-
+        
         public static void Draw(Texture2D texture, Color color, Rectangle sourceRectangle, ref Matrix3x3 matrix, float depth)
         {
             var viewSpace = instance.currentWorldToView * matrix;

@@ -14,6 +14,7 @@ namespace Engine
         private Body body;
 
         private readonly List<Collider> colliders = new List<Collider>();
+
         private bool isKinematic;
         private bool freezeRotation;
 
@@ -57,7 +58,7 @@ namespace Engine
 
         [CanBeNull]
         internal Body Body => this.body;
-
+        
         public void ApplyAngularImpulse(float impulse)
         {
             if (this.body != null)

@@ -23,6 +23,7 @@ namespace Engine
         private Fixture fixture;
 
         private float density = 1f;
+
         private float friction = 0.1f;
 
         public float Density
@@ -43,7 +44,7 @@ namespace Engine
                 }
             }
         }
-
+        
         public float Friction
         {
             get => this.friction;
@@ -62,7 +63,7 @@ namespace Engine
                 }
             }
         }
-
+        
         internal Shape Shape
         {
             get

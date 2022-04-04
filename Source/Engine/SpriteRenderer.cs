@@ -20,7 +20,7 @@ namespace Engine
         }
 
         public Color Color { get; set; }
-
+        
         public Rectangle? SourceRect { get; set; }
 
         public SpriteRenderer()
@@ -28,7 +28,7 @@ namespace Engine
             this.Color = Color.White;
             this.SourceRect = null;
         }
-
+        
         /// <inheritdoc />
         public override void Draw()
         {
