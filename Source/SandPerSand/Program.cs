@@ -20,8 +20,9 @@ namespace SandPerSand
             //CreateOriginMarker();
             CreateFpsText();
             //CreatePerformanceTest(10000);
-            CreatePhysicsTest(5, 6);
+            //CreatePhysicsTest(5, 6);
             //CreatePhysicsTest2(30, 20);
+            CreateNightmare();
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -167,6 +168,34 @@ namespace SandPerSand
                     };
                 }
             }
+        }
+
+        private static void CreateNightmare()
+        {
+            var mrSmiley = new GameObject();
+            var input = mrSmiley.AddComponent<SimpleInputComonent>();
+            input.myPlayerIndex = PlayerIndex.One;
+
+            var groundCol = mrSmiley.AddComponent<CircleCollider>();
+            groundCol.Radius = 1;
+
+            var groundRndr = mrSmiley.AddComponent<SpriteRenderer>();
+            groundRndr.LoadFromContent("Smiley");
+
+            var circleRb = mrSmiley.AddComponent<RigidBody>();
+            //circleRb.IsKinematic = y % 2 == 1;
+            //circleRb.FreezeRotation = y % 2 == 0;
+
+            // And some ground
+            var groundGo = new GameObject();
+            groundGo.Transform.LocalPosition = new Vector2(0f, -302);
+            groundGo.Transform.LossyScale = new Vector2(600, 600);
+
+            var groundColl = groundGo.AddComponent<CircleCollider>();
+            groundColl.Radius = 1;
+
+            var groundRndrr = groundGo.AddComponent<SpriteRenderer>();
+            groundRndrr.LoadFromContent("Smiley");
         }
     }
 
