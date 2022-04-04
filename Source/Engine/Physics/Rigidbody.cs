@@ -56,6 +56,18 @@ namespace Engine
             }
         }
 
+        public Vector2 Velocity
+        {
+            get => this.body != null ? this.body.LinearVelocity : Vector2.Zero;
+            set
+            {
+                if (this.body != null)
+                {
+                    this.body.LinearVelocity = value;
+                }
+            }
+        }
+
         [CanBeNull]
         internal Body Body => this.body;
         
