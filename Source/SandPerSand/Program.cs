@@ -219,17 +219,6 @@ namespace SandPerSand
             }
         }
 
-        /// <summary>
-        /// Create and initialize player game objects and their respective input handlers
-        /// </summary>
-        private static void createPlayers()
-        {
-            // create and assign player controllers
-            InputHandler inputHandler = new InputHandler(PlayerIndex.One);
-
-            //var player = new GameObject();
-        }
-
         private static void CreatePhysicsTest3(int offsetX, int offsetY, int countX, int countY)
         {
             // Create a large smiley as ground, a round ground makes for more interesting collider behavior
