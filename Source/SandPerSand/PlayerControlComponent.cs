@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿using System;
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,7 +17,7 @@ namespace SandPerSand
         private Vector2[] dubugPlayerColliderOutline;
 
         private const float JumpForce = 10.0f;
-        private const float WalkForce = 20.0f;
+        //private const float WalkForce = 20.0f;
 
         public PlayerIndex PlayerIndex
         {
@@ -50,8 +51,9 @@ namespace SandPerSand
             //force in the stick direction
             Vector2 stickDir = inputHandler.getLeftThumbstickDirX();
             //System.Diagnostics.Debug.Write($"Stick Dir X: {stickDir}\n");
-            playerRB.ApplyForce(stickDir * WalkForce * Time.DeltaTime);
-
+            //playerRB.ApplyForce(stickDir * WalkForce * Time.DeltaTime);
+            var newPosition = this.Transform.Position + (stickDir * 0.2f);
+            this.Transform.Position = newPosition;
 
             // Update the input handler's state
             inputHandler.UpdateState();
