@@ -1,3 +1,4 @@
+using System;
 using Engine;
 using Microsoft.Xna.Framework;
 
@@ -5,7 +6,32 @@ namespace SandPerSand
 {
     public class ShapeExampleComponent : Behaviour
     {
-        public Vector2[] Outline { get; set; }
+        private Vector2[] outline;
+
+        public Vector2[] Outline
+        {
+            get => this.outline;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                if (value.Length < 2)
+                {
+                    throw new ArgumentException("The outline needs to consist of at least two points.");
+                }
+
+                this.outline = value;
+
+                var collider = this.Owner.GetComponent<PolygonCollider>();
+                if (collider != null)
+                {
+                    collider.Outline = this.outline;
+                }
+            }
+        }
 
         public Color Color { get; set; } = Color.White;
 
@@ -21,7 +47,7 @@ namespace SandPerSand
 
             if (this.Outline != null && this.Outline.Length >= 2)
             {
-                collider.Outline = this.Outline;
+                collider.Outline = this.outline;
             }
         }
 

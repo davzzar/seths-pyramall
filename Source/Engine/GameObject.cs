@@ -82,11 +82,18 @@ namespace Engine
 
         public bool IsAlive { get; private set; }
 
+        [NotNull]
         public Scene Scene { get; internal set; }
 
         internal GameObjectState State => this.state;
 
-        public GameObject()
+        public GameObject() : this("New GameObject", SceneManager.ScopedScene)
+        { }
+
+        public GameObject(string name) : this(name, SceneManager.ScopedScene)
+        { }
+
+        public GameObject(string name, Scene scene)
         {
             this.state = GameObjectState.Creating;
             this.Transform = new Transform();
@@ -98,12 +105,12 @@ namespace Engine
             this.isChangingEnableState = false;
             this.IsAlive = false;
 
-            var containingScene = SceneManager.ActiveScene;
-            containingScene.AddGameObject(this);
-            this.Transform.SetContainingScene(containingScene);
+            this.Scene = scene;
+            this.Scene.AddGameObject(this);
+            this.Transform.SetContainingScene(this.Scene);
             this.state = GameObjectState.Created;
 
-            if (SceneManager.IsReady)
+            if (this.Scene.IsLoaded)
             {
                 this.OnAwakeInternal();
 
@@ -146,7 +153,7 @@ namespace Engine
         [NotNull]
         public T AddComponent<T>() where T : Component, new()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't add a component to a dead game object.");
             }
@@ -217,7 +224,7 @@ namespace Engine
 
         public void Destroy()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
@@ -385,7 +392,7 @@ namespace Engine
             {
                 this.behaviors.Add(b);
 
-                if (SceneManager.IsReady && this.state != GameObjectState.Awakening)
+                if (this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
                 {
                     b.OnAwakeInternal();
 
@@ -395,7 +402,7 @@ namespace Engine
                     }
                 }
             }
-            else if(SceneManager.IsReady && this.state != GameObjectState.Awakening)
+            else if(this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
             {
                 component.OnAwakeInternal();
             }

@@ -31,7 +31,7 @@ namespace SandPerSand
             /*Empty component constructor*/
         }
 
-        protected override void OnAwake()
+        protected override void OnEnable()
         {
             inputHandler = new InputHandler(this.PlayerIndex);
             playerRB = this.Owner.GetComponent<RigidBody>();

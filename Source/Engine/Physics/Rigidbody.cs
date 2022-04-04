@@ -241,7 +241,8 @@ namespace Engine
                 return;
             }
 
-            throw new NotImplementedException();
+            Debug.Assert(!this.colliders.Contains(collider));
+            this.colliders.Add(collider);
         }
 
         internal void RemoveCollider(Collider collider)
@@ -251,7 +252,8 @@ namespace Engine
                 return;
             }
 
-            throw new NotImplementedException();
+            Debug.Assert(this.colliders.Contains(collider));
+            this.colliders.Remove(collider);
         }
 
         internal void OnBeforePhysicsStep()

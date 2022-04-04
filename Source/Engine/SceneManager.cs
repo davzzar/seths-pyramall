@@ -2,34 +2,35 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 
 namespace Engine
 {
-    public sealed class SceneManager
+    public static class SceneManager
     {
-        private static SceneManager instance;
+        private static Scene activeScene;
 
-        static SceneManager()
-        {
-            instance = new SceneManager();
-        }
+        private static readonly List<Scene> openScenes;
 
-        private Scene activeScene;
+        private static readonly List<Scene> scenesToAdd;
 
-        private readonly List<Scene> openScenes;
+        private static readonly List<Scene> scenesToAddBackBuffer;
 
-        private readonly IReadOnlyList<Scene> readonlyOpenScenes;
+        private static readonly List<Scene> scenesToRemove;
 
-        private bool isReady;
+        private static readonly List<Scene> scenesToRemoveBackBuffer;
 
-        internal static bool IsReady => instance.isReady;
+        [CanBeNull]
+        private static Scene scopedScene;
+
+        internal static bool IsReady { get; private set; }
 
         public static Scene ActiveScene
         {
-            get => instance.activeScene;
+            get => activeScene;
             set
             {
-                if (instance.activeScene == value)
+                if (activeScene == value)
                 {
                     return;
                 }
@@ -39,22 +40,30 @@ namespace Engine
                     throw new InvalidOperationException("Can't set a scene as active scene when it's not yet loaded.");
                 }
 
-                instance.activeScene = value ?? throw new ArgumentNullException(nameof(value));
+                activeScene = value ?? throw new ArgumentNullException(nameof(value));
                 OnActiveSceneChanged();
             }
         }
 
-        public static IReadOnlyList<Scene> OpenScenes => instance.readonlyOpenScenes;
+        [NotNull]
+        internal static Scene ScopedScene => scopedScene ?? ActiveScene;
+
+        public static IReadOnlyList<Scene> OpenScenes { get; }
 
         public static event EventHandler ActiveSceneChanged;
 
-        private SceneManager()
+        static SceneManager()
         {
-            this.openScenes = new List<Scene>();
-            this.readonlyOpenScenes = this.openScenes.AsReadOnly();
+            openScenes = new List<Scene>();
+            OpenScenes = openScenes.AsReadOnly();
 
-            this.activeScene = new Scene();
-            this.openScenes.Add(this.activeScene);
+            scenesToAdd = new List<Scene>();
+            scenesToAddBackBuffer = new List<Scene>();
+            scenesToRemove = new List<Scene>();
+            scenesToRemoveBackBuffer = new List<Scene>();
+
+            activeScene = new Scene();
+            openScenes.Add(activeScene);
         }
 
         public static void LoadScene(Scene scene)
@@ -64,16 +73,11 @@ namespace Engine
                 throw new ArgumentNullException(nameof(scene));
             }
 
-            foreach(var openScene in instance.openScenes)
-            {
-                openScene.OnUnload();
-            }
+            scenesToAdd.Clear();
+            scenesToRemove.Clear();
 
-            instance.openScenes.Clear();
-            
-            instance.openScenes.Add(scene);
-            instance.activeScene = scene;
-            scene.OnLoad();
+            scenesToAdd.Add(scene);
+            scenesToRemove.AddRange(openScenes);
         }
 
         public static void LoadSceneAdditive(Scene scene)
@@ -83,13 +87,17 @@ namespace Engine
                 throw new ArgumentNullException(nameof(scene));
             }
 
-            if (instance.openScenes.Contains(scene))
+            if (openScenes.Contains(scene))
             {
                 throw new InvalidOperationException("The scene is already loaded.");
             }
 
-            instance.openScenes.Add(scene);
-            scene.OnLoad();
+            if (scenesToAdd.Contains(scene))
+            {
+                throw new InvalidOperationException("The scene is already being loaded.");
+            }
+
+            scenesToAdd.Add(scene);
         }
 
         public static void UnloadScene(Scene scene)
@@ -99,39 +107,90 @@ namespace Engine
                 throw new ArgumentNullException(nameof(scene));
             }
 
-            if (!instance.openScenes.Contains(scene))
+            if (!openScenes.Contains(scene))
             {
                 throw new InvalidOperationException("The scene is not loaded.");
             }
 
-            if (instance.openScenes.Count <= 1)
+            if (scenesToRemove.Contains(scene))
+            {
+                throw new InvalidOperationException("The scene is already being unloaded.");
+            }
+
+            if (openScenes.Count <= 1)
             {
                 throw new InvalidOperationException("Can't remove the last remaining scene, use LoadScene to replace a scene instead.");
             }
 
-            instance.openScenes.Remove(scene);
-            scene.OnUnload();
-
-            if (instance.activeScene == scene)
-            {
-                instance.activeScene = instance.openScenes[0];
-            }
+            scenesToRemove.Add(scene);
         }
 
         internal static void DoUpdate()
         {
-            Debug.Assert(instance.isReady);
+            Debug.Assert(IsReady);
 
-            foreach (var scene in OpenScenes)
+            while (scenesToAdd.Count > 0 || scenesToRemove.Count > 0)
             {
+                // Work on a local copy in case the scene loading causes another change in the scene graph
+                scenesToAddBackBuffer.Clear();
+                scenesToRemoveBackBuffer.Clear();
+                scenesToAddBackBuffer.AddRange(scenesToAdd);
+                scenesToRemoveBackBuffer.AddRange(scenesToRemove);
+
+                // First unload all scenes that are no longer needed
+                foreach (var scene in scenesToRemoveBackBuffer)
+                {
+                    Debug.Assert(openScenes.Contains(scene));
+
+                    scopedScene = scene;
+                    scene.OnUnload();
+                    scopedScene = null;
+
+                    openScenes.Remove(scene);
+
+                    if (scene == activeScene)
+                    {
+                        activeScene = openScenes.Count > 0 ? openScenes[0] : null;
+                    }
+                }
+
+                // Then load all new scenes
+                foreach (var scene in scenesToAddBackBuffer)
+                {
+                    Debug.Assert(!openScenes.Contains(scene));
+
+                    if (activeScene == null)
+                    {
+                        activeScene = scene;
+                    }
+
+                    openScenes.Add(scene);
+
+                    scopedScene = scene;
+                    scene.OnLoad();
+                    scopedScene = null;
+                }
+
+                scenesToAdd.Clear();
+                scenesToRemove.Clear();
+                scenesToAddBackBuffer.Clear();
+                scenesToRemoveBackBuffer.Clear();
+            }
+
+            // Finally, just do a normal update on all open scenes
+            foreach(var scene in openScenes)
+            {
+                scopedScene = scene;
                 scene.DoUpdate();
             }
+
+            scopedScene = null;
         }
 
         internal static void Init()
         {
-            instance.isReady = true;
-            instance.activeScene.OnLoad();
+            IsReady = true;
+            activeScene.OnLoad();
         }
 
         private static void OnActiveSceneChanged()

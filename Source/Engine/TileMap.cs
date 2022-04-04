@@ -41,7 +41,7 @@ namespace Engine
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentMapPath == null || !SceneManager.IsReady)
+            if (this.loadFromContentMapPath == null || !this.Owner.Scene.IsLoaded)
             {
                 return;
             }
@@ -94,8 +94,14 @@ namespace Engine
 
                 if (outlinesByGridId.ContainsKey(gridId))
                 {
+                    var outline = outlinesByGridId[gridId];
+
                     var tileCollider = newTileGo.AddComponent<PolygonCollider>();
-                    tileCollider.Outline = outlinesByGridId[gridId];
+
+                    if (outline.Length >= 3)
+                    {
+                        tileCollider.Outline = outline;
+                    }
 
                     Console.WriteLine("gridId:"+gridId);
                     foreach (Vector2 p in tileCollider.Outline)
@@ -103,11 +109,11 @@ namespace Engine
                         //var point = newTileGo.Transform.TransformPoint(p);
                         Console.WriteLine(p.X + "," + p.Y);
                     }
-
                 }
                 // Register Tile GameObject
                 tileGoList.Add(newTileGo);
             }
+
             // Register Tile GameObjects
             tileGos = tileGoList.ToArray();
             this.loadFromContentMapPath = null;
@@ -163,8 +169,8 @@ namespace Engine
                 Console.WriteLine("gridId:" + gridId);
                 for (int i = 0; i < pointsNum; i += 1)
                 {
-                    outline[i] = new Vector2(obj.x+obj.polygon.points[2*i],
-                        height - (obj.y + obj.polygon.points[2*i + 1])); //TODO note the Y flip!
+                    outline[i] = new Vector2((obj.x+obj.polygon.points[2*i])/32f - 0.5f,
+                        (height - (obj.y + obj.polygon.points[2*i + 1]))/32f - 0.5f); //TODO note the Y flip!
                     Console.WriteLine("point["+i+"]:" + outline[i].X + "," + outline[i].Y);
                 }
 
@@ -178,19 +184,7 @@ namespace Engine
             else //rectangle collider
             {
                 //FIXME WHY width and height HERE ARE ZEROS!!!
-                Console.WriteLine("rectangle");
-                Console.WriteLine(obj.width + "," + obj.height);
-                var outline = new Vector2[] {
-                    new Vector2(obj.x, obj.y),
-                    new Vector2(obj.x+ obj.width, obj.y),
-                    new Vector2(obj.x + obj.width, obj.y + obj.width),
-                    new Vector2(obj.x, obj.y + obj.width) };
-                outlinesByGridId.Add(gridId, outline);
-                foreach (Vector2 p in outline)
-                {
-                    //var point = newTileGo.Transform.TransformPoint(p);
-                    Console.WriteLine(p.X + "," + p.Y);
-                }
+                outlinesByGridId.Add(gridId, Array.Empty<Vector2>());
             }
 
             return;

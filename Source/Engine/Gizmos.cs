@@ -27,6 +27,7 @@ namespace Engine
             data = new CommandEntry[32];
         }
 
+        [Conditional("DEBUG")]
         public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color)
         {
             // calculate the distance between the two vectors
@@ -38,6 +39,7 @@ namespace Engine
             DrawLine(in point1, distance, angle, color);
         }
 
+        [Conditional("DEBUG")]
         public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color)
         {
             GrowBufferOnDemand();
@@ -47,21 +49,7 @@ namespace Engine
             numEntries++;
         }
 
-        public static void DrawRect(in Vector2 center, in Vector2 size, float rotation, Color color)
-        {
-            throw new NotImplementedException();
-        }
-
-        public static void FillRect(in Vector2 center, in Vector2 size, float rotation, Color color)
-        {
-            GrowBufferOnDemand();
-
-            color *= GizmosAlpha;
-            var pos = center + new Vector2(-size.X, size.Y) / 2f;
-            data[numEntries] = new CommandEntry(CommandType.Rect, in color, in pos, in rotation, in size);
-            numEntries++;
-        }
-
+        [Conditional("DEBUG")]
         internal static void OnRender()
         {
             InitRenderCache();
