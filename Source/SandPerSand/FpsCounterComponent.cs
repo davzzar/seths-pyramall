@@ -25,6 +25,7 @@ namespace SandPerSand
 
                 if (this.textRenderer != null)
                 {
+
                 }
             }
         }
@@ -44,6 +45,7 @@ namespace SandPerSand
         protected override void OnEnable()
         {
             this.textRenderer = this.Owner.GetOrAddComponent<GuiTextRenderer>();
+            this.textRenderer.FontSize = 16;
             this.textRenderer.ScreenPosition = Vector2.One * 20;
         }
     }
