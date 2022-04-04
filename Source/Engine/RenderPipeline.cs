@@ -13,6 +13,8 @@ namespace Engine
         private readonly List<Camera> cameras = new List<Camera>();
 
         private readonly List<Renderer> renderers = new List<Renderer>();
+
+        private readonly List<GuiRenderer> guiRenderers = new List<GuiRenderer>();
         
         private bool isRendering;
         
@@ -65,6 +67,27 @@ namespace Engine
             renderers.Add(renderer);
         }
 
+        internal void AddGuiRenderer(GuiRenderer renderer)
+        {
+            if (renderer == null)
+            {
+                throw new ArgumentNullException(nameof(renderer));
+            }
+
+            if (!renderer.Owner.IsAlive)
+            {
+                throw new InvalidOperationException("Can't register a gui renderer of a dead game object.");
+            }
+
+            if (this.isRendering)
+            {
+                throw new InvalidOperationException("Can't register a gui renderer in the render loop.");
+            }
+
+            Debug.Assert(!this.guiRenderers.Contains(renderer));
+            this.guiRenderers.Add(renderer);
+        }
+
         internal void RemoveCamera(Camera camera)
         {
             if (camera == null)
@@ -90,11 +113,27 @@ namespace Engine
 
             if (this.isRendering)
             {
-                throw new InvalidOperationException("Can't register a camera in the render loop.");
+                throw new InvalidOperationException("Can't remove a renderer in the render loop.");
             }
 
             Debug.Assert(this.renderers.Contains(renderer));
             this.renderers.RemoveSwapBack(renderer);
+        }
+
+        internal void RemoveGuiRenderer(GuiRenderer renderer)
+        {
+            if (renderer == null)
+            {
+                throw new ArgumentNullException(nameof(renderer));
+            }
+
+            if (this.isRendering)
+            {
+                throw new InvalidOperationException("Can't remove a gui renderer in the render loop.");
+            }
+
+            Debug.Assert(this.guiRenderers.Contains(renderer));
+            this.guiRenderers.RemoveSwapBack(renderer);
         }
 
         internal void Render()
@@ -106,20 +145,37 @@ namespace Engine
                 Graphics.BeginRender(camera);
                 Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
-                Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-
-                foreach (var renderer in this.renderers)
+                // Draw scene
+                if (this.renderers.Count > 0)
                 {
-                    renderer.Draw();
-                }
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
 
-                Graphics.SpriteBatch.End();
+                    foreach (var renderer in this.renderers)
+                    {
+                        renderer.Draw();
+                    }
+
+                    Graphics.SpriteBatch.End();
+                }
 
                 // Draw Gizmos if needed, don't sort draw calls
                 if (Gizmos.CommandBufferCount > 0)
                 {
                     Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
                     Gizmos.OnRender();
+                    Graphics.SpriteBatch.End();
+                }
+
+                // Draw gui elements
+                if (this.guiRenderers.Count > 0)
+                {
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+
+                    foreach (var renderer in this.guiRenderers)
+                    {
+                        renderer.Draw();
+                    }
+
                     Graphics.SpriteBatch.End();
                 }
 

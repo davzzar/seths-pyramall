@@ -1,17 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Color = Microsoft.Xna.Framework.Color;
 
 namespace Engine
 {
-    public sealed class TextRenderer : Renderer
+    public sealed class GuiTextRenderer : GuiRenderer
     {
+        public enum ScreenPositionMode
+        {
+            /// <summary>
+            /// The position is relative to the actual screen size where <b>(0, 0)</b> is the top left corner and <b>(1, 1)</b> is the bottom right corner of the screen.
+            /// </summary>
+            Relative,
+
+            /// <summary>
+            /// The position is absolute in pixel coordinates where <b>(0, 0)</b> is the top left corner and <b>(ScreenSize.Width, ScreenSize.Height)</b> is the bottom right corner of the screen.
+            /// </summary>
+            Absolute
+        }
+
         private string text;
         private SpriteFont font;
         private Vector2 textSize;
@@ -60,6 +69,16 @@ namespace Engine
         public Color Color { get; set; }
 
         /// <summary>
+        /// The position of the text pivot on the screen.
+        /// </summary>
+        public Vector2 ScreenPosition { get; set; }
+
+        /// <summary>
+        /// Gets or sets how the <see cref="ScreenPosition"/> is interpreted.
+        /// </summary>
+        public ScreenPositionMode PositionMode { get; set; } = ScreenPositionMode.Absolute;
+
+        /// <summary>
         /// Transform independent text size
         /// </summary>
         public Vector2 TextSize
@@ -74,14 +93,30 @@ namespace Engine
                 return this.textSize;
             }
         }
-
-        public TextRenderer()
+        
+        public GuiTextRenderer()
         {
             this.text = "";
             this.Color = Color.White;
-            this.FontSize = 12f;
+            this.FontSize = 24f;
             this.textSizeDirty = true;
             this.canRender = false;
+        }
+
+        /// <inheritdoc />
+        public override void Draw()
+        {
+            if (this.canRender)
+            {
+                var screenPos = this.ScreenPosition;
+
+                if (this.PositionMode == ScreenPositionMode.Relative)
+                {
+                    screenPos *= Graphics.ScreenSize;
+                }
+
+                Graphics.DrawGuiText(this.Font, this.Text, this.FontSize, this.Color, screenPos, this.Depth);
+            }
         }
 
         protected override void OnAwake()
@@ -89,14 +124,6 @@ namespace Engine
             if (this.font == null)
             {
                 this.Font = FontManager.LoadFont("SanSerif");
-            }
-        }
-
-        public override void Draw()
-        {
-            if (this.canRender)
-            {
-                Graphics.DrawText(this.Font, this.Text, this.FontSize, this.Color, ref this.Transform.LocalToWorld, this.Depth);
             }
         }
 

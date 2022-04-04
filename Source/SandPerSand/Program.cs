@@ -18,7 +18,7 @@ namespace SandPerSand
             // Initialize the scene by adding some game objects and components
             CreateCamera();
             //CreateOriginMarker();
-            //CreateFpsText();
+            CreateFpsText();
             //CreatePerformanceTest(10000);
             CreatePhysicsTest(5, 6);
             //CreatePhysicsTest2(30, 20);
@@ -35,7 +35,7 @@ namespace SandPerSand
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 10;
+            cameraComp.Height = 50;
             var cameraSway = cameraGo.AddComponent<SwayComponent>();
             cameraSway.MaxSway = MathF.PI * 0.25f;
             cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -62,7 +62,7 @@ namespace SandPerSand
         {
             var fpsGo = new GameObject();
             fpsGo.Transform.Position = new Vector2(-2f, 3f);
-            fpsGo.Transform.LossyScale = Vector2.One * 100f;
+            fpsGo.Transform.LossyScale = Vector2.One * 3f;
             fpsGo.AddComponent<FpsCounterComponent>();
         }
 
