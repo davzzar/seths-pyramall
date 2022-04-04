@@ -2,6 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
@@ -13,21 +14,23 @@ namespace SandPerSand
         [STAThread]
         static void Main()
         {
-            var engine = new GameEngine(); 
+            var engine = new GameEngine();
 
             // Initialize the scene by adding some game objects and components
             CreateCamera();
             //CreateOriginMarker();
-            CreateFpsText();
+            //CreateFpsText();
             //CreatePerformanceTest(10000);
             //CreatePhysicsTest(5, 6);
             //CreatePhysicsTest2(30, 20);
-            CreateNightmare();
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
             //engine.IsFixedTimeStep = false;
-            
+
+            // Create InputHandler and PlayerComponent
+            CreateGamePadTest();
+
             // Start the engine, this call blocks until the game is closed
             engine.Run();
         }
@@ -36,7 +39,7 @@ namespace SandPerSand
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
-            cameraComp.Height = 50;
+            cameraComp.Height = 10;
             var cameraSway = cameraGo.AddComponent<SwayComponent>();
             cameraSway.MaxSway = MathF.PI * 0.25f;
             cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -63,8 +66,44 @@ namespace SandPerSand
         {
             var fpsGo = new GameObject();
             fpsGo.Transform.Position = new Vector2(-2f, 3f);
-            fpsGo.Transform.LossyScale = Vector2.One * 3f;
+            fpsGo.Transform.LossyScale = Vector2.One * 100f;
             fpsGo.AddComponent<FpsCounterComponent>();
+        }
+
+        private static void CreateGamePadTest()
+        {
+            var playerGo = new GameObject();
+            playerGo.AddComponent<PlayerControlComponent>();
+
+            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
+            playerRenderer.LoadFromContent("Smiley");
+            
+            var playerCollider = playerGo.AddComponent<PolygonCollider>();
+            playerCollider.Outline = new[]
+            {
+                new Vector2(-0.5f, -0.5f), 
+                new Vector2(0.5f, -0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-0.5f, 0.5f)
+            };
+            playerCollider.Friction = 0.0f;
+
+
+            var playerRB = playerGo.AddComponent<RigidBody>();
+            playerRB.IsKinematic = false;
+            playerRB.FreezeRotation = true;
+
+            // And some ground
+            var groundGo = new GameObject();
+            groundGo.Transform.LocalPosition = new Vector2(0f, -302);
+            groundGo.Transform.LossyScale = new Vector2(600, 600);
+
+            var groundColl = groundGo.AddComponent<CircleCollider>();
+            groundColl.Radius = 1;
+
+            var groundRenderer = groundGo.AddComponent<SpriteRenderer>();
+            groundRenderer.LoadFromContent("Smiley");
+
         }
 
         private static void CreatePerformanceTest(int count)
@@ -170,32 +209,15 @@ namespace SandPerSand
             }
         }
 
-        private static void CreateNightmare()
+        /// <summary>
+        /// Create and initialize player game objects and their respective input handlers
+        /// </summary>
+        private static void createPlayers()
         {
-            var mrSmiley = new GameObject();
-            var input = mrSmiley.AddComponent<SimpleInputComonent>();
-            input.myPlayerIndex = PlayerIndex.One;
+            // create and assign player controllers
+            InputHandler inputHandler = new InputHandler(PlayerIndex.One);
 
-            var groundCol = mrSmiley.AddComponent<CircleCollider>();
-            groundCol.Radius = 1;
-
-            var groundRndr = mrSmiley.AddComponent<SpriteRenderer>();
-            groundRndr.LoadFromContent("Smiley");
-
-            var circleRb = mrSmiley.AddComponent<RigidBody>();
-            //circleRb.IsKinematic = y % 2 == 1;
-            //circleRb.FreezeRotation = y % 2 == 0;
-
-            // And some ground
-            var groundGo = new GameObject();
-            groundGo.Transform.LocalPosition = new Vector2(0f, -302);
-            groundGo.Transform.LossyScale = new Vector2(600, 600);
-
-            var groundColl = groundGo.AddComponent<CircleCollider>();
-            groundColl.Radius = 1;
-
-            var groundRndrr = groundGo.AddComponent<SpriteRenderer>();
-            groundRndrr.LoadFromContent("Smiley");
+            //var player = new GameObject();
         }
     }
 
