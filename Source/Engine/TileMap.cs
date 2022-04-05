@@ -22,7 +22,7 @@ namespace Engine
         private TiledLayer baseLayer;
         private GameObject[] tileGos;
 
-        
+
         public void LoadFromContent(string mapPath)
         {
             if (string.IsNullOrWhiteSpace(mapPath))
@@ -51,6 +51,9 @@ namespace Engine
 
             // Load tsx file
             LoadTilesets();
+
+            // Parse objects (collider) for each Grid in each Tilesets
+            ParseTilesetsObjects();
 
             // Load layers TODO
             this.tiledLayers = sourceTiledMap.Layers;
@@ -83,22 +86,22 @@ namespace Engine
 
                 // Get (X,Y)OnLayer <- 
                 int x = layerTileItr % baseLayer.width;
-                int y =  -layerTileItr / baseLayer.height + baseLayer.height - 1;
+                int y = -layerTileItr / baseLayer.height + baseLayer.height - 1;
 
                 // Create Tile GameObject
                 var newTileGo = new GameObject();
                 newTileGo.Transform.Position = new Vector2(x, y);
-                var tileRenderer = newTileGo.AddComponent<TileRenderer>();
+                var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
                 // TODO Depth of TileRenderer
                 tileRenderer.Texture = texture;
-                tileRenderer.SourceRectangle = sourceRectangle;
+                tileRenderer.SourceRect = sourceRectangle;
 
                 if (outlinesByGridId.ContainsKey(gridId))
                 {
-                    var tileCollider = newTileGo.AddComponent<PolygonCollider>();
+                    var tileCollider = newTileGo.AddComponent<ShapeExampleComponent>();
                     tileCollider.Outline = outlinesByGridId[gridId];
 
-                    Console.WriteLine("gridId:"+gridId);
+                    Console.WriteLine("gridId:" + gridId);
                     foreach (Vector2 p in tileCollider.Outline)
                     {
                         //var point = newTileGo.Transform.TransformPoint(p);
@@ -123,7 +126,6 @@ namespace Engine
             // Load all Tileset
             // Get paths of all TiledTileSet, then load them and store into a dic
             this.tiledsetsByFirstGridId = new Dictionary<int, TiledTileset>();
-            this.outlinesByGridId = new Dictionary<int, Vector2[]>();
             foreach (TiledMapTileset tiledMS in sourceTiledMap.Tilesets)
             {
                 string tiledsetPath = Path.GetFileNameWithoutExtension(tiledMS.source);
@@ -135,70 +137,64 @@ namespace Engine
 
                 // Associate each Tiledset with its firstgid
                 tiledsetsByFirstGridId.Add(tiledMS.firstgid, tiledS);
+            }
+        }
 
-                // parse objects (collider)
-                // TODO assume we have at most 1 collider!
+        private void ParseTilesetsObjects()
+        {
+
+            outlinesByGridId = new Dictionary<int, Vector2[]>();
+
+            foreach (var item in tiledsetsByFirstGridId)
+            {
+                int firstGridId = item.Key;
+                TiledTileset tiledS = item.Value;
+                Vector2 translatePoint(Vector2 vector)
+                {   //TODO explain the 0.5f offset
+                    Vector2 result = new Vector2();
+                    result.X = vector.X / tiledS.TileWidth - 0.5f;
+                    result.Y = 0.5f - vector.Y / tiledS.TileHeight;
+                    return result;
+                }
                 foreach (TiledTile tiledT in tiledS.Tiles)
                 {
+                    int gridId = tiledT.id + firstGridId;
                     foreach (TiledObject obj in tiledT.objects)
                     {
-                        // need gridId = firstGridId + tileId as key
-                        ParseTiledTileObjects(tiledMS.firstgid + tiledT.id, obj, tiledS.TileHeight);
+
+                        if (obj.polygon != null)//polygon collider
+                        {
+                            Console.WriteLine("polygon");
+                            int pointsNum = obj.polygon.points.Length / 2;
+                            var outline = new Vector2[pointsNum];
+                            Console.WriteLine("gridId:" + gridId);
+                            for (int i = 0; i < pointsNum; i += 1)
+                            {
+                                outline[i] = translatePoint(
+                                    new Vector2(
+                                        obj.x + obj.polygon.points[2 * i],
+                                        obj.y + obj.polygon.points[2 * i + 1])
+                                    );
+                                Console.WriteLine("point[" + i + "]:" + outline[i].X + "," + outline[i].Y);
+                            }
+                            outlinesByGridId.Add(gridId, outline);
+                        }
+                        else //rectangle collider
+                        {
+                            var outline = new Vector2[] {
+                            translatePoint(new Vector2(obj.x, obj.y)),
+                            translatePoint(new Vector2(obj.x+ obj.width, obj.y)),
+                            translatePoint(new Vector2(obj.x + obj.width, obj.y + obj.width)),
+                            translatePoint(new Vector2(obj.x, obj.y + obj.width))
+                            };
+                            outlinesByGridId.Add(gridId, outline);
+                        }
+
                     }
                 }
-                
             }
         }
-
-        private void ParseTiledTileObjects(int gridId, TiledObject obj, int height)
-        {
-            if ( outlinesByGridId == null)
-            {
-                return;
-            }
-            if (obj.polygon != null)//polygon collider
-            {
-                Console.WriteLine("polygon");
-                int pointsNum = obj.polygon.points.Length / 2;
-                var outline = new Vector2[pointsNum];
-                Console.WriteLine("gridId:" + gridId);
-                for (int i = 0; i < pointsNum; i += 1)
-                {
-                    outline[i] = new Vector2(obj.x+obj.polygon.points[2*i],
-                        height - (obj.y + obj.polygon.points[2*i + 1])); //TODO note the Y flip!
-                    Console.WriteLine("point["+i+"]:" + outline[i].X + "," + outline[i].Y);
-                }
-
-                //foreach (Vector2 p in outline)
-                //{
-                //    //var point = newTileGo.Transform.TransformPoint(p);
-                //    Console.WriteLine(p.X + "," + p.Y);
-                //}
-                outlinesByGridId.Add(gridId, outline);
-            }
-            else //rectangle collider
-            {
-                //FIXME WHY width and height HERE ARE ZEROS!!!
-                Console.WriteLine("rectangle");
-                Console.WriteLine(obj.width + "," + obj.height);
-                var outline = new Vector2[] {
-                    new Vector2(obj.x, obj.y),
-                    new Vector2(obj.x+ obj.width, obj.y),
-                    new Vector2(obj.x + obj.width, obj.y + obj.width),
-                    new Vector2(obj.x, obj.y + obj.width) };
-                outlinesByGridId.Add(gridId, outline);
-                foreach (Vector2 p in outline)
-                {
-                    //var point = newTileGo.Transform.TransformPoint(p);
-                    Console.WriteLine(p.X + "," + p.Y);
-                }
-            }
-
-            return;
-        }
-
     }
-
 
     //FIXME WHY drawed shape doesn't correpond to actual collider?
     public class ShapeExampleComponent : Behaviour

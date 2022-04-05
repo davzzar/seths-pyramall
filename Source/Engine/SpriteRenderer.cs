@@ -19,8 +19,16 @@ namespace Engine
             }
         }
 
-        public Color Color { get; set; } = Color.White;
+        public Color Color { get; set; }
+        
+        public Rectangle? SourceRect { get; set; }
 
+        public SpriteRenderer()
+        {
+            this.Color = Color.White;
+            this.SourceRect = null;
+        }
+        
         /// <inheritdoc />
         public override void Draw()
         {
@@ -31,7 +39,14 @@ namespace Engine
 
             var matrix = this.Transform.LocalToWorld * Matrix3x3.CreateTranslation(new Vector2(-0.5f, 0.5f));
 
-            Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth);
+            if (this.SourceRect.HasValue)
+            {
+                Graphics.Draw(this.texture, this.Color, this.SourceRect.Value, ref matrix, this.Depth);
+            }
+            else
+            {
+                Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth);
+            }
         }
 
         /// <inheritdoc />

@@ -9,7 +9,7 @@ namespace SandPerSand
 {
     public class FpsCounterComponent : Behaviour
     {
-        private TextRenderer textRenderer;
+        private GuiTextRenderer textRenderer;
 
         private float avgDeltaTime;
         private float fontSize;
@@ -35,7 +35,6 @@ namespace SandPerSand
             this.avgDeltaTime = (Time.DeltaTime + this.avgDeltaTime * 9f) / 10f;
             this.Fps = 1f / this.avgDeltaTime;
 
-            this.textRenderer.Transform.LossyScale = Vector2.One * 0.3f;
             this.textRenderer.Text = $"Total FPS: {MathF.Round(1f / this.avgDeltaTime, 3)}\n" +
                                      $"Update FPS: {MathF.Round(1f / Time.AvgFrameUpdateTime, 3)}\n" +
                                      $"Draw FPS: {MathF.Round(1f / Time.AvgFrameDrawTime, 3)}";
@@ -44,7 +43,8 @@ namespace SandPerSand
         /// <inheritdoc />
         protected override void OnEnable()
         {
-            this.textRenderer = this.Owner.GetOrAddComponent<TextRenderer>();
+            this.textRenderer = this.Owner.GetOrAddComponent<GuiTextRenderer>();
+            this.textRenderer.ScreenPosition = Vector2.One * 20;
         }
     }
 }

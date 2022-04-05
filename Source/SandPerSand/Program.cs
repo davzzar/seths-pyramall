@@ -17,6 +17,7 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
             CreateCamera();
+            //CreateNightmare();
             CreateOriginMarker();
             CreateMap();
             CreateFpsText();
@@ -51,6 +52,7 @@ namespace SandPerSand
             textComp.Color = Color.Red;
             textComp.Transform.LossyScale = Vector2.One * 0.2f;
             textComp.Depth = 1f;
+
             var gridGo = new GameObject();
             var gridComp = gridGo.AddComponent<DrawGridComponent>();
             gridComp.Color = Color.White;
@@ -61,7 +63,7 @@ namespace SandPerSand
         {
             var fpsGo = new GameObject();
             fpsGo.Transform.Position = new Vector2(-2f, 3f);
-            fpsGo.Transform.LossyScale = Vector2.One * 100f;
+            fpsGo.Transform.LossyScale = Vector2.One * 3f;
             fpsGo.AddComponent<FpsCounterComponent>();
         }
 
@@ -72,10 +74,7 @@ namespace SandPerSand
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
             tileMapComp.LoadFromContent("test_map");
         }
-
-
-
-
+        
         private static void CreatePerformanceTest(int count)
         {
             var smileyParent = new GameObject();
@@ -128,6 +127,8 @@ namespace SandPerSand
 
                     // The rigidBody allows the game object to be moved around by the physics engine, makes the collider dynamic
                     var circleRb = circleGo.AddComponent<RigidBody>();
+                    //circleRb.IsKinematic = y % 2 == 1;
+                    circleRb.FreezeRotation = y % 2 == 0;
 
                     var circleRndr = circleGo.AddComponent<SpriteRenderer>();
                     circleRndr.Depth = 1f;
@@ -165,7 +166,7 @@ namespace SandPerSand
 
                     // The ShapeExampleComponent will create the collider and rigidBody for us, we just need to define the outline
                     var shape = shapeGo.AddComponent<ShapeExampleComponent>();
-                    shape.Color = Color.Cyan;
+                    shape.Color = Color.White;
                     shape.Outline = new[]
                     {
                         new Vector2(-0.5f, -0.5f), 
@@ -176,6 +177,35 @@ namespace SandPerSand
                 }
             }
         }
+
+        private static void CreateNightmare()
+        {
+            var mrSmiley = new GameObject();
+            var input = mrSmiley.AddComponent<SimpleInputComonent>();
+            input.myPlayerIndex = PlayerIndex.One;
+
+            var groundCol = mrSmiley.AddComponent<CircleCollider>();
+            groundCol.Radius = 1;
+
+            var groundRndr = mrSmiley.AddComponent<SpriteRenderer>();
+            groundRndr.LoadFromContent("Smiley");
+
+            var circleRb = mrSmiley.AddComponent<RigidBody>();
+            //circleRb.IsKinematic = y % 2 == 1;
+            //circleRb.FreezeRotation = y % 2 == 0;
+
+            // And some ground
+            var groundGo = new GameObject();
+            groundGo.Transform.LocalPosition = new Vector2(0f, -302);
+            groundGo.Transform.LossyScale = new Vector2(600, 600);
+
+            var groundColl = groundGo.AddComponent<CircleCollider>();
+            groundColl.Radius = 1;
+
+            var groundRndrr = groundGo.AddComponent<SpriteRenderer>();
+            groundRndrr.LoadFromContent("Smiley");
+        }
+
         private static void CreatePhysicsTest3(int offsetX, int offsetY, int countX, int countY)
         {
             // Create a large smiley as ground, a round ground makes for more interesting collider behavior
@@ -213,8 +243,8 @@ namespace SandPerSand
         }
     }
 
-
-
+    
+    
     public class ShapeExampleComponent : Behaviour
     {
         public Vector2[] Outline { get; set; }
