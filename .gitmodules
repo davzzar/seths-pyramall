@@ -1,6 +1,6 @@
 [submodule "Source/Source/TiledCS"]
 	path = Source/Source/TiledCS
-	url = https://github.com/iUltimateLP/TiledCS.git
+	url = https://github.com/whostheme/TiledCS.git 
 [submodule "Source/TiledCS"]
 	path = Source/TiledCS
-	url = https://github.com/iUltimateLP/TiledCS.git
+	url = https://github.com/whostheme/TiledCS.git
