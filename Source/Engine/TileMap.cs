@@ -22,7 +22,6 @@ namespace Engine
         private TiledLayer baseLayer;
         private GameObject[] tileGos;
 
-
         public void LoadFromContent(string mapPath)
         {
             if (string.IsNullOrWhiteSpace(mapPath))
@@ -42,7 +41,7 @@ namespace Engine
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentMapPath == null || !SceneManager.IsReady)
+            if (this.loadFromContentMapPath == null || !this.Owner.Scene.IsLoaded)
             {
                 return;
             }
@@ -98,8 +97,14 @@ namespace Engine
 
                 if (outlinesByGridId.ContainsKey(gridId))
                 {
-                    var tileCollider = newTileGo.AddComponent<ShapeExampleComponent>();
-                    tileCollider.Outline = outlinesByGridId[gridId];
+                    var outline = outlinesByGridId[gridId];
+
+                    var tileCollider = newTileGo.AddComponent<PolygonCollider>();
+
+                    if (outline.Length >= 3)
+                    {
+                        tileCollider.Outline = outline;
+                    }
 
                     Console.WriteLine("gridId:" + gridId);
                     foreach (Vector2 p in tileCollider.Outline)
@@ -107,11 +112,11 @@ namespace Engine
                         //var point = newTileGo.Transform.TransformPoint(p);
                         Console.WriteLine(p.X + "," + p.Y);
                     }
-
                 }
                 // Register Tile GameObject
                 tileGoList.Add(newTileGo);
             }
+
             // Register Tile GameObjects
             tileGos = tileGoList.ToArray();
             this.loadFromContentMapPath = null;
@@ -195,45 +200,4 @@ namespace Engine
             }
         }
     }
-
-    //FIXME WHY drawed shape doesn't correpond to actual collider?
-    public class ShapeExampleComponent : Behaviour
-    {
-        public Vector2[] Outline { get; set; }
-
-        public Color Color { get; set; } = Color.White;
-
-        /// <inheritdoc />
-        protected override void OnAwake()
-        {
-
-            var collider = this.Owner.AddComponent<PolygonCollider>();
-
-            if (this.Outline != null && this.Outline.Length >= 2)
-            {
-                collider.Outline = this.Outline;
-            }
-        }
-
-        protected override void Update()
-        {
-            if (this.Outline == null || this.Outline.Length < 2)
-            {
-                return;
-            }
-
-            var p0 = this.Transform.TransformPoint(this.Outline[0]);
-            var pCur = p0;
-
-            for (var i = 0; i < this.Outline.Length - 1; i++)
-            {
-                var pNext = this.Transform.TransformPoint(this.Outline[i + 1]);
-                Gizmos.DrawLine(pCur, pNext, Color.Red);
-                pCur = pNext;
-            }
-
-            Gizmos.DrawLine(pCur, p0, Color.Red);
-        }
-    }
-
 }

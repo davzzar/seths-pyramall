@@ -98,5 +98,21 @@ namespace Engine
 
             return new PolygonShape(vertices, this.Density);
         }
+
+        /// <inheritdoc />
+        protected override void DrawGizmos()
+        {
+            var p0 = this.Transform.TransformPoint(this.outline[0]);
+            var pCur = p0;
+
+            for (var i = 0; i < this.outline.Count - 1; i++)
+            {
+                var pNext = this.Transform.TransformPoint(this.outline[i + 1]);
+                Gizmos.DrawLine(pCur, pNext, Color.White);
+                pCur = pNext;
+            }
+
+            Gizmos.DrawLine(pCur, p0, Color.White);
+        }
     }
 }

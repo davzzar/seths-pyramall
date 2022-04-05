@@ -69,7 +69,7 @@ namespace Engine
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentPath != null && SceneManager.IsReady && this.IsActiveInHierarchy)
+            if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
             {
                 this.texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
                 this.loadFromContentPath = null;

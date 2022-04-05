@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Collision.Shapes;
@@ -14,25 +15,36 @@ namespace Engine
         private Body body;
 
         private readonly List<Collider> colliders = new List<Collider>();
-
-        private bool isKinematic;
+        
+        private float angularDamping;
         private bool freezeRotation;
+        private bool ignoreGravity;
+        private bool isKinematic;
+        private float linearDamping;
+        private float mass;
 
-        public bool IsKinematic
+        public float AngularDamping
         {
-            get => this.isKinematic;
+            get => this.angularDamping;
             set
             {
-                if (this.isKinematic == value)
-                {
-                    return;
-                }
-
-                this.isKinematic = value;
+                this.angularDamping = value;
 
                 if (this.body != null)
                 {
-                    this.body.BodyType = this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic;
+                    this.body.AngularDamping = value;
+                }
+            }
+        }
+
+        public float AngularVelocity
+        {
+            get => this.body != null ? this.body.AngularVelocity : 0f;
+            set
+            {
+                if (this.body != null)
+                {
+                    this.body.AngularVelocity = value;
                 }
             }
         }
@@ -54,6 +66,86 @@ namespace Engine
                     this.body.FixedRotation = this.freezeRotation;
                 }
             }
+        }
+
+        public bool IgnoreGravity
+        {
+            get => this.ignoreGravity;
+            set
+            {
+                this.ignoreGravity = value;
+
+                if (this.body != null)
+                {
+                    this.body.IgnoreGravity = value;
+                }
+            }
+        }
+
+        public bool IsKinematic
+        {
+            get => this.isKinematic;
+            set
+            {
+                if (this.isKinematic == value)
+                {
+                    return;
+                }
+
+                this.isKinematic = value;
+
+                if (this.body != null)
+                {
+                    this.body.BodyType = this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic;
+                }
+            }
+        }
+
+        public float LinearDamping
+        {
+            get => this.linearDamping;
+            set
+            {
+                this.linearDamping = value;
+
+                if (this.body != null)
+                {
+                    this.body.LinearDamping = value;
+                }
+            }
+        }
+
+        public Vector2 LinearVelocity
+        {
+            get => this.body != null ? this.body.LinearVelocity : Vector2.Zero;
+            set
+            {
+                if (this.body != null)
+                {
+                    this.body.LinearVelocity = value;
+                }
+            }
+        }
+
+        public float Mass
+        {
+            get => this.mass;
+            set
+            {
+                this.mass = value;
+
+                if (this.body != null)
+                {
+                    this.body.Mass = value;
+                }
+            }
+        }
+
+        [Obsolete("Use LinearVelocity instead.")]
+        public Vector2 Velocity
+        {
+            get => this.LinearVelocity;
+            set => this.LinearVelocity = value;
         }
 
         [CanBeNull]
@@ -116,7 +208,11 @@ namespace Engine
                 this.isKinematic ? BodyType.Kinematic : BodyType.Dynamic);
 
             Debug.Assert(this.body != null);
+            this.body.AngularDamping = this.angularDamping;
             this.body.FixedRotation = this.freezeRotation;
+            this.body.IgnoreGravity  = this.ignoreGravity;
+            this.body.LinearDamping = this.linearDamping;
+            this.body.Mass = this.mass;
 
             this.Owner.GetComponentsInChildren(this.colliders);
 
@@ -145,7 +241,8 @@ namespace Engine
                 return;
             }
 
-            throw new NotImplementedException();
+            Debug.Assert(!this.colliders.Contains(collider));
+            this.colliders.Add(collider);
         }
 
         internal void RemoveCollider(Collider collider)
@@ -155,7 +252,8 @@ namespace Engine
                 return;
             }
 
-            throw new NotImplementedException();
+            Debug.Assert(this.colliders.Contains(collider));
+            this.colliders.Remove(collider);
         }
 
         internal void OnBeforePhysicsStep()

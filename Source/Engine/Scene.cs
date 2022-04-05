@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Engine
 {
@@ -13,11 +14,13 @@ namespace Engine
 
         private readonly List<GameObject> objectsToRemove = new List<GameObject>();
 
+        private bool isLoaded;
+
         public string Name { get; set; }
 
-        public bool IsLoaded => SceneManager.OpenScenes.Contains(this);
-
         public bool IsActive => SceneManager.ActiveScene == this;
+
+        public bool IsLoaded => this.isLoaded;
 
         public IReadOnlyList<GameObject> Objects => this.allObjects.AsReadOnly();
 
@@ -34,6 +37,8 @@ namespace Engine
             {
                 return;
             }
+
+            this.isLoaded = true;
 
             // Use for instead of foreach to support game object creation in OnAwake
             for (var i = 0; i < this.allObjects.Count; i++)
@@ -78,6 +83,8 @@ namespace Engine
                 var go = this.allObjects[i];
                 go.OnDestroyInternal();
             }
+
+            this.isLoaded = false;
         }
 
         internal void DoUpdate()
@@ -112,7 +119,6 @@ namespace Engine
             Debug.Assert(this.allObjects.Contains(go));
 
             this.allObjects.RemoveSwapBack(go);
-            go.Scene = null;
         }
     }
 }

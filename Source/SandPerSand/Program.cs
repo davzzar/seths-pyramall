@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
@@ -13,20 +16,22 @@ namespace SandPerSand
         [STAThread]
         static void Main()
         {
-            var engine = new GameEngine(); 
+            var engine = new GameEngine();
 
             // Initialize the scene by adding some game objects and components
-            CreateCamera();
-            //CreateNightmare();
-            CreateOriginMarker();
-            CreateMap();
-            CreateFpsText();
-            //CreatePerformanceTest(10000);
-            CreatePhysicsTest3(10,20,30, 20);
+            
+            CreateFpsText(); 
+            
+
+            var sceneManagerGo = new GameObject("Scene Manager");
+            var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
             //engine.IsFixedTimeStep = false;
+
+            // Create InputHandler and PlayerComponent
             
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -37,9 +42,10 @@ namespace SandPerSand
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
-            var cameraSway = cameraGo.AddComponent<SwayComponent>();
-            cameraSway.MaxSway = MathF.PI * 0.25f;
-            cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
+            var cameraController = cameraGo.AddComponent<CameraController>();
+            //var cameraSway = cameraGo.AddComponent<SwayComponent>();
+            //cameraSway.MaxSway = MathF.PI * 0.25f;
+            //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
         }
 
         private static void CreateOriginMarker()
@@ -63,7 +69,7 @@ namespace SandPerSand
         {
             var fpsGo = new GameObject();
             fpsGo.Transform.Position = new Vector2(-2f, 3f);
-            fpsGo.Transform.LossyScale = Vector2.One * 3f;
+            fpsGo.Transform.LossyScale = Vector2.One * 1f;
             fpsGo.AddComponent<FpsCounterComponent>();
         }
 
@@ -75,6 +81,44 @@ namespace SandPerSand
             tileMapComp.LoadFromContent("test_map");
         }
         
+        private static void CreateGamePadTest()
+        {
+            var playerGo = new GameObject();
+            playerGo.Transform.Position = new Vector2(5, 5);
+            
+
+            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
+            playerRenderer.LoadFromContent("Smiley");
+            
+            var playerCollider = playerGo.AddComponent<PolygonCollider>();
+            playerCollider.Outline = new[]
+            {
+                new Vector2(-0.5f, -0.5f), 
+                new Vector2(0.5f, -0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-0.5f, 0.5f)
+            };
+            playerCollider.Friction = 0.0f;
+
+            var playerRB = playerGo.AddComponent<RigidBody>();
+            playerRB.IsKinematic = false;
+            playerRB.FreezeRotation = true;
+            
+            playerGo.AddComponent<PlayerControlComponent>();
+
+            // And some ground
+            //var groundGo = new GameObject();
+            //groundGo.Transform.LocalPosition = new Vector2(0f, -302);
+            //groundGo.Transform.LossyScale = new Vector2(600, 600);
+
+            //var groundColl = groundGo.AddComponent<CircleCollider>();
+            //groundColl.Radius = 1;
+
+            //var groundRenderer = groundGo.AddComponent<SpriteRenderer>();
+            //groundRenderer.LoadFromContent("Smiley");
+
+        }
+
         private static void CreatePerformanceTest(int count)
         {
             var smileyParent = new GameObject();
@@ -178,46 +222,9 @@ namespace SandPerSand
             }
         }
 
-        private static void CreateNightmare()
-        {
-            var mrSmiley = new GameObject();
-            var input = mrSmiley.AddComponent<SimpleInputComonent>();
-            input.myPlayerIndex = PlayerIndex.One;
-
-            var groundCol = mrSmiley.AddComponent<CircleCollider>();
-            groundCol.Radius = 1;
-
-            var groundRndr = mrSmiley.AddComponent<SpriteRenderer>();
-            groundRndr.LoadFromContent("Smiley");
-
-            var circleRb = mrSmiley.AddComponent<RigidBody>();
-            //circleRb.IsKinematic = y % 2 == 1;
-            //circleRb.FreezeRotation = y % 2 == 0;
-
-            // And some ground
-            var groundGo = new GameObject();
-            groundGo.Transform.LocalPosition = new Vector2(0f, -302);
-            groundGo.Transform.LossyScale = new Vector2(600, 600);
-
-            var groundColl = groundGo.AddComponent<CircleCollider>();
-            groundColl.Radius = 1;
-
-            var groundRndrr = groundGo.AddComponent<SpriteRenderer>();
-            groundRndrr.LoadFromContent("Smiley");
-        }
-
         private static void CreatePhysicsTest3(int offsetX, int offsetY, int countX, int countY)
         {
             // Create a large smiley as ground, a round ground makes for more interesting collider behavior
-            var groundGo = new GameObject();
-            groundGo.Transform.LocalPosition = new Vector2(0f, -30);
-            groundGo.Transform.LossyScale = new Vector2(60, 60);
-
-            var groundCol = groundGo.AddComponent<CircleCollider>();
-            groundCol.Radius = 1;
-
-            var groundRndr = groundGo.AddComponent<SpriteRenderer>();
-            groundRndr.LoadFromContent("Smiley");
 
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
@@ -241,50 +248,95 @@ namespace SandPerSand
                 }
             }
         }
-    }
 
-    
-    
-    public class ShapeExampleComponent : Behaviour
-    {
-        public Vector2[] Outline { get; set; }
-
-        public Color Color { get; set; } = Color.White;
-
-        /// <inheritdoc />
-        protected override void OnAwake()
+        /// <summary>
+        /// The scene manager component uses loading components to load scenes.<br/>
+        /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
+        /// Once the user presses the numpad key relating to the index of that scene loader, it will be executed.
+        /// </summary>
+        private class SceneManagerComponent : Behaviour
         {
-            if (this.Owner.GetComponent<RigidBody>() == null)
+            public readonly List<Type> SceneLoaderTypes = new List<Type>();
+
+            private int loadedSceneIndex = -1;
+
+            private Scene loadedScene;
+
+            /// <inheritdoc />
+            protected override void Update()
             {
-                this.Owner.AddComponent<RigidBody>();
+                if (this.loadedSceneIndex == -1 && this.SceneLoaderTypes.Count > 0)
+                {
+                    this.RunSceneLoader(0);
+                    return;
+                }
+
+                var state = Keyboard.GetState();
+
+                for (var i = 0; i < this.SceneLoaderTypes.Count && i < 10; i++)
+                {
+                    var key = (Keys)(Keys.NumPad0 + i);
+                    if (state.IsKeyDown(key))
+                    {
+                        this.RunSceneLoader(i);
+                        return;
+                    }
+                }
             }
 
-            var collider = this.Owner.AddComponent<PolygonCollider>();
-
-            if (this.Outline != null && this.Outline.Length >= 2)
+            private void RunSceneLoader(int index)
             {
-                collider.Outline = this.Outline;
+                if (this.loadedSceneIndex == index)
+                {
+                    return;
+                }
+
+                if (this.loadedScene != null)
+                {
+                    SceneManager.UnloadScene(this.loadedScene);
+                }
+
+                var scene = new Scene();
+
+                var loaderGo = new GameObject($"Loader for Scene {index}", scene);
+                loaderGo.AddComponent(this.SceneLoaderTypes[index]);
+
+                this.loadedScene = scene;
+                this.loadedSceneIndex = index;
+
+                SceneManager.LoadSceneAdditive(this.loadedScene);
             }
         }
 
-        protected override void Update()
+        /// <summary>
+        /// Loads the default scene with a map, player and camera.
+        /// </summary>
+        private class LoadScene0 : Component
         {
-            if (this.Outline == null || this.Outline.Length < 2)
+            protected override void OnAwake()
             {
-                return;
+                Debug.Print("Loaded Scene 0");
+
+                CreateMap();
+                CreateCamera();
+                CreateGamePadTest();
             }
+        }
 
-            var p0 = this.Transform.TransformPoint(this.Outline[0]);
-            var pCur = p0;
-
-            for (var i = 0; i < this.Outline.Length - 1; i++)
+        /// <summary>
+        /// Loads the extended scene with a map, player, camera and lots of rigid bodies.
+        /// </summary>
+        private class LoadScene1 : Component
+        {
+            protected override void OnAwake()
             {
-                var pNext = this.Transform.TransformPoint(this.Outline[i + 1]);
-                Gizmos.DrawLine(pCur, pNext, this.Color);
-                pCur = pNext;
+                Debug.Print("Loaded Scene 1");
+               
+                CreateMap();
+                CreateCamera();
+                CreateGamePadTest();
+                CreatePhysicsTest3(10, 20, 10, 10);
             }
-
-            Gizmos.DrawLine(pCur, p0, this.Color);
         }
     }
 }

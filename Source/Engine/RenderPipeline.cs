@@ -140,10 +140,11 @@ namespace Engine
         {
             this.isRendering = true;
 
+            Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+
             foreach (var camera in this.cameras)
             {
                 Graphics.BeginRender(camera);
-                Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
                 // Draw scene
                 if (this.renderers.Count > 0)
@@ -159,12 +160,16 @@ namespace Engine
                 }
 
                 // Draw Gizmos if needed, don't sort draw calls
+                #if DEBUG
+
                 if (Gizmos.CommandBufferCount > 0)
                 {
                     Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
                     Gizmos.OnRender();
                     Graphics.SpriteBatch.End();
                 }
+
+                #endif
 
                 // Draw gui elements
                 if (this.guiRenderers.Count > 0)

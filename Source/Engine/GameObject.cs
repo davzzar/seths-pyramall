@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using JetBrains.Annotations;
+using BindingFlags = System.Reflection.BindingFlags;
 
 namespace Engine
 {
@@ -81,11 +82,18 @@ namespace Engine
 
         public bool IsAlive { get; private set; }
 
+        [NotNull]
         public Scene Scene { get; internal set; }
 
         internal GameObjectState State => this.state;
 
-        public GameObject()
+        public GameObject() : this("New GameObject", SceneManager.ScopedScene)
+        { }
+
+        public GameObject(string name) : this(name, SceneManager.ScopedScene)
+        { }
+
+        public GameObject(string name, Scene scene)
         {
             this.state = GameObjectState.Creating;
             this.Transform = new Transform();
@@ -97,12 +105,12 @@ namespace Engine
             this.isChangingEnableState = false;
             this.IsAlive = false;
 
-            var containingScene = SceneManager.ActiveScene;
-            containingScene.AddGameObject(this);
-            this.Transform.SetContainingScene(containingScene);
+            this.Scene = scene;
+            this.Scene.AddGameObject(this);
+            this.Transform.SetContainingScene(this.Scene);
             this.state = GameObjectState.Created;
 
-            if (SceneManager.IsReady)
+            if (this.Scene.IsLoaded)
             {
                 this.OnAwakeInternal();
 
@@ -113,37 +121,45 @@ namespace Engine
             }
         }
 
+        public Component AddComponent(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (!typeof(Component).IsAssignableFrom(type))
+            {
+                throw new ArgumentException("The component type needs to inherit from Component.", nameof(type));
+            }
+
+            if (type.IsAbstract)
+            {
+                throw new ArgumentException("The type cannot be abstract.");
+            }
+
+            var constructor = type.GetConstructor(Array.Empty<Type>());
+
+            if (constructor == null)
+            {
+                throw new ArgumentException("The type must have a public parameter-free constructor.");
+            }
+
+            var component = (Component)constructor.Invoke(Array.Empty<object>());
+            this.AddComponentInternal(component);
+            return component;
+        }
+
         [NotNull]
         public T AddComponent<T>() where T : Component, new()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't add a component to a dead game object.");
             }
 
             var t = new T();
-            t.SetupInternal(this);
-            this.components.Add(t);
-
-            if (t is Behaviour b)
-            {
-                this.behaviors.Add(b);
-
-                if (SceneManager.IsReady && this.state != GameObjectState.Awakening)
-                {
-                    b.OnAwakeInternal();
-
-                    if (this.IsEnabledInHierarchy && b.IsActive && this.state != GameObjectState.Enabling)
-                    {
-                        b.OnEnableInternal();
-                    }
-                }
-            }
-            else if(SceneManager.IsReady && this.state != GameObjectState.Awakening)
-            {
-                t.OnAwakeInternal();
-            }
-
+            this.AddComponentInternal(t);
             return t;
         }
         
@@ -208,7 +224,7 @@ namespace Engine
 
         public void Destroy()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
@@ -220,6 +236,40 @@ namespace Engine
 
             this.OnDestroyInternal();
             this.Transform.containingScene.RemoveGameObject(this);
+        }
+
+        public static T FindComponent<T>() where T : Component
+        {
+            foreach (var scene in SceneManager.OpenScenes)
+            {
+                foreach (var go in scene.Objects)
+                {
+                    var t = go.GetComponent<T>();
+
+                    if (t != null)
+                    {
+                        return t;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        public static void FindComponents<T>(List<T> items) where T : Component
+        {
+            if (items == null)
+            {
+                throw new ArgumentNullException(nameof(items));
+            }
+
+            foreach (var scene in SceneManager.OpenScenes)
+            {
+                foreach (var go in scene.Objects)
+                {
+                    go.GetComponents<T>(items);
+                }
+            }
         }
 
         internal void DoUpdate()
@@ -331,6 +381,31 @@ namespace Engine
             }
 
             this.state = GameObjectState.Destroyed;
+        }
+
+        private void AddComponentInternal(Component component)
+        {
+            component.SetupInternal(this);
+            this.components.Add(component);
+
+            if (component is Behaviour b)
+            {
+                this.behaviors.Add(b);
+
+                if (this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
+                {
+                    b.OnAwakeInternal();
+
+                    if (this.IsEnabledInHierarchy && b.IsActive && this.state != GameObjectState.Enabling)
+                    {
+                        b.OnEnableInternal();
+                    }
+                }
+            }
+            else if(this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
+            {
+                component.OnAwakeInternal();
+            }
         }
 
         private void EnableHierarchyRecursive()
