@@ -17,10 +17,35 @@ namespace Engine
         private bool isChangingEnableState;
 
         private GameObjectState state;
+        private int layer;
+
+        internal event EventHandler<(int oldLayer, int newLayer)> LayerChanged;
 
         public Transform Transform { get; }
 
         public string Name { get; set; }
+
+        public int Layer
+        {
+            get => this.layer;
+            set
+            {
+                if (value < 0 || value > 31)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                if (this.layer == value)
+                {
+                    return;
+                }
+
+                var oldLayer = this.layer;
+                this.layer = value;
+
+                this.OnLayerChanged((oldLayer, this.layer));
+            }
+        }
 
         public bool IsEnabled
         {
@@ -493,6 +518,11 @@ namespace Engine
             /// The game object is destroyed.
             /// </summary>
             Destroyed
+        }
+
+        private void OnLayerChanged((int oldLayer, int newLayer) e)
+        {
+            this.LayerChanged?.Invoke(this, e);
         }
     }
 }

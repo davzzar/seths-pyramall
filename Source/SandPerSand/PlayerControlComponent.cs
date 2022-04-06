@@ -1,8 +1,7 @@
-﻿using System;
-using Engine;
+﻿using Engine;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Ray = Engine.Ray;
 
 namespace SandPerSand
 {
@@ -36,6 +35,8 @@ namespace SandPerSand
             inputHandler = new InputHandler(this.PlayerIndex);
             playerRB = this.Owner.GetComponent<RigidBody>();
             dubugPlayerColliderOutline = this.Owner.GetComponent<PolygonCollider>().Outline;
+
+            this.Owner.Layer = 1;
         }
 
         protected override void Update()
@@ -44,34 +45,51 @@ namespace SandPerSand
             switch (inputHandler.getButtonState(Buttons.A))
             {
                 case ButtonState.Pressed:
-                    playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
+                {
+                    if (this.IsGrounded())
+                    {
+                        playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
+                    }
+
                     break;
+                }
             }
 
             //force in the stick direction
             Vector2 stickDir = inputHandler.getLeftThumbstickDirX();
             //System.Diagnostics.Debug.Write($"Stick Dir X: {stickDir}\n");
             //playerRB.ApplyForce(stickDir * WalkForce * Time.DeltaTime);
-            var newPosition = this.Transform.Position + (stickDir * 0.2f);
-            this.Transform.Position = newPosition;
+            var velocity = this.playerRB.LinearVelocity;
+            velocity.X = stickDir.X * 10f;
+            this.playerRB.LinearVelocity = velocity;
+
+            //var newPosition = this.Transform.Position + (stickDir * 0.2f);
+            //this.Transform.Position = newPosition;
 
             // Update the input handler's state
             inputHandler.UpdateState();
-
-            // draw collider for debug purposes
-            var p0 = this.Transform.TransformPoint(dubugPlayerColliderOutline[0]);
-            var pCur = p0;
-
-            for (var i = 0; i < dubugPlayerColliderOutline.Length - 1; i++)
-            {
-                var pNext = this.Transform.TransformPoint(dubugPlayerColliderOutline[i + 1]);
-                Gizmos.DrawLine(pCur, pNext, Color.Red);
-                pCur = pNext;
-            }
-
-            Gizmos.DrawLine(pCur, p0, Color.Red);
         }
 
+        private bool IsGrounded()
+        {
+            const int resolution = 8;
 
+            var size = this.Transform.Scale;
+            var pos0 = this.Transform.Position;
+            pos0.X -= size.X / 2f;
+
+            for (var i = 0; i < resolution; i++)
+            {
+                var origin = pos0 + Vector2.UnitX * (i / (float)(resolution - 1));
+                var ray = new Ray(origin, -Vector2.UnitY);
+                if (Physics.RayCast(ray, out var hit, size.Y / 2f + 0.1f, LayerMask.FromLayers(0)))
+                {
+                    Gizmos.DrawLine(origin, hit.Point, Color.Red);
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

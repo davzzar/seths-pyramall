@@ -75,6 +75,7 @@ namespace Engine
                 {
                     this.shape = this.GetShape();
                     this.isShapeDirty = false;
+                    Debug.Assert(this.shape != null);
                 }
 
                 return this.shape;
@@ -135,13 +136,6 @@ namespace Engine
         /// <inheritdoc />
         protected override void OnEnable()
         {
-            if (this.shape == null || this.isShapeDirty)
-            {
-                this.shape = this.GetShape();
-                this.isShapeDirty = false;
-                Debug.Assert(this.shape != null);
-            }
-
             var rigidBody = this.owningRigidBody;
 
             if (rigidBody == null)
@@ -152,7 +146,8 @@ namespace Engine
                 // This can happen when the scene loads, the rigidBody.OnAwake was not called yet and a collider was added in a child GO during the OnAwake call of another component.
                 if (rigidBody != null && rigidBody.Body != null)
                 {
-                    this.fixture = rigidBody.Body.CreateFixture(this.shape);
+                    this.fixture = rigidBody.Body.CreateFixture(this.Shape);
+                    this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
                     this.fixture.Friction = this.friction;
 
                     rigidBody.AddCollider(this);
@@ -164,14 +159,19 @@ namespace Engine
             {
                 this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                 Debug.Assert(this.body != null);
-                this.fixture = this.body.CreateFixture(this.shape);
+                this.fixture = this.body.CreateFixture(this.Shape);
+                this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
                 this.fixture.Friction = this.friction;
             }
-        }
 
+            this.Owner.LayerChanged += this.OwnerOnLayerChanged;
+        }
+        
         /// <inheritdoc />
         protected override void OnDisable()
         {
+            this.Owner.LayerChanged -= this.OwnerOnLayerChanged;
+
             if (this.owningRigidBody != null && this.owningRigidBody.Body != null)
             {
                 Debug.Assert(this.fixture != null);
@@ -234,7 +234,16 @@ namespace Engine
 
             bodyInUse.Remove(this.fixture);
             this.fixture = bodyInUse.CreateFixture(this.Shape);
+            this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
             this.fixture.Friction = this.friction;
+        }
+
+        private void OwnerOnLayerChanged(object? sender, (int oldLayer, int newLayer) e)
+        {
+            if (this.fixture != null)
+            {
+                this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
+            }
         }
     }
 }
