@@ -116,7 +116,7 @@
 /processorParam:TextureFormat=Color
 /build:tiles/tilehalf1.png
 
-#begin TilesetTexture.png
+#begin tiles/TilesetTexture.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -126,5 +126,17 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:TilesetTexture.png
+/build:tiles/TilesetTexture.png
+
+#begin tiles/TilesetTexture2.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:tiles/TilesetTexture2.png
 
