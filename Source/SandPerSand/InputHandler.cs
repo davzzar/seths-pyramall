@@ -20,7 +20,7 @@ namespace SandPerSand
         Held = 2,
         Released = 3
     }
-
+    
     internal class InputHandler
     {
         // Point of this class is to implement GENERAL gamepad input
@@ -41,7 +41,8 @@ namespace SandPerSand
             {
                 // TODO: Find better exception type.
                 // TODO: Develop an in-game connection menu to avoid this situation.
-                throw new InvalidOperationException($"Gamepad for player index {this.playerIndex} is not connected.");
+                // throw new InvalidOperationException($"Gamepad for player index {this.playerIndex} is not connected.");
+                return;
             }
 
             // check gamepad capabilities
@@ -76,14 +77,14 @@ namespace SandPerSand
 
             return ButtonState.Held;
             }
-
-
+        
         // Triggers
         //TODO move the threshold constants to a settings section or file.
         public bool LeftTrigger(float threshold = 0.4f, float maxValue = 1.0f)
         {
             return (currState.Triggers.Left >= threshold && currState.Triggers.Left <= maxValue);
         }
+
         public bool RightTrigger(float threshold = 0.4f, float maxValue = 1.0f)
         {
             return (currState.Triggers.Right >= threshold && currState.Triggers.Right <= maxValue);
@@ -113,7 +114,6 @@ namespace SandPerSand
         {
             return new Vector2(getThumbstickDir(right, magnitudeThreshold).X, 0);
         }
-
 
         private Vector2 getThumstickDirY(bool right, float magnitudeThreshold = 0.5f)
         {

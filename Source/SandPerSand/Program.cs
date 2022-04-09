@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -20,7 +21,9 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
             
-            CreateFpsText(); 
+            CreateFpsText();
+
+            Collider.ShowGizmos = true;
             
 
             var sceneManagerGo = new GameObject("Scene Manager");
@@ -249,10 +252,26 @@ namespace SandPerSand
             }
         }
 
+        private static void CreateSandPhysics()
+        {
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            sandSim.Size = Vector2.One * 20f;
+            sandSim.ResolutionX = 200;
+            sandSim.ResolutionY = 200;
+            sandSim.SimulationStepTime = 1f / 100;
+            sandSim.MaxLayer = 4;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+            
+            sandSim.AddSandSource(new RectangleF(12f, 18f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new RectangleF(5f, 16f, 0.5f, 0.5f));
+        }
+
         /// <summary>
         /// The scene manager component uses loading components to load scenes.<br/>
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
-        /// Once the user presses the numpad key relating to the index of that scene loader, it will be executed.
+        /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
         private class SceneManagerComponent : Behaviour
         {
@@ -275,7 +294,7 @@ namespace SandPerSand
 
                 for (var i = 0; i < this.SceneLoaderTypes.Count && i < 10; i++)
                 {
-                    var key = (Keys)(Keys.NumPad0 + i);
+                    var key = (Keys)(Keys.D1 + i);
                     if (state.IsKeyDown(key))
                     {
                         this.RunSceneLoader(i);
@@ -320,6 +339,7 @@ namespace SandPerSand
                 CreateMap();
                 CreateCamera();
                 CreateGamePadTest();
+                CreateSandPhysics();
             }
         }
 

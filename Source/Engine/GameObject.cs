@@ -281,6 +281,13 @@ namespace Engine
             return null;
         }
 
+        public static T[] FindComponents<T>() where T : Component
+        {
+            var items = new List<T>();
+            FindComponents<T>(items);
+            return items.ToArray();
+        }
+
         public static void FindComponents<T>(List<T> items) where T : Component
         {
             if (items == null)

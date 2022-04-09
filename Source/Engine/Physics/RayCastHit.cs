@@ -1,23 +1,24 @@
 ﻿using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Dynamics;
 
-namespace Engine;
-
-public readonly struct RayCastHit
+namespace Engine
 {
-    public readonly Fixture Fixture;
-
-    public readonly Vector2 Point;
-
-    public readonly Vector2 Normal;
-
-    public readonly float Fraction;
-
-    public RayCastHit(Fixture fixture, in Vector2 point, in Vector2 normal, float fraction)
+    public readonly struct RayCastHit
     {
-        this.Fixture = fixture;
-        this.Point = point;
-        this.Normal = normal;
-        this.Fraction = fraction;
+        public readonly Fixture Fixture;
+
+        public readonly Vector2 Point;
+
+        public readonly Vector2 Normal;
+
+        public readonly float Fraction;
+
+        public RayCastHit(Fixture fixture, in Vector2 point, in Vector2 normal, float fraction)
+        {
+            this.Fixture = fixture;
+            this.Point = point;
+            this.Normal = normal;
+            this.Fraction = fraction;
+        }
     }
 }
