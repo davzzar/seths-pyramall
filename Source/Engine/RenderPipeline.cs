@@ -149,7 +149,7 @@ namespace Engine
                 // Draw scene
                 if (this.renderers.Count > 0)
                 {
-                    Graphics.SpriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointClamp);
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp);
                     
                     foreach (var renderer in this.renderers)
                     {
