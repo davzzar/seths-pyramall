@@ -238,7 +238,7 @@ namespace Engine
             this.fixture.Friction = this.friction;
         }
 
-        private void OwnerOnLayerChanged(object? sender, (int oldLayer, int newLayer) e)
+        private void OwnerOnLayerChanged(object sender, (int oldLayer, int newLayer) e)
         {
             if (this.fixture != null)
             {
