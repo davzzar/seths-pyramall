@@ -78,7 +78,7 @@ namespace SandPerSand
             var tileMapGo = new GameObject();
 
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
-            tileMapComp.LoadFromContent("test_map");
+            tileMapComp.LoadFromContent("debug_map");
         }
         
         private static void CreateGamePadTest()
