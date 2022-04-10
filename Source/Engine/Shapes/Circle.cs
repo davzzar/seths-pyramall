@@ -46,8 +46,8 @@ namespace Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool ContainsRect(in Vector2 min, in Vector2 max)
         {
-            var x = MathHelper.Clamp(this.Center.X, min.X, max.X) - this.Center.X;
-            var y = MathHelper.Clamp(this.Center.Y, min.Y, max.Y) - this.Center.Y;
+            var x = MathF.Max(MathF.Abs(min.X - this.Center.X), MathF.Abs(max.X - this.Center.X));
+            var y = MathF.Max(MathF.Abs(min.Y - this.Center.Y), MathF.Abs(max.Y - this.Center.Y));
 
             var sqrDist = x * x + y * y;
             return sqrDist <= this.Radius * this.Radius;
@@ -57,8 +57,8 @@ namespace Engine
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IntersectsRect(in Vector2 min, in Vector2 max)
         {
-            var x = MathF.Max(MathF.Abs(min.X - this.Center.X), MathF.Abs(max.X - this.Center.X));
-            var y = MathF.Max(MathF.Abs(min.Y - this.Center.Y), MathF.Abs(max.Y - this.Center.Y));
+            var x = MathHelper.Clamp(this.Center.X, min.X, max.X) - this.Center.X;
+            var y = MathHelper.Clamp(this.Center.Y, min.Y, max.Y) - this.Center.Y;
 
             var sqrDist = x * x + y * y;
             return sqrDist <= this.Radius * this.Radius;
