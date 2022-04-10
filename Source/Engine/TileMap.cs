@@ -123,8 +123,8 @@ namespace Engine
                             var outline = new Vector2[] {
                             translatePoint(new Vector2(obj.x, obj.y)),
                             translatePoint(new Vector2(obj.x+ obj.width, obj.y)),
-                            translatePoint(new Vector2(obj.x + obj.width, obj.y + obj.width)),
-                            translatePoint(new Vector2(obj.x, obj.y + obj.width))
+                            translatePoint(new Vector2(obj.x + obj.width, obj.y + obj.height)),
+                            translatePoint(new Vector2(obj.x, obj.y + obj.height))
                             };
                             outlinesByGridId.Add(gridId, outline);
                         }
@@ -189,7 +189,7 @@ namespace Engine
 
                 // Get (X,Y)OnLayer <- (Layer, LayerTile)
                 int x = layerTileItr % sourceLayer.width;
-                int y = -layerTileItr / sourceLayer.height + sourceLayer.height - 1;
+                int y = -layerTileItr / sourceLayer.width + sourceLayer.height - 1;
 
                 // Create Tile GameObject
                 var newTileGo = new GameObject();
