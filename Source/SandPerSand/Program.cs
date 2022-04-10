@@ -88,7 +88,6 @@ namespace SandPerSand
         {
             var playerGo = new GameObject();
             playerGo.Transform.Position = new Vector2(5, 5);
-            
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("Smiley");
@@ -103,6 +102,8 @@ namespace SandPerSand
             };
             playerCollider.Friction = 0.0f;
 
+            var playerSandTest = playerGo.AddComponent<SandInteractionTest>();
+            
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
@@ -260,7 +261,7 @@ namespace SandPerSand
             sandSim.Size = Vector2.One * 20f;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
-            sandSim.SimulationStepTime = 1f / 100;
+            sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
             
@@ -338,8 +339,8 @@ namespace SandPerSand
 
                 CreateMap();
                 CreateCamera();
-                CreateGamePadTest();
                 CreateSandPhysics();
+                CreateGamePadTest();
             }
         }
 

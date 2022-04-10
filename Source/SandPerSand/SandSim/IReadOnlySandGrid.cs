@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Engine;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -19,17 +20,22 @@ namespace SandPerSand.SandSim
         
         public SandCell this[in int x, in int y] { get; }
 
-        public SandCell this[in Int2 index] { get; } 
+        public SandCell this[in Int2 index] { get; }
+
+        /// <summary>
+        /// Evaluates whether the shape is touching any sand cells.
+        /// </summary>
+        public bool IsTouchingSand<T>(in T shape) where T : IArea;
 
         /// <summary>
         /// Gets the absolute coordinates of the center of the cell with the given index.
         /// </summary>
         public Vector2 IndexToCenterPoint(in int x, in int y);
 
-         /// <summary>
-         /// Gets the absolute coordinates of the center of the cell with the given index.
-         /// </summary>
-         public Vector2 IndexToCenterPoint(in Int2 index);
+        /// <summary>
+        /// Gets the absolute coordinates of the center of the cell with the given index.
+        /// </summary>
+        public Vector2 IndexToCenterPoint(in Int2 index);
 
         /// <summary>
         /// Gets the absolute coordinates of the upper right corner of the cell with the given index.

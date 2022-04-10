@@ -575,6 +575,12 @@ namespace SandPerSand.SandSim
             public SandCell this[in Int2 index] => this.SandGrid[in index];
 
             /// <inheritdoc />
+            public bool IsTouchingSand<T>(in T shape) where T : IArea
+            {
+                return this.SandGrid.IsTouchingSand(shape);
+            }
+
+            /// <inheritdoc />
             public Vector2 IndexToCenterPoint(in int x, in int y)
             {
                 return this.SandGrid.IndexToCenterPoint(in x, in y);

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Engine;
 using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Common;
 
@@ -225,7 +226,39 @@ namespace SandPerSand.SandSim
 
             this.data.CopyTo(target.data, 0);
         }
-        
+
+        /// <inheritdoc />
+        public bool IsTouchingSand<T>(in T shape) where T : IArea
+        {
+            var bounds = shape.Bounds;
+
+            var minIndex = this.PointToIndexClamped(bounds.Min);
+            var maxIndex = this.PointToIndexClamped(bounds.Max);
+            
+            for (var y = minIndex.Y; y <= maxIndex.Y; y++)
+            {
+                for (var x = minIndex.X; x < maxIndex.X; x++)
+                {
+                    var cell = this.GetInternal(in x, in y);
+
+                    if (!cell.HasSand)
+                    {
+                        continue;
+                    }
+
+                    var cellMin = this.IndexToMinPoint(in x, in y);
+                    Gizmos.DrawRect(cellMin + this.cellSize / 2f, this.cellSize, Color.Red);
+
+                    if (shape.IntersectsRect(cellMin, cellMin + this.cellSize))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
         /// <inheritdoc />
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Vector2 IndexToCenterPoint(in int x, in int y)
