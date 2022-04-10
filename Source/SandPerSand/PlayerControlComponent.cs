@@ -19,10 +19,18 @@ namespace SandPerSand
         private const float JumpForce = 10.0f;
         //private const float WalkForce = 20.0f;
 
+        private PlayerIndex playerIndex;
         public PlayerIndex PlayerIndex
         {
-            get;
-            set;
+            get => this.playerIndex;
+            set {
+                if(this.playerIndex == value)
+                {
+                    return;
+                }
+                this.playerIndex = value;
+                inputHandler = new InputHandler(this.PlayerIndex);
+            }
         }
 
 
