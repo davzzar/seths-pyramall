@@ -20,13 +20,13 @@ namespace SandPerSand.SandSim
 
         private readonly int resY;
 
-        private readonly Vector2 pos;
+        private Vector2 pos;
 
-        private readonly Vector2 size;
+        private Vector2 size;
 
-        private readonly Vector2 cellSize;
+        private Vector2 cellSize;
 
-        private readonly Vector2 halfCellSize;
+        private Vector2 halfCellSize;
 
         #endregion
 
@@ -39,16 +39,51 @@ namespace SandPerSand.SandSim
         public int ResolutionY => this.resY;
 
         /// <inheritdoc />
-        public Vector2 Size => this.size;
+        public Vector2 Size
+        {
+            get => this.size;
+            set
+            {
+                if (value.X <= 0 || float.IsInfinity(value.X) || float.IsNaN(value.X))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                if (value.Y <= 0 || float.IsInfinity(value.Y) || float.IsNaN(value.Y))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                this.size = value;
+                this.cellSize = new Vector2(this.size.X / this.resX, this.size.Y / this.resY);
+                this.halfCellSize = this.cellSize / 2f;
+            }
+        }
 
         /// <inheritdoc />
-        public Vector2 Position => this.pos;
+        public Vector2 Position
+        {
+            get => this.pos;
+            set
+            {
+                if (float.IsInfinity(value.X) || float.IsNaN(value.X) || float.IsInfinity(value.Y) || float.IsNaN(value.Y))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                this.pos = value;
+            }
+        }
 
         /// <inheritdoc />
         public Vector2 CellSize => this.cellSize;
-        
-        public ref SandCell this[in int x, in int y] => ref this.GetInternal(in x, in y);
 
+        SandCell IReadOnlySandGrid.this[in int x, in int y] => this.GetInternal(in x, in y);
+
+        SandCell IReadOnlySandGrid.this[in Int2 index] => this.GetInternal(in index);
+
+        public ref SandCell this[in int x, in int y] => ref this.GetInternal(x, y);
+        
         public ref SandCell this[in Int2 index] => ref this.GetInternal(in index);
 
         #endregion

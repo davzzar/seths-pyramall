@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Engine;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -26,9 +27,11 @@ namespace SandPerSand.SandSim
         private LayerMask colliderLayerMask;
         private float simulationStepTime;
 
-        private List<RectangleF> sandSources;
-        private List<RectangleF> sandDrains;
+        private List<Aabb> sandSources;
+        private List<Aabb> sandDrains;
         private float currentSimulationTime;
+
+        private readonly SandGridReader sandGridReader;
 
         public int ResolutionX
         {
@@ -106,6 +109,11 @@ namespace SandPerSand.SandSim
 
         public int MaxLayer { get; set; } = 2;
 
+        /// <summary>
+        /// Gets the read only access to the sand data.
+        /// </summary>
+        public IReadOnlySandGrid SandData => this.sandGridReader;
+
         public SandSimulation()
         {
             this.resolutionX = 128;
@@ -116,8 +124,8 @@ namespace SandPerSand.SandSim
             this.simulationStepTime = 1 / 20f;
             this.MaxSimulationSteps = 100;
 
-            this.sandSources = new List<RectangleF>();
-            this.sandDrains = new List<RectangleF>();
+            this.sandSources = new List<Aabb>();
+            this.sandDrains = new List<Aabb>();
             this.dirty = true;
 
             this.updateFrontBuffer = new List<Int2>();
@@ -125,15 +133,17 @@ namespace SandPerSand.SandSim
             this.updateLookup = new HashSet<Int2>();
             this.newSandBuffer = new List<Int2>();
             this.newSandLookup = new HashSet<Int2>();
+
+            this.sandGridReader = new SandGridReader();
         }
 
-        public void AddSandSource(in RectangleF rect)
+        public void AddSandSource(in Aabb rect)
         {
             this.sandSources.Add(rect);
             this.MarkSandSource(in rect);
         }
 
-        public void AddSandDrain(in RectangleF rect)
+        public void AddSandDrain(in Aabb rect)
         {
             this.sandDrains.Add(rect);
             this.MarkSandDrain(in rect);
@@ -235,6 +245,7 @@ namespace SandPerSand.SandSim
         {
             this.sandFrontBuffer = new SandGrid(this.ResolutionX, this.ResolutionY, this.Min, this.Size);
             this.sandBackBuffer = new SandGrid(this.ResolutionX, this.resolutionY, this.Min, this.Size);
+            this.sandGridReader.SandGrid = this.sandFrontBuffer;
             
             this.updateFrontBuffer.Clear();
             this.updateBackBuffer.Clear();
@@ -287,7 +298,7 @@ namespace SandPerSand.SandSim
             this.sandFrontBuffer.CopyTo(this.sandBackBuffer);
         }
 
-        private void MarkSandSource(in RectangleF rect)
+        private void MarkSandSource(in Aabb rect)
         {
             if (this.sandFrontBuffer == null)
             {
@@ -308,7 +319,7 @@ namespace SandPerSand.SandSim
             }
         }
 
-        private void MarkSandDrain(in RectangleF rect)
+        private void MarkSandDrain(in Aabb rect)
         {
             if (this.sandFrontBuffer == null)
             {
@@ -370,6 +381,7 @@ namespace SandPerSand.SandSim
             // Swap back and front buffer
             (this.sandFrontBuffer, this.sandBackBuffer) = (this.sandBackBuffer, this.sandFrontBuffer);
             this.sandRenderer.SandGrid = this.sandFrontBuffer;
+            this.sandGridReader.SandGrid = this.sandFrontBuffer;
         }
 
         private int GetSandLayer(SandCell cell, int x, int y)
@@ -530,6 +542,85 @@ namespace SandPerSand.SandSim
 
             this.newSandBuffer.Add(index);
             this.newSandLookup.Add(index);
+        }
+
+        /// <summary>
+        /// Proxy class for the sand data to provide a read only interface while allowing only the sand simulation to modify internal data.
+        /// </summary>
+        private sealed class SandGridReader : IReadOnlySandGrid
+        {
+            /// <summary>
+            /// The sand grid data to use, this can only be modified by <see cref="SandSimulation"/> duo to the class protection level.
+            /// </summary>
+            public SandGrid SandGrid { get; set; }
+
+            /// <inheritdoc />
+            public int ResolutionX => this.SandGrid.ResolutionX;
+
+            /// <inheritdoc />
+            public int ResolutionY => this.SandGrid.ResolutionY;
+
+            /// <inheritdoc />
+            public Vector2 Size => this.SandGrid.Size;
+
+            /// <inheritdoc />
+            public Vector2 Position => this.SandGrid.Position;
+
+            /// <inheritdoc />
+            public Vector2 CellSize => this.SandGrid.CellSize;
+
+            /// <inheritdoc />
+            public SandCell this[in int x, in int y] => this.SandGrid[in x, in y];
+
+            public SandCell this[in Int2 index] => this.SandGrid[in index];
+
+            /// <inheritdoc />
+            public Vector2 IndexToCenterPoint(in int x, in int y)
+            {
+                return this.SandGrid.IndexToCenterPoint(in x, in y);
+            }
+
+            /// <inheritdoc />
+            public Vector2 IndexToCenterPoint(in Int2 index)
+            {
+                return this.SandGrid.IndexToCenterPoint(in index);
+            }
+
+            /// <inheritdoc />
+            public Vector2 IndexToMaxPoint(in int x, in int y)
+            {
+                return this.SandGrid.IndexToMaxPoint(in x, in y);
+            }
+
+            /// <inheritdoc />
+            public Vector2 IndexToMaxPoint(in Int2 index)
+            {
+                return this.SandGrid.IndexToMaxPoint(in index);
+            }
+
+            /// <inheritdoc />
+            public Vector2 IndexToMinPoint(in int x, in int y)
+            {
+                return this.SandGrid.IndexToMinPoint(in x, in y);
+            }
+
+            /// <inheritdoc />
+            public Vector2 IndexToMinPoint(in Int2 index)
+            {
+                return this.SandGrid.IndexToMinPoint(in index);
+            }
+
+            /// <inheritdoc />
+            public Int2 PointToIndex(in Vector2 point)
+            {
+                return this.SandGrid.PointToIndex(in point);
+            }
+
+            /// <inheritdoc />
+            public Int2 PointToIndexClamped(in Vector2 point)
+            {
+                return this.SandGrid.PointToIndexClamped(in point);
+            }
         }
     }
 }

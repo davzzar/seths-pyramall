@@ -264,8 +264,8 @@ namespace SandPerSand
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
             
-            sandSim.AddSandSource(new RectangleF(12f, 18f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new RectangleF(5f, 16f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
 
         /// <summary>
