@@ -114,8 +114,7 @@ namespace Engine
                 data = newData;
             }
         }
-
-        [StructLayout(LayoutKind.Sequential)]
+        
         private readonly struct CommandEntry
         {
             public readonly CommandType Type;
