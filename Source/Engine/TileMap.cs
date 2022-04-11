@@ -88,9 +88,9 @@ namespace Engine
                 var newTileGo = new GameObject();
                 newTileGo.Transform.Position = new Vector2(x, y);
                 var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
-                // TODO Depth of TileRenderer
                 tileRenderer.Texture = texture;
                 tileRenderer.SourceRect= sourceRectangle;
+                tileRenderer.Depth = 0.5f;
 
                 if (outlinesByGridId.ContainsKey(gridId))
                 {

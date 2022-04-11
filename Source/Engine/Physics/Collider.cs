@@ -199,8 +199,8 @@ namespace Engine
                 var p0 = this.Transform.TransformPoint(Vector2.Zero);
                 var pRight = this.Transform.TransformPoint(Vector2.UnitX * 0.3f);
                 var pUp = this.Transform.TransformPoint(Vector2.UnitY * 0.3f);
-                Gizmos.DrawLine(p0, pRight, Color.Blue);
-                Gizmos.DrawLine(p0, pUp, Color.Red);
+                //Gizmos.DrawLine(p0, pRight, Color.Blue);
+                //Gizmos.DrawLine(p0, pUp, Color.Red);
             }
         }
 
