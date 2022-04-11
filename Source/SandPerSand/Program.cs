@@ -259,7 +259,8 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            sandSim.Size = Vector2.One * 20f;
+            var map = GameObject.FindComponent<TileMap>();
+            sandSim.Size = map.Size;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
             sandSim.SimulationStepTime = 1f / 40;

@@ -12,6 +12,16 @@ namespace Engine
     {
         private string loadFromContentMapPath;
 
+        private TiledMap sourceMap;
+
+        public Vector2 Size {
+            get {
+                return new Vector2(sourceMap.Width, sourceMap.Height);
+            }
+        }
+
+        public bool Infinite { get { return sourceMap.Infinite; } }
+
         public Layer[] Layers
         {
             get;
@@ -42,21 +52,22 @@ namespace Engine
                 return;
             }
             // Load tmx file
-            var sourceTiledMap = new TiledMap($"Content/{this.loadFromContentMapPath}.tmx");
+            var tiledMap = new TiledMap($"Content/{this.loadFromContentMapPath}.tmx");
+            this.sourceMap = tiledMap;
 
             // Load tsx file
-            var tiledsetsByFirstGridId = LoadTilesets(sourceTiledMap.Tilesets);
+            var tiledsetsByFirstGridId = LoadTilesets(tiledMap.Tilesets);
 
             // Parse objects (colliders) for each Grid in each Tilesets
             var outlinesByGridId = ParseTilesetsObjects(tiledsetsByFirstGridId);
 
             // Init layers with properties
-            this.Layers = ParseLayersProperties(sourceTiledMap.Layers);
+            this.Layers = ParseLayersProperties(tiledMap.Layers);
 
             // Load each Tile on each Layer
             foreach(Layer layer in this.Layers)
             {
-                ParseTiles(layer,sourceTiledMap,tiledsetsByFirstGridId,outlinesByGridId);
+                ParseTiles(layer, tiledMap, tiledsetsByFirstGridId,outlinesByGridId);
             }
 
             this.loadFromContentMapPath = null;
@@ -157,7 +168,7 @@ namespace Engine
             return layers;
         }
 
-        private void ParseTiles(Layer layer,TiledMap sourceTiledMap,
+        private void ParseTiles(Layer layer,TiledMap tiledMap,
             Dictionary<int, TiledTileset> tiledsetsByFirstGridId,
             Dictionary<int, Vector2[]> outlinesByGridId)
         {
@@ -171,7 +182,7 @@ namespace Engine
                 int gridId = sourceLayer.data[layerTileItr];
                 if (gridId <= 0)
                     continue;
-                int firstGridId = sourceTiledMap.GetTiledMapTileset(gridId).firstgid;
+                int firstGridId = tiledMap.GetTiledMapTileset(gridId).firstgid;
                 int tileId = gridId - firstGridId;
 
                 // Get Tileset <- (LayerTile)
