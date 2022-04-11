@@ -91,6 +91,7 @@ namespace SandPerSand
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("Smiley");
+            playerRenderer.Depth = 0f;
             
             var playerCollider = playerGo.AddComponent<PolygonCollider>();
             playerCollider.Outline = new[]

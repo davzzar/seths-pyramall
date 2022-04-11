@@ -29,6 +29,8 @@ namespace SandPerSand.SandSim
 
         private Vector2 halfCellSize;
 
+        private readonly List<Int2> cellIndicesCache = new List<Int2>();
+
         #endregion
 
         #region Public Properties and Indexers
@@ -228,7 +230,7 @@ namespace SandPerSand.SandSim
         }
 
         /// <inheritdoc />
-        public bool IsTouchingSand<T>(in T shape) where T : IArea
+        public bool ShapeCast<T>(in T shape) where T : IArea
         {
             var bounds = shape.Bounds;
 
@@ -257,6 +259,67 @@ namespace SandPerSand.SandSim
             }
 
             return false;
+        }
+
+        /// <inheritdoc />
+        public bool ShapeCast<T>(in T shape, out SandCastResult result) where T : IArea
+        {
+            var hasHit = this.ShapeCast(in shape, out result, this.cellIndicesCache);
+            this.cellIndicesCache.Clear();
+
+            return hasHit;
+        }
+
+        /// <inheritdoc />
+        public bool ShapeCast<T>(in T shape, out SandCastResult result, out Int2[] cellIndices) where T : IArea
+        {
+            this.cellIndicesCache.Clear();
+            var hasHit = this.ShapeCast(in shape, out result, this.cellIndicesCache);
+            cellIndices = this.cellIndicesCache.ToArray();
+            this.cellIndicesCache.Clear();
+
+            return hasHit;
+        }
+
+        /// <inheritdoc />
+        public bool ShapeCast<T>(in T shape, out SandCastResult result, IList<Int2> cellIndices) where T : IArea
+        {
+            var bounds = shape.Bounds;
+
+            var minIndex = this.PointToIndexClamped(bounds.Min);
+            var maxIndex = this.PointToIndexClamped(bounds.Max);
+            
+            var overlapArea = 0f;
+            var overlapCellCount = 0;
+
+            var cellArea = this.cellSize.X * this.cellSize.Y;
+            
+            for (var y = minIndex.Y; y <= maxIndex.Y; y++)
+            {
+                for (var x = minIndex.X; x < maxIndex.X; x++)
+                {
+                    var cell = this.GetInternal(in x, in y);
+
+                    if (!cell.HasSand)
+                    {
+                        continue;
+                    }
+
+                    var cellMin = this.IndexToMinPoint(in x, in y);
+                    Gizmos.DrawRect(cellMin + this.cellSize / 2f, this.cellSize, Color.Red);
+
+                    if (shape.IntersectsRect(cellMin, cellMin + this.cellSize))
+                    {
+                        overlapCellCount++;
+                        overlapArea += cellArea;
+                        cellIndices.Add(new Int2(x, y));
+                    }
+                }
+            }
+
+            result = new SandCastResult(overlapArea, overlapCellCount);
+
+            return overlapCellCount > 0;
         }
 
         /// <inheritdoc />

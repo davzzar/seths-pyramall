@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Engine;
-using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -575,9 +574,27 @@ namespace SandPerSand.SandSim
             public SandCell this[in Int2 index] => this.SandGrid[in index];
 
             /// <inheritdoc />
-            public bool IsTouchingSand<T>(in T shape) where T : IArea
+            public bool ShapeCast<T>(in T shape) where T : IArea
             {
-                return this.SandGrid.IsTouchingSand(shape);
+                return this.SandGrid.ShapeCast(shape);
+            }
+
+            /// <inheritdoc />
+            public bool ShapeCast<T>(in T shape, out SandCastResult result) where T : IArea
+            {
+                return this.SandGrid.ShapeCast(shape, out result);
+            }
+
+            /// <inheritdoc />
+            public bool ShapeCast<T>(in T shape, out SandCastResult result, out Int2[] cellIndices) where T : IArea
+            {
+                return this.SandGrid.ShapeCast(shape, out result, out cellIndices);
+            }
+
+            /// <inheritdoc />
+            public bool ShapeCast<T>(in T shape, out SandCastResult result, IList<Int2> cellIndices) where T : IArea
+            {
+                return this.SandGrid.ShapeCast(shape, out result, cellIndices);
             }
 
             /// <inheritdoc />

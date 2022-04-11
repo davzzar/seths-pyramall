@@ -40,7 +40,7 @@ namespace SandPerSand
             var shape = new Circle(this.Transform.Position, this.Transform.Scale.X / 2f);
             var color = Color.White;
 
-            if (this.sandSimulation.SandData.IsTouchingSand(in shape))
+            if (this.sandSimulation.SandData.ShapeCast(in shape))
             {
                 color = Color.Red;
             }

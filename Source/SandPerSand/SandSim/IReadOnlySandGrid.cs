@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Engine;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -23,9 +24,37 @@ namespace SandPerSand.SandSim
         public SandCell this[in Int2 index] { get; }
 
         /// <summary>
-        /// Evaluates whether the shape is touching any sand cells.
+        /// Evaluates whether the shape intersects with any sand.
         /// </summary>
-        public bool IsTouchingSand<T>(in T shape) where T : IArea;
+        /// <param name="shape">The shape to cast, only sand intersecting with the shape will be considered.</param>
+        /// <returns>Returns <c>true</c> if any sand intersects the shape, <c>false</c> otherwise.</returns>
+        public bool ShapeCast<T>(in T shape) where T : IArea;
+
+        /// <summary>
+        /// Evaluates whether the shape intersects with any sand and collects information about the intersection.
+        /// </summary>
+        /// <param name="shape">The shape to cast, only sand intersecting with the shape will be considered.</param>
+        /// <param name="result">Contains all collected information about the sand inside the shape.</param>
+        /// <returns>Returns <c>true</c> if any sand intersects the shape, <c>false</c> otherwise.</returns>
+        public bool ShapeCast<T>(in T shape, out SandCastResult result) where T : IArea;
+
+        /// <summary>
+        /// Evaluates whether the shape intersects with any sand and collects information about the intersection and compiles a list of all cell indices that intersect.
+        /// </summary>
+        /// <param name="shape">The shape to cast, only sand intersecting with the shape will be considered.</param>
+        /// <param name="result">Contains all collected information about the sand inside the shape.</param>
+        /// <param name="cellIndices">Array containing the indices of all cells that intersect the shape.</param>
+        /// <returns>Returns <c>true</c> if any sand intersects the shape, <c>false</c> otherwise.</returns>
+        public bool ShapeCast<T>(in T shape, out SandCastResult result, [NotNull]out Int2[] cellIndices) where T : IArea;
+
+        /// <summary>
+        /// Evaluates whether the shape intersects with any sand and collects information about the intersection and compiles a list of all cell indices that intersect.
+        /// </summary>
+        /// <param name="shape">The shape to cast, only sand intersecting with the shape will be considered.</param>
+        /// <param name="result">Contains all collected information about the sand inside the shape.</param>
+        /// <param name="cellIndices">List to which the indices of all cells that intersect the shape will be written.</param>
+        /// <returns>Returns <c>true</c> if any sand intersects the shape, <c>false</c> otherwise.</returns>
+        public bool ShapeCast<T>(in T shape, out SandCastResult result, [NotNull] IList<Int2> cellIndices) where T : IArea;
 
         /// <summary>
         /// Gets the absolute coordinates of the center of the cell with the given index.
