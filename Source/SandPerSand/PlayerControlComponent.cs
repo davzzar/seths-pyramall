@@ -55,16 +55,10 @@ namespace SandPerSand
                 }
             }
 
-            //force in the stick direction
-            Vector2 stickDir = inputHandler.getLeftThumbstickDirX();
-            //System.Diagnostics.Debug.Write($"Stick Dir X: {stickDir}\n");
-            //playerRB.ApplyForce(stickDir * WalkForce * Time.DeltaTime);
+            float direction = inputHandler.getLeftThumbstickDirX();
             var velocity = this.playerRB.LinearVelocity;
-            velocity.X = stickDir.X * 10f;
+            velocity.X = direction * 10f;
             this.playerRB.LinearVelocity = velocity;
-
-            //var newPosition = this.Transform.Position + (stickDir * 0.2f);
-            //this.Transform.Position = newPosition;
 
             // Update the input handler's state
             inputHandler.UpdateState();
@@ -103,7 +97,6 @@ namespace SandPerSand
             }
             var jumpButtonOrigin = pos + Vector2.UnitY;
             Gizmos.DrawRect(jumpButtonOrigin, 0.5f * Vector2.One, jumpIndicatorColor);
-
         }
     }
 }
