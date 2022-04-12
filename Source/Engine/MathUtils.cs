@@ -7,7 +7,7 @@ using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine
 {
-    public static class Math2
+    public static class MathUtils
     {
         /// <summary>
         /// Makes the component wise absolute of the given vector.
@@ -125,6 +125,46 @@ namespace Engine
             t = -orig.Y / dir.Y;
             x = orig.X + dir.X * t;
             return true;
+        }
+
+        /// <summary>
+        /// Port of Unity's MoveTowards utility function for floats.
+        /// Source: https://github.com/Unity-Technologies/UniteAustinTechnicalPresentation/blob/48cbbffc485b7b9fd5d48a861136d60a644c740f/StressTesting/Assets/Scripts/Systems/Jobs/MathUtils.cs#L40
+        /// </summary>
+        public static float MoveTowards(in float current, in float target, in float maxDistanceDelta)
+        {
+            float delta = target - current;
+
+            // if we are more than a single step away
+            if (delta > maxDistanceDelta)
+            {
+                if (delta > 0f) return current + delta * maxDistanceDelta;
+                return current;
+            }
+            return target;
+        }
+
+        /// <summary>
+        /// Port of Unity's MoveTowards utility function for Vector2.
+        /// Source: https://github.com/Unity-Technologies/UniteAustinTechnicalPresentation/blob/48cbbffc485b7b9fd5d48a861136d60a644c740f/StressTesting/Assets/Scripts/Systems/Jobs/MathUtils.cs#L40
+        /// </summary>
+        public static Vector2 MoveTowards(in Vector2 current, in Vector2 target, in float maxDistanceDelta)
+        {
+            Vector2 delta = target - current;
+
+            float sqrDelta = delta.LengthSquared();
+            float sqrMaxDistanceDelta = maxDistanceDelta * maxDistanceDelta;
+
+            if (sqrDelta > sqrMaxDistanceDelta)
+            {
+                float deltaMagnitude = MathF.Sqrt(sqrDelta);
+                if (deltaMagnitude > 0f)
+                {
+                    return current + delta / deltaMagnitude * maxDistanceDelta;
+                }
+                return current;
+            }
+            return target;
         }
     }
 }
