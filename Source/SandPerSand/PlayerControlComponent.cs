@@ -1,7 +1,6 @@
 ﻿using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
-using Ray = Engine.Ray;
 
 namespace SandPerSand
 {
@@ -19,8 +18,8 @@ namespace SandPerSand
         private float horizontalDirection;
         private float currentHorizontalSpeed;
 
-        private const float acceleration = 20f;
-        private const float deceleration = 10f;
+        private const float acceleration = 110f;
+        private const float deceleration = 60f;
         private const float maxHorizontalSpeed = 13f;
 
         public PlayerIndex PlayerIndex
