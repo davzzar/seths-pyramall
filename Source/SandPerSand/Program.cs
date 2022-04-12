@@ -92,15 +92,9 @@ namespace SandPerSand
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("ProtoPlayer");
             playerRenderer.Depth = 0f;
-            
-            var playerCollider = playerGo.AddComponent<PolygonCollider>();
-            playerCollider.Outline = new[]
-            {
-                new Vector2(-0.5f, -0.5f), 
-                new Vector2(0.5f, -0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(-0.5f, 0.5f)
-            };
+
+            var playerCollider = playerGo.AddComponent<CircleCollider>();
+            playerCollider.Radius = 1f;
             playerCollider.Friction = 0.0f;
 
             var playerRB = playerGo.AddComponent<RigidBody>();
