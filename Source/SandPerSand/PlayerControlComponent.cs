@@ -11,11 +11,18 @@ namespace SandPerSand
         /// This component is responsible for player control.
         /// </summary>
         private InputHandler inputHandler;
-        private RigidBody playerRB;
+        private RigidBody rigidBody;
         private GroundCheckComponent groundChecker;
 
-        private const float JumpForce = 10.0f;
-        //private const float WalkForce = 20.0f;
+        private float horizontalDirection;
+        
+        private float currentHorizontalSpeed;
+        private float acceleration;
+        private float deceleration;
+        private float maxHorizontalSpeed;
+
+
+
 
         public PlayerIndex PlayerIndex
         {
@@ -32,7 +39,7 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             inputHandler = new InputHandler(this.PlayerIndex);
-            playerRB = this.Owner.GetComponent<RigidBody>();
+            rigidBody = this.Owner.GetComponent<RigidBody>();
             groundChecker = this.Owner.GetComponent<GroundCheckComponent>();
 
             this.Owner.Layer = 1;
@@ -41,27 +48,45 @@ namespace SandPerSand
         protected override void Update()
         {
             DrawInputControls();
-            //impulse up if A is pressed
-            switch (inputHandler.getButtonState(Buttons.A))
-            {
-                case ButtonState.Pressed:
-                {
-                    if (groundChecker.IsGrounded())
-                    {
-                        playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
-                    }
 
-                    break;
-                }
-            }
+            horizontalDirection = inputHandler.getLeftThumbstickDirX();
+            computeHorrizontalSpeed();
 
-            float direction = inputHandler.getLeftThumbstickDirX();
-            var velocity = this.playerRB.LinearVelocity;
-            velocity.X = direction * 10f;
-            this.playerRB.LinearVelocity = velocity;
 
             // Update the input handler's state
             inputHandler.UpdateState();
+        }
+
+        protected void computeHorrizontalSpeed()
+        {
+            if (horizontalDirection != 0)
+            {
+                // Set horizontal move speed
+                currentHorizontalSpeed += horizontalDirection * acceleration * Time.DeltaTime;
+
+                // clamped by max frame movement
+                currentHorizontalSpeed = MathHelper.Clamp(currentHorizontalSpeed, -maxHorizontalSpeed, maxHorizontalSpeed);
+
+                //TODO Add jump apex bonus speed
+            }
+            else
+            {
+                // Decelerate the player
+                currentHorizontalSpeed = MathUtils.MoveTowards(currentHorizontalSpeed, 0, deceleration * Time.DeltaTime);
+            }
+
+            // horizontal collisions with rigid body should set horizontal velocity to zero automatically.
+        }
+
+        /// <summary>
+        /// Apply updated velocities to the player.
+        /// </summary>
+        private void applyVelocities()
+        {
+            var currentVelocity = rigidBody.LinearVelocity;
+            currentVelocity.X = currentHorizontalSpeed;
+            
+            rigidBody.LinearVelocity = currentVelocity;
         }
 
         /// <summary>
