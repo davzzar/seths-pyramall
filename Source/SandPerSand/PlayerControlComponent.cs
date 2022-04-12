@@ -14,6 +14,7 @@ namespace SandPerSand
 
         private RigidBody playerRB;
         private Vector2[] dubugPlayerColliderOutline;
+        private GroundCheckComponent groundChecker;
 
         private const float JumpForce = 10.0f;
         //private const float WalkForce = 20.0f;
@@ -30,10 +31,11 @@ namespace SandPerSand
             /*Empty component constructor*/
         }
 
-        protected override void OnEnable()
+        protected override void OnAwake()
         {
             inputHandler = new InputHandler(this.PlayerIndex);
             playerRB = this.Owner.GetComponent<RigidBody>();
+            groundChecker = this.Owner.GetComponent<GroundCheckComponent>();
             dubugPlayerColliderOutline = this.Owner.GetComponent<PolygonCollider>().Outline;
 
             this.Owner.Layer = 1;
@@ -46,7 +48,7 @@ namespace SandPerSand
             {
                 case ButtonState.Pressed:
                 {
-                    if (this.IsGrounded())
+                    if (groundChecker.IsGrounded())
                     {
                         playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
                     }
@@ -68,28 +70,6 @@ namespace SandPerSand
 
             // Update the input handler's state
             inputHandler.UpdateState();
-        }
-
-        private bool IsGrounded()
-        {
-            const int resolution = 8;
-
-            var size = this.Transform.Scale;
-            var pos0 = this.Transform.Position;
-            pos0.X -= size.X / 2f;
-
-            for (var i = 0; i < resolution; i++)
-            {
-                var origin = pos0 + Vector2.UnitX * (i / (float)(resolution - 1));
-                var ray = new Ray(origin, -Vector2.UnitY);
-                if (Physics.RayCast(ray, out var hit, size.Y / 2f + 0.1f, LayerMask.FromLayers(0)))
-                {
-                    Gizmos.DrawLine(origin, hit.Point, Color.Red);
-                    return true;
-                }
-            }
-
-            return false;
         }
     }
 }

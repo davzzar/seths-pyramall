@@ -103,12 +103,11 @@ namespace SandPerSand
             };
             playerCollider.Friction = 0.0f;
 
-            //var playerSandTest = playerGo.AddComponent<SandInteractionTest>();
-            
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-            
+
+            playerGo.AddComponent<GroundCheckComponent>();
             playerGo.AddComponent<PlayerControlComponent>();
 
             return playerGo;
