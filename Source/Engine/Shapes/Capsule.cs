@@ -177,14 +177,14 @@ namespace Engine
             var br = new Vector2(c2.X + cosR, c2.Y + sinR);
             var side = tl - bl;
 
-            if (Math2.InRectMm(bl, start, end) || Math2.InRectMm(tl, start, end) ||
-                Math2.InRectMm(tr, start, end) || Math2.InRectMm(br, start, end))
+            if (MathUtils.InRectMm(bl, start, end) || MathUtils.InRectMm(tl, start, end) ||
+                MathUtils.InRectMm(tr, start, end) || MathUtils.InRectMm(br, start, end))
             {
                 return true;
             }
 
             // Left
-            if (Math2.RayRectMmIntersection(bl, side, start, end, out var t))
+            if (MathUtils.RayRectMmIntersection(bl, side, start, end, out var t))
             {
                 if (0f <= t && t <= 1f)
                 {
@@ -193,7 +193,7 @@ namespace Engine
             }
 
             // Right
-            if (Math2.RayRectMmIntersection(br, side, start, end, out t))
+            if (MathUtils.RayRectMmIntersection(br, side, start, end, out t))
             {
                 if (0f <= t && t <= 1f)
                 {
