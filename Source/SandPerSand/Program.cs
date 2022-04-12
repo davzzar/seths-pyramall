@@ -31,8 +31,8 @@ namespace SandPerSand
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1), typeof(LoadScene2) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
-            engine.VSync = false;
-            engine.IsFixedTimeStep = false;
+            //engine.VSync = false;
+            //engine.IsFixedTimeStep = false;
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -104,9 +104,8 @@ namespace SandPerSand
             playerCollider.Friction = 0.0f;
 
             var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = false;
+            //playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-            //playerRB.IgnoreCCD = true;
 
             playerGo.AddComponent<GroundCheckComponent>();
             playerGo.AddComponent<PlayerControlComponent>();

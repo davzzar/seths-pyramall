@@ -15,14 +15,11 @@ namespace SandPerSand
         private GroundCheckComponent groundChecker;
 
         private float horizontalDirection;
-        
         private float currentHorizontalSpeed;
-        private float acceleration;
-        private float deceleration;
-        private float maxHorizontalSpeed;
 
-
-
+        private const float acceleration = 20f;
+        private const float deceleration = 10f;
+        private const float maxHorizontalSpeed = 13f;
 
         public PlayerIndex PlayerIndex
         {
@@ -49,9 +46,10 @@ namespace SandPerSand
         {
             DrawInputControls();
 
-            horizontalDirection = inputHandler.getLeftThumbstickDirX();
+            horizontalDirection = inputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
+            
             computeHorrizontalSpeed();
-
+            applyVelocity();
 
             // Update the input handler's state
             inputHandler.UpdateState();
@@ -59,6 +57,7 @@ namespace SandPerSand
 
         protected void computeHorrizontalSpeed()
         {
+            // NOTE: Check assumes there is a dead zone on the stick input.
             if (horizontalDirection != 0)
             {
                 // Set horizontal move speed
@@ -68,11 +67,13 @@ namespace SandPerSand
                 currentHorizontalSpeed = MathHelper.Clamp(currentHorizontalSpeed, -maxHorizontalSpeed, maxHorizontalSpeed);
 
                 //TODO Add jump apex bonus speed
+                System.Diagnostics.Debug.WriteLine($"Accelerating: {currentHorizontalSpeed}");
             }
             else
             {
                 // Decelerate the player
                 currentHorizontalSpeed = MathUtils.MoveTowards(currentHorizontalSpeed, 0, deceleration * Time.DeltaTime);
+                System.Diagnostics.Debug.WriteLine($"Decelerating: {currentHorizontalSpeed}");
             }
 
             // horizontal collisions with rigid body should set horizontal velocity to zero automatically.
@@ -81,7 +82,7 @@ namespace SandPerSand
         /// <summary>
         /// Apply updated velocities to the player.
         /// </summary>
-        private void applyVelocities()
+        private void applyVelocity()
         {
             var currentVelocity = rigidBody.LinearVelocity;
             currentVelocity.X = currentHorizontalSpeed;
