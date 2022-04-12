@@ -14,6 +14,8 @@ namespace SandPerSand
         private RigidBody rigidBody;
         private GroundCheckComponent groundChecker;
 
+        private Vector2 velocity;
+
         private float horizontalDirection;
         private float currentHorizontalSpeed;
 
@@ -46,6 +48,9 @@ namespace SandPerSand
         {
             DrawInputControls();
 
+            // get current velocity
+            velocity = rigidBody.LinearVelocity;
+
             horizontalDirection = inputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
             
             computeHorrizontalSpeed();
@@ -57,6 +62,8 @@ namespace SandPerSand
 
         protected void computeHorrizontalSpeed()
         {
+            currentHorizontalSpeed = velocity.X;
+
             // NOTE: Check assumes there is a dead zone on the stick input.
             if (horizontalDirection != 0)
             {
