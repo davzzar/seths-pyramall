@@ -1,5 +1,5 @@
 ﻿using System;
-
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
@@ -16,6 +16,7 @@ namespace SandPerSand
         Held = 2,
         Released = 3
     }
+
     
     public class InputHandler
     {
@@ -28,32 +29,12 @@ namespace SandPerSand
         public InputHandler(PlayerIndex playerIndex)
         {
             this.playerIndex = playerIndex;
-            // assign current state as the previous state.
-
-            /// FIXME: This is commented as no gamepad is detected before engine.Run is called...
-            // Check gamepad connection
-            GamePadCapabilities capabilities = GamePad.GetCapabilities(this.playerIndex);
-            if (!capabilities.IsConnected)
-            {
-                // TODO: Find better exception type.
-                // TODO: Develop an in-game connection menu to avoid this situation.
-                // throw new InvalidOperationException($"Gamepad for player index {this.playerIndex} is not connected.");
-                return;
-            }
-
-            // check gamepad capabilities
-            if (capabilities.GamePadType != GamePadType.GamePad)
-            {
-                throw new InvalidOperationException(
-                    $"Connected gamepad for player index {this.playerIndex} is of wrong type.");
-            }
-
             prevState = currState = GamePad.GetState(this.playerIndex, GamePadDeadZone.Circular);
         }
 
         // Button State Machine
         // TODO make private/protected and expose button API in descendents.
-        public ButtonState getButtonState(Buttons b)
+        public virtual ButtonState getButtonState(Buttons b)
         {
             if (currState.IsButtonUp(b))
             {
@@ -76,12 +57,12 @@ namespace SandPerSand
         
         // Triggers
         //TODO move the threshold constants to a settings section or file.
-        public bool LeftTrigger(float threshold = 0.4f, float maxValue = 1.0f)
+        public virtual  bool LeftTrigger(float threshold = 0.4f, float maxValue = 1.0f)
         {
             return (currState.Triggers.Left >= threshold && currState.Triggers.Left <= maxValue);
         }
 
-        public bool RightTrigger(float threshold = 0.4f, float maxValue = 1.0f)
+        public virtual  bool RightTrigger(float threshold = 0.4f, float maxValue = 1.0f)
         {
             return (currState.Triggers.Right >= threshold && currState.Triggers.Right <= maxValue);
         }
@@ -122,17 +103,17 @@ namespace SandPerSand
         /// </summary>
         /// <param name="magnitudeThreshold">The minimum magnitude of the direction vector to return.</param>
         /// <returns>The normalized direction vector of the Left analogue stick, or the zero vector.</returns>
-        public Vector2 getLeftThumbstickDir(float magnitudeThreshold = 0.5f)
+        public virtual Vector2 getLeftThumbstickDir(float magnitudeThreshold = 0.5f)
         {
             return getThumbstickDir(false, magnitudeThreshold);
         }
 
-        public float getLeftThumbstickDirX(float magnitudeThreshold = 0.5f)
+        public virtual float getLeftThumbstickDirX(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirX(false, magnitudeThreshold);
         }
 
-        public float getLeftThumbstickDirY(float magnitudeThreshold = 0.5f)
+        public virtual float getLeftThumbstickDirY(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirY(false, magnitudeThreshold);
         }
@@ -143,17 +124,17 @@ namespace SandPerSand
         /// </summary>
         /// <param name="magnitudeThreshold">The minimum magnitude of the direction vector to return.</param>
         /// <returns>The normalized direction vector of the Right analogue stick, or the zero vector.</returns>
-        public Vector2 getRightThumbstickDir(float magnitudeThreshold = 0.5f)
+        public virtual Vector2 getRightThumbstickDir(float magnitudeThreshold = 0.5f)
         {
             return getThumbstickDir(true, magnitudeThreshold);
         }
 
-        public float getRightThumbstickDirX(float magnitudeThreshold = 0.5f)
+        public virtual float getRightThumbstickDirX(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirX(true, magnitudeThreshold);
         }
 
-        public float getRightThumbstickDirY(float magnitudeThreshold = 0.5f)
+        public virtual float getRightThumbstickDirY(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirY(true, magnitudeThreshold);
         }
@@ -165,6 +146,19 @@ namespace SandPerSand
         {
             prevState = currState;
             currState = GamePad.GetState(playerIndex);
+        }
+    }
+
+    public class DummyInputHandler : InputHandler
+    {
+        public DummyInputHandler(PlayerIndex playerIndex) : base(playerIndex)
+        {   
+        }
+        public override float getLeftThumbstickDirX(float magnitudeThreshold = 0.5f)
+        {
+            float dir = MathF.Sin(5f * Time.GameTime);
+            System.Diagnostics.Debug.WriteLine($"Dummy: {dir}");
+            return dir;
         }
     }
 }
