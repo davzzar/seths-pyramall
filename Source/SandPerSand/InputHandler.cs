@@ -9,7 +9,7 @@ namespace SandPerSand
     /// <summary>
     /// ButtonState enum with more states than the enum provided by Monogame.
     /// </summary>
-    enum  ButtonState
+    public enum  ButtonState
     {
         Up = 0,
         Pressed = 1,
@@ -17,7 +17,7 @@ namespace SandPerSand
         Released = 3
     }
     
-    internal class InputHandler
+    public class InputHandler
     {
         // Point of this class is to implement GENERAL gamepad input
 

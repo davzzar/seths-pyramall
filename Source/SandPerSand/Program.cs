@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -86,6 +87,8 @@ namespace SandPerSand
         
         private static GameObject CreatePlayer(Vector2 position)
         {
+            var inputHandler = new InputHandler(PlayerIndex.One);
+
             var playerGo = new GameObject();
             playerGo.Transform.Position = position;
 
@@ -102,7 +105,9 @@ namespace SandPerSand
             playerRB.FreezeRotation = true;
 
             playerGo.AddComponent<GroundCheckComponent>();
-            playerGo.AddComponent<PlayerControlComponent>();
+            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
+            controlComp.InputHandler = inputHandler;
+
             playerGo.AddComponent<TracerRendererComponent>();
 
             return playerGo;
@@ -353,6 +358,11 @@ namespace SandPerSand
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
                 var playerGo = CreatePlayer(new Vector2(3, 1));
+
+                var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
+                cameraSwitcherComp.Parent = playerGo;
+                cameraSwitcherComp.GlobalPosition = Vector2.Zero;
+                cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
 
                 // add camera as a player child GO as a hacky way to make it follow them
                 cameraGo.Transform.Parent = playerGo.Transform;

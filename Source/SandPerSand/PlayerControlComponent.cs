@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿using System;
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
@@ -9,7 +10,8 @@ namespace SandPerSand
         /// <summary>
         /// This component is responsible for player control.
         /// </summary>
-        private InputHandler inputHandler;
+        public InputHandler InputHandler { get; set;  }
+
         private RigidBody rigidBody;
         private GroundCheckComponent groundChecker;
 
@@ -18,9 +20,11 @@ namespace SandPerSand
         private float horizontalDirection;
         private float currentHorizontalSpeed;
 
+        //TODO add airAcceleration
         private const float acceleration = 110f;
         private const float deceleration = 60f;
         private const float maxHorizontalSpeed = 13f;
+        private float linearDrag = 4f;
 
         public PlayerIndex PlayerIndex
         {
@@ -36,7 +40,6 @@ namespace SandPerSand
 
         protected override void OnAwake()
         {
-            inputHandler = new InputHandler(this.PlayerIndex);
             rigidBody = this.Owner.GetComponent<RigidBody>();
             groundChecker = this.Owner.GetComponent<GroundCheckComponent>();
 
@@ -45,18 +48,30 @@ namespace SandPerSand
 
         protected override void Update()
         {
+            if (InputHandler.getButtonState(Buttons.B) == ButtonState.Pressed)
+            {
+                linearDrag += 4f;
+                System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
+            }
+
+            if (InputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed)
+            {
+                linearDrag -= 4f;
+                System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
+            }
+
             DrawInputControls();
 
             // get current velocity
             velocity = rigidBody.LinearVelocity;
 
-            horizontalDirection = inputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
+            horizontalDirection = InputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
             
             computeHorrizontalSpeed();
             applyVelocity();
 
             // Update the input handler's state
-            inputHandler.UpdateState();
+            InputHandler.UpdateState();
         }
 
         protected void computeHorrizontalSpeed()
@@ -66,6 +81,18 @@ namespace SandPerSand
             // NOTE: Check assumes there is a dead zone on the stick input.
             if (horizontalDirection != 0)
             {
+                // check if we are changing directions
+                bool changingDirection = (horizontalDirection > 0 && currentHorizontalSpeed < 0) ||
+                                         (horizontalDirection < 0 && currentHorizontalSpeed > 0);
+
+                if (changingDirection)
+                {
+                    rigidBody.LinearDamping = linearDrag;
+                }
+                else
+                {
+                    rigidBody.LinearDamping = 0f;
+                }
                 // Set horizontal move speed
                 currentHorizontalSpeed += horizontalDirection * acceleration * Time.DeltaTime;
 
@@ -73,13 +100,13 @@ namespace SandPerSand
                 currentHorizontalSpeed = MathHelper.Clamp(currentHorizontalSpeed, -maxHorizontalSpeed, maxHorizontalSpeed);
 
                 //TODO Add jump apex bonus speed
-                System.Diagnostics.Debug.WriteLine($"Accelerating: {currentHorizontalSpeed}");
+                //System.Diagnostics.Debug.WriteLine($"Accelerating: {currentHorizontalSpeed}");
             }
             else
             {
                 // Decelerate the player
                 currentHorizontalSpeed = MathUtils.MoveTowards(currentHorizontalSpeed, 0, deceleration * Time.DeltaTime);
-                System.Diagnostics.Debug.WriteLine($"Decelerating: {currentHorizontalSpeed}");
+                //System.Diagnostics.Debug.WriteLine($"Decelerating: {currentHorizontalSpeed}");
             }
 
             // horizontal collisions with rigid body should set horizontal velocity to zero automatically.
@@ -105,12 +132,12 @@ namespace SandPerSand
             var pos = this.Transform.Position;
             var stickLineOrigin = pos + (-Vector2.UnitX + Vector2.UnitY);
 
-            var stickDir = inputHandler.getLeftThumbstickDir(magnitudeThreshold: 0f);
+            var stickDir = InputHandler.getLeftThumbstickDir(magnitudeThreshold: 0f);
             Gizmos.DrawRect(stickLineOrigin, 0.5f * Vector2.One, Color.Black);
             Gizmos.DrawLine(stickLineOrigin, stickLineOrigin + stickDir, Color.Black);
 
             
-            var jumpButtonState = inputHandler.getButtonState(Buttons.A);
+            var jumpButtonState = InputHandler.getButtonState(Buttons.A);
             Color jumpIndicatorColor;
             switch (jumpButtonState)
             {
