@@ -22,10 +22,17 @@ namespace Engine
         /// Removes the given <b>item</b> by replacing it with the last element in the collection.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RemoveSwapBack<T>(this IList<T> items, T item)
+        public static bool RemoveSwapBack<T>(this IList<T> items, T item)
         {
             var index = items.IndexOf(item);
-            items.RemoveSwapBack(index);
+
+            if (index >= 0)
+            {
+                items.RemoveSwapBack(index);
+                return true;
+            }
+
+            return false;
         }
     }
 }

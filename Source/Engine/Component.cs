@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace Engine
@@ -9,6 +11,14 @@ namespace Engine
     /// </summary>
     public abstract class Component
     {
+#if DEBUG
+
+        private readonly List<Action> drawGizmosCallbacks = new List<Action>();
+
+        private bool canRegisterGizmosCallbacks;
+
+#endif
+        
         private GameObject owner;
 
         /// <summary>
@@ -27,6 +37,52 @@ namespace Engine
         /// Gets the <see cref="GameObject.Transform"/> of the <see cref="Owner"/>;
         /// </summary>
         public Transform Transform => this.Owner.Transform;
+
+        /// <summary>
+        /// Event that is invoked directly before drawing the gizmos, can be used to inject gizmos draw calls that depend on state affected by other components and physics.
+        /// </summary>
+        public event Action OnDrawGizmos
+        {
+            add
+            {
+#if DEBUG
+
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                if (this.drawGizmosCallbacks.Contains(value))
+                {
+                    return;
+                }
+
+                this.drawGizmosCallbacks.Add(value);
+
+                if (this.canRegisterGizmosCallbacks)
+                {
+                    GameEngine.Instance.RenderPipeline.OnDrawGizmos += value;
+                }
+
+#endif
+            }
+            remove
+            {
+#if DEBUG
+
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                if (this.drawGizmosCallbacks.RemoveSwapBack(value) && this.canRegisterGizmosCallbacks)
+                {
+                    GameEngine.Instance.RenderPipeline.OnDrawGizmos -= value;
+                }
+
+#endif
+            }
+        }
 
         /// <summary>
         /// Destroys this <see cref="Component"/>, effectively removing it from the game.<br/>
@@ -76,12 +132,34 @@ namespace Engine
         internal void OnAwakeInternal()
         {
             this.OnAwake();
+
+#if DEBUG
+            this.canRegisterGizmosCallbacks = true;
+
+            foreach (var drawGizmosCallback in this.drawGizmosCallbacks)
+            {
+                GameEngine.Instance.RenderPipeline.OnDrawGizmos += drawGizmosCallback;
+            }
+
+#endif
         }
 
         internal void OnDestroyInternal()
         {
             this.OnDestroy();
             this.owner = null;
+
+            #if DEBUG
+
+            foreach (var drawGizmosCallback in this.drawGizmosCallbacks)
+            {
+                GameEngine.Instance.RenderPipeline.OnDrawGizmos -= drawGizmosCallback;
+            }
+
+            this.canRegisterGizmosCallbacks = false;
+            this.drawGizmosCallbacks.Clear();
+
+            #endif
         }
     }
 }

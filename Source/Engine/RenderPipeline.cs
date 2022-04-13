@@ -17,6 +17,8 @@ namespace Engine
         private readonly List<GuiRenderer> guiRenderers = new List<GuiRenderer>();
         
         private bool isRendering;
+
+        internal event Action OnDrawGizmos;
         
         internal void Init()
         {
@@ -162,6 +164,8 @@ namespace Engine
                 // Draw Gizmos if needed, don't sort draw calls
                 #if DEBUG
 
+                this.InvokeOnDrawGizmos();
+
                 if (Gizmos.CommandBufferCount > 0)
                 {
                     Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
@@ -188,6 +192,11 @@ namespace Engine
             }
 
             this.isRendering = false;
+        }
+
+        private void InvokeOnDrawGizmos()
+        {
+            this.OnDrawGizmos?.Invoke();
         }
     }
 }
