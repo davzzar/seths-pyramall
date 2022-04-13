@@ -29,7 +29,6 @@ namespace SandPerSand
         private const float acceleration = 110f;
         private const float deceleration = 60f;
         private const float maxHorizontalSpeed = 13f;
-        private float linearDrag;
 
         public PlayerIndex PlayerIndex
         {
@@ -54,20 +53,6 @@ namespace SandPerSand
         protected override void Update()
         {
             ShowDebug();
-
-            if (InputHandler.getButtonState(Buttons.B) == ButtonState.Pressed)
-            {
-                linearDrag += 50f;
-                System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
-            }
-
-            if (InputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed)
-            {
-                linearDrag -= 50f;
-                System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
-            }
-
-            linearDrag = MathHelper.Clamp(linearDrag, 0f, 500f);
 
             // get current velocity
             velocity = rigidBody.LinearVelocity;
@@ -94,8 +79,7 @@ namespace SandPerSand
 
         private void RenderDebugText(in GuiTextRenderer tr)
         {
-            tr.Text = $"H. Vel.: {HorizontalSpeed:F3}" +
-                $" L. Drag: {linearDrag:F3}";
+            tr.Text = $"H. Vel.: {HorizontalSpeed:F3}";
         }
 
         protected void computeHorizontalSpeed()
@@ -105,16 +89,6 @@ namespace SandPerSand
             // NOTE: Check assumes there is a dead zone on the stick input.
             if (horizontalDirection != 0)
             {
-                // check if we are changing directions
-                bool changingDirection = (horizontalDirection > 0 && currentHorizontalSpeed < 0) ||
-                                         (horizontalDirection < 0 && currentHorizontalSpeed > 0);
-
-                if (changingDirection)
-                {
-                    currentHorizontalSpeed += -MathF.Sign(currentHorizontalSpeed) * linearDrag * Time.DeltaTime;
-                }
-                
-
                 // Set horizontal move speed
                 currentHorizontalSpeed += horizontalDirection * acceleration * Time.DeltaTime;
 
