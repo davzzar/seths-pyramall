@@ -8,15 +8,21 @@ namespace SandPerSand
     internal class PlayerControlComponent : Behaviour
     {
         /// <summary>
-        /// This component is responsible for interpreting GamePad input and updating the player accordingly.
+        /// This component is responsible for player control.
         /// </summary>
         private InputHandler inputHandler;
+        private RigidBody rigidBody;
+        private GroundCheckComponent groundChecker;
 
-        private RigidBody playerRB;
-        private Vector2[] dubugPlayerColliderOutline;
+        private float horizontalDirection;
+        
+        private float currentHorizontalSpeed;
+        private float acceleration;
+        private float deceleration;
+        private float maxHorizontalSpeed;
 
-        private const float JumpForce = 10.0f;
-        //private const float WalkForce = 20.0f;
+
+
 
         public PlayerIndex PlayerIndex
         {
@@ -30,66 +36,92 @@ namespace SandPerSand
             /*Empty component constructor*/
         }
 
-        protected override void OnEnable()
+        protected override void OnAwake()
         {
             inputHandler = new InputHandler(this.PlayerIndex);
-            playerRB = this.Owner.GetComponent<RigidBody>();
-            dubugPlayerColliderOutline = this.Owner.GetComponent<PolygonCollider>().Outline;
+            rigidBody = this.Owner.GetComponent<RigidBody>();
+            groundChecker = this.Owner.GetComponent<GroundCheckComponent>();
 
             this.Owner.Layer = 1;
         }
 
         protected override void Update()
         {
-            //impulse up if A is pressed
-            switch (inputHandler.getButtonState(Buttons.A))
-            {
-                case ButtonState.Pressed:
-                {
-                    if (this.IsGrounded())
-                    {
-                        playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
-                    }
+            DrawInputControls();
 
-                    break;
-                }
-            }
+            horizontalDirection = inputHandler.getLeftThumbstickDirX();
+            computeHorrizontalSpeed();
 
-            //force in the stick direction
-            Vector2 stickDir = inputHandler.getLeftThumbstickDirX();
-            //System.Diagnostics.Debug.Write($"Stick Dir X: {stickDir}\n");
-            //playerRB.ApplyForce(stickDir * WalkForce * Time.DeltaTime);
-            var velocity = this.playerRB.LinearVelocity;
-            velocity.X = stickDir.X * 10f;
-            this.playerRB.LinearVelocity = velocity;
-
-            //var newPosition = this.Transform.Position + (stickDir * 0.2f);
-            //this.Transform.Position = newPosition;
 
             // Update the input handler's state
             inputHandler.UpdateState();
         }
 
-        private bool IsGrounded()
+        protected void computeHorrizontalSpeed()
         {
-            const int resolution = 8;
-
-            var size = this.Transform.Scale;
-            var pos0 = this.Transform.Position;
-            pos0.X -= size.X / 2f;
-
-            for (var i = 0; i < resolution; i++)
+            if (horizontalDirection != 0)
             {
-                var origin = pos0 + Vector2.UnitX * (i / (float)(resolution - 1));
-                var ray = new Ray(origin, -Vector2.UnitY);
-                if (Physics.RayCast(ray, out var hit, size.Y / 2f + 0.1f, LayerMask.FromLayers(0)))
-                {
-                    Gizmos.DrawLine(origin, hit.Point, Color.Red);
-                    return true;
-                }
+                // Set horizontal move speed
+                currentHorizontalSpeed += horizontalDirection * acceleration * Time.DeltaTime;
+
+                // clamped by max frame movement
+                currentHorizontalSpeed = MathHelper.Clamp(currentHorizontalSpeed, -maxHorizontalSpeed, maxHorizontalSpeed);
+
+                //TODO Add jump apex bonus speed
+            }
+            else
+            {
+                // Decelerate the player
+                currentHorizontalSpeed = MathUtils.MoveTowards(currentHorizontalSpeed, 0, deceleration * Time.DeltaTime);
             }
 
-            return false;
+            // horizontal collisions with rigid body should set horizontal velocity to zero automatically.
+        }
+
+        /// <summary>
+        /// Apply updated velocities to the player.
+        /// </summary>
+        private void applyVelocities()
+        {
+            var currentVelocity = rigidBody.LinearVelocity;
+            currentVelocity.X = currentHorizontalSpeed;
+            
+            rigidBody.LinearVelocity = currentVelocity;
+        }
+
+        /// <summary>
+        /// Draws the current right analogue stick and jump button inputs next to player
+        /// for debuging purposes.
+        /// </summary>
+        private void DrawInputControls()
+        {
+            var pos = this.Transform.Position;
+            var stickLineOrigin = pos + (-Vector2.UnitX + Vector2.UnitY);
+
+            var stickDir = inputHandler.getLeftThumbstickDir(magnitudeThreshold: 0f);
+            Gizmos.DrawRect(stickLineOrigin, 0.5f * Vector2.One, Color.Black);
+            Gizmos.DrawLine(stickLineOrigin, stickLineOrigin + stickDir, Color.Black);
+
+            
+            var jumpButtonState = inputHandler.getButtonState(Buttons.A);
+            Color jumpIndicatorColor;
+            switch (jumpButtonState)
+            {
+                case ButtonState.Pressed:
+                    jumpIndicatorColor = Color.Yellow;
+                    break;
+                case ButtonState.Held:
+                    jumpIndicatorColor = Color.Red;
+                    break;
+                case ButtonState.Released:
+                    jumpIndicatorColor = Color.Magenta;
+                    break;
+                default:
+                    jumpIndicatorColor = Color.Black;
+                    break;
+            }
+            var jumpButtonOrigin = pos + Vector2.UnitY;
+            Gizmos.DrawRect(jumpButtonOrigin, 0.5f * Vector2.One, jumpIndicatorColor);
         }
     }
 }

@@ -28,19 +28,17 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1), typeof(LoadScene2) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
-            //engine.VSync = false;
-            //engine.IsFixedTimeStep = false;
+            engine.VSync = false;
+            engine.IsFixedTimeStep = false;
 
-            // Create InputHandler and PlayerComponent
-            
             // Start the engine, this call blocks until the game is closed
             engine.Run();
         }
 
-        private static void CreateCamera()
+        private static GameObject CreateCamera()
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
@@ -49,6 +47,8 @@ namespace SandPerSand
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
+
+            return cameraGo;
         }
 
         private static void CreateOriginMarker()
@@ -76,21 +76,21 @@ namespace SandPerSand
             fpsGo.AddComponent<FpsCounterComponent>();
         }
 
-        private static void CreateMap()
+        private static void CreateMap(string mapName)
         {
             var tileMapGo = new GameObject();
 
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
-            tileMapComp.LoadFromContent("debug_map");
+            tileMapComp.LoadFromContent(mapName);
         }
         
-        private static void CreateGamePadTest()
+        private static GameObject CreatePlayer(Vector2 position)
         {
             var playerGo = new GameObject();
-            playerGo.Transform.Position = new Vector2(5, 5);
+            playerGo.Transform.Position = position;
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("Smiley");
+            playerRenderer.LoadFromContent("ProtoPlayer");
             playerRenderer.Depth = 0f;
             
             var playerCollider = playerGo.AddComponent<PolygonCollider>();
@@ -103,25 +103,16 @@ namespace SandPerSand
             };
             playerCollider.Friction = 0.0f;
 
-            var playerSandTest = playerGo.AddComponent<SandInteractionTest>();
-            
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-            
+            //playerRB.IgnoreCCD = true;
+
+            playerGo.AddComponent<GroundCheckComponent>();
             playerGo.AddComponent<PlayerControlComponent>();
+            playerGo.AddComponent<TracerRendererComponent>();
 
-            // And some ground
-            //var groundGo = new GameObject();
-            //groundGo.Transform.LocalPosition = new Vector2(0f, -302);
-            //groundGo.Transform.LossyScale = new Vector2(600, 600);
-
-            //var groundColl = groundGo.AddComponent<CircleCollider>();
-            //groundColl.Radius = 1;
-
-            //var groundRenderer = groundGo.AddComponent<SpriteRenderer>();
-            //groundRenderer.LoadFromContent("Smiley");
-
+            return playerGo;
         }
 
         private static void CreatePerformanceTest(int count)
@@ -259,7 +250,8 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            sandSim.Size = Vector2.One * 20f;
+            var map = GameObject.FindComponent<TileMap>();
+            sandSim.Size = map.Size;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
             sandSim.SimulationStepTime = 1f / 40;
@@ -336,12 +328,12 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 0");
-
-                CreateMap();
+                CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                CreateGamePadTest();
+                CreatePlayer(new Vector2(5,5));
+
+                Debug.Print("Loaded Scene 0: Debug with Sand");
             }
         }
 
@@ -352,12 +344,28 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 1");
-               
-                CreateMap();
+                CreateMap("debug_map");
                 CreateCamera();
-                CreateGamePadTest();
+                CreatePlayer(new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
+                
+                Debug.Print("Loaded Scene 1: Debug with Physics");
+            }
+        }
+
+        private class LoadScene2 : Component
+        {
+            protected override void OnAwake()
+            {
+                CreateMap("controller_testing_map");
+                var cameraGo = CreateCamera();
+                var playerGo = CreatePlayer(new Vector2(3, 1));
+
+                // add camera as a player child GO as a hacky way to make it follow them
+                cameraGo.Transform.Parent = playerGo.Transform;
+                cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
+
+                Debug.Print("Loaded Scene 2: Controller Testing");
             }
         }
     }

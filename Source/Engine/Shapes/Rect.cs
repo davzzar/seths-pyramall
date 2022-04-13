@@ -116,14 +116,14 @@ namespace Engine
             var tr = this.center + new Vector2(cosX - sinY, sinX + cosY);
             var br = this.center + new Vector2(cosX + sinY, sinX - cosY);
 
-            if (Math2.InRectMm(bl, start, end) || Math2.InRectMm(tl, start, end) ||
-                Math2.InRectMm(tr, start, end) || Math2.InRectMm(br, start, end))
+            if (MathUtils.InRectMm(bl, start, end) || MathUtils.InRectMm(tl, start, end) ||
+                MathUtils.InRectMm(tr, start, end) || MathUtils.InRectMm(br, start, end))
             {
                 return true;
             }
 
             // Left
-            if (Math2.RayRectMmIntersection(bl, tl - bl, start, end, out var t))
+            if (MathUtils.RayRectMmIntersection(bl, tl - bl, start, end, out var t))
             {
                 if (0f <= t && t <= 1f)
                 {
@@ -132,7 +132,7 @@ namespace Engine
             }
 
             // Top
-            if (Math2.RayRectMmIntersection(tl, tr - tl, start, end, out t))
+            if (MathUtils.RayRectMmIntersection(tl, tr - tl, start, end, out t))
             {
                 if (0f <= t && t <= 1f)
                 {
@@ -141,7 +141,7 @@ namespace Engine
             }
 
             // Right
-            if (Math2.RayRectMmIntersection(tr, br - tr, start, end, out t))
+            if (MathUtils.RayRectMmIntersection(tr, br - tr, start, end, out t))
             {
                 if (0f <= t && t <= 1f)
                 {
@@ -150,7 +150,7 @@ namespace Engine
             }
 
             // Bottom
-            if (Math2.RayRectMmIntersection(br, bl - br, start, end, out t))
+            if (MathUtils.RayRectMmIntersection(br, bl - br, start, end, out t))
             {
                 if (0f <= t && t <= 1f)
                 {

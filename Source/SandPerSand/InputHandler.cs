@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Text;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -110,14 +106,14 @@ namespace SandPerSand
             return (dir.Length() > magnitudeThreshold) ? dir : Vector2.Zero;
         }
 
-        private Vector2 getThumstickDirX(bool right, float magnitudeThreshold = 0.5f)
+        private float getThumstickDirX(bool right, float magnitudeThreshold = 0.5f)
         {
-            return new Vector2(getThumbstickDir(right, magnitudeThreshold).X, 0);
+            return getThumbstickDir(right, magnitudeThreshold).X;
         }
 
-        private Vector2 getThumstickDirY(bool right, float magnitudeThreshold = 0.5f)
+        private float getThumstickDirY(bool right, float magnitudeThreshold = 0.5f)
         {
-            return new Vector2(0, getThumbstickDir(right, magnitudeThreshold).Y);
+            return getThumbstickDir(right, magnitudeThreshold).Y;
         }
 
         /// <summary>
@@ -131,12 +127,12 @@ namespace SandPerSand
             return getThumbstickDir(false, magnitudeThreshold);
         }
 
-        public Vector2 getLeftThumbstickDirX(float magnitudeThreshold = 0.5f)
+        public float getLeftThumbstickDirX(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirX(false, magnitudeThreshold);
         }
 
-        public Vector2 getLeftThumbstickDirY(float magnitudeThreshold = 0.5f)
+        public float getLeftThumbstickDirY(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirY(false, magnitudeThreshold);
         }
@@ -152,12 +148,12 @@ namespace SandPerSand
             return getThumbstickDir(true, magnitudeThreshold);
         }
 
-        public Vector2 getRightThumbstickDirX(float magnitudeThreshold = 0.5f)
+        public float getRightThumbstickDirX(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirX(true, magnitudeThreshold);
         }
 
-        public Vector2 getRightThumbstickDirY(float magnitudeThreshold = 0.5f)
+        public float getRightThumbstickDirY(float magnitudeThreshold = 0.5f)
         {
             return getThumstickDirY(true, magnitudeThreshold);
         }
