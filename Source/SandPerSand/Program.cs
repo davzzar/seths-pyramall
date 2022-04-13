@@ -87,8 +87,6 @@ namespace SandPerSand
         
         private static GameObject CreatePlayer(Vector2 position)
         {
-            var inputHandler = new InputHandler(PlayerIndex.One);
-
             var playerGo = new GameObject();
             playerGo.Transform.Position = position;
 
@@ -101,14 +99,21 @@ namespace SandPerSand
             playerCollider.Friction = 0.0f;
 
             var playerRB = playerGo.AddComponent<RigidBody>();
-            //playerRB.IsKinematic = false;
+            playerRB.IsKinematic = true;
             playerRB.FreezeRotation = true;
 
             playerGo.AddComponent<GroundCheckComponent>();
-            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = inputHandler;
 
-            playerGo.AddComponent<TracerRendererComponent>();
+            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
+            controlComp.InputHandler = new DummyInputHandler(PlayerIndex.One);
+
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
+            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
+
+
+            var tracer = playerGo.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
 
             return playerGo;
         }
@@ -357,11 +362,14 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                var playerGo = CreatePlayer(new Vector2(3, 1));
+                var playerGo = CreatePlayer(new Vector2(10, 1));
 
                 var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
                 cameraSwitcherComp.Parent = playerGo;
-                cameraSwitcherComp.GlobalPosition = Vector2.Zero;
+                /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
+                cameraSwitcherComp.GlobalHeight = 30f;*/
+                cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
+                cameraSwitcherComp.GlobalHeight = 15f;
                 cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
 
                 // add camera as a player child GO as a hacky way to make it follow them

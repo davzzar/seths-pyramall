@@ -20,11 +20,16 @@ namespace SandPerSand
         private float horizontalDirection;
         private float currentHorizontalSpeed;
 
+        public float HorizontalSpeed
+        {
+            get => currentHorizontalSpeed;
+        }
+
         //TODO add airAcceleration
         private const float acceleration = 110f;
         private const float deceleration = 60f;
         private const float maxHorizontalSpeed = 13f;
-        private float linearDrag = 4f;
+        private float linearDrag;
 
         public PlayerIndex PlayerIndex
         {
@@ -48,33 +53,52 @@ namespace SandPerSand
 
         protected override void Update()
         {
+            ShowDebug();
+
             if (InputHandler.getButtonState(Buttons.B) == ButtonState.Pressed)
             {
-                linearDrag += 4f;
+                linearDrag += 50f;
                 System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
             }
 
             if (InputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed)
             {
-                linearDrag -= 4f;
+                linearDrag -= 50f;
                 System.Diagnostics.Debug.WriteLine($"Linear Drag: {linearDrag}");
             }
 
-            DrawInputControls();
+            linearDrag = MathHelper.Clamp(linearDrag, 0f, 500f);
 
             // get current velocity
             velocity = rigidBody.LinearVelocity;
 
             horizontalDirection = InputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
             
-            computeHorrizontalSpeed();
+            computeHorizontalSpeed();
             applyVelocity();
 
             // Update the input handler's state
             InputHandler.UpdateState();
         }
 
-        protected void computeHorrizontalSpeed()
+        private void ShowDebug()
+        {
+            DrawInputControls();
+
+            var textRenderer = this.Owner.GetComponent<GuiTextRenderer>();
+            if (textRenderer != null)
+            {
+                RenderDebugText(textRenderer);
+            }
+        }
+
+        private void RenderDebugText(in GuiTextRenderer tr)
+        {
+            tr.Text = $"H. Vel.: {HorizontalSpeed:F3}" +
+                $" L. Drag: {linearDrag:F3}";
+        }
+
+        protected void computeHorizontalSpeed()
         {
             currentHorizontalSpeed = velocity.X;
 
@@ -87,12 +111,10 @@ namespace SandPerSand
 
                 if (changingDirection)
                 {
-                    rigidBody.LinearDamping = linearDrag;
+                    currentHorizontalSpeed += -MathF.Sign(currentHorizontalSpeed) * linearDrag * Time.DeltaTime;
                 }
-                else
-                {
-                    rigidBody.LinearDamping = 0f;
-                }
+                
+
                 // Set horizontal move speed
                 currentHorizontalSpeed += horizontalDirection * acceleration * Time.DeltaTime;
 
@@ -132,7 +154,7 @@ namespace SandPerSand
             var pos = this.Transform.Position;
             var stickLineOrigin = pos + (-Vector2.UnitX + Vector2.UnitY);
 
-            var stickDir = InputHandler.getLeftThumbstickDir(magnitudeThreshold: 0f);
+            var stickDir = new Vector2(horizontalDirection, InputHandler.getLeftThumbstickDirY(magnitudeThreshold: 0f));
             Gizmos.DrawRect(stickLineOrigin, 0.5f * Vector2.One, Color.Black);
             Gizmos.DrawLine(stickLineOrigin, stickLineOrigin + stickDir, Color.Black);
 
