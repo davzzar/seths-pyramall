@@ -163,6 +163,14 @@ namespace SandPerSand
             }
         }
 
+        private static void CreateMultiGamePadTest2()
+        {
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
+
+        }
+
         private static void CreatePerformanceTest(int count)
         {
             var smileyParent = new GameObject();
@@ -399,7 +407,7 @@ namespace SandPerSand
                 }
                 CreateMap();
                 CreateCamera();
-                CreateMultiGamePadTest();
+                CreateMultiGamePadTest2();
 
             }
         }

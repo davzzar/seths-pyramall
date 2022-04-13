@@ -53,8 +53,15 @@ namespace SandPerSand
             {
                 case ButtonState.Pressed:
                     playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
+                    if (GameStateManager.Instance.CurrentState == GameStateManager.GameState.Prepare)
+                    {
+                        GameStateManager.Instance.PlayerPrepared[this.PlayerIndex] = true;
+
+                    }
                     break;
             }
+
+
 
             //force in the stick direction
             Vector2 stickDir = inputHandler.getLeftThumbstickDirX();
