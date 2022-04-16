@@ -4,6 +4,8 @@ using System.Globalization;
 using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using System.Diagnostics;
 
 namespace SandPerSand
 {
@@ -17,29 +19,25 @@ namespace SandPerSand
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> multiplayersGo;
+        private Dictionary<PlayerIndex, GameObject> players;
+
 
         protected override void OnAwake()
         {
             base.OnAwake();
-            multiplayersGo = new Dictionary<PlayerIndex, GameObject>();
-            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
-            {
-                multiplayersGo.Add(playerIndex, null);
-            }
-
+            players = new Dictionary<PlayerIndex, GameObject>();
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
-            return multiplayersGo[index];
+            return players[index];
         }
 
         public bool DestroyPlayer(PlayerIndex index)
         {
-            if (multiplayersGo[index] != null)
+            if (players.ContainsKey(index))
             {
-                multiplayersGo[index].Destroy();
-                multiplayersGo[index] = null;
+                players[index].Destroy();
+                players.Remove(index);
                 return true;
             }
             else
@@ -50,13 +48,21 @@ namespace SandPerSand
 
         public void CreatePlayer(PlayerIndex playerIndex, Vector2 position)
         {
-            if (multiplayersGo[playerIndex] != null)
+            if (players.ContainsKey(playerIndex))
             {
-                multiplayersGo[playerIndex].Destroy();
+                if (players[playerIndex] != null)
+                {
+                    players[playerIndex].Destroy();
+                }
+                players[playerIndex] = new GameObject();
             }
-            var playerGo = new GameObject();
-            playerGo.Transform.Position = position;
+            else
+            {
+                players.Add(playerIndex, new GameObject());
+            }
 
+            var playerGo = players[playerIndex];
+            playerGo.Transform.Position = position;
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("Smiley");
 
@@ -72,15 +78,93 @@ namespace SandPerSand
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-
             var playerCon = playerGo.AddComponent<PlayerControlComponent>();
             playerCon.PlayerIndex = playerIndex;
-
-            multiplayersGo[playerIndex] = playerGo;
+            var playerStates = playerGo.AddComponent<PlayerStates>();
 
 
         }
 
+        public void CheckConnections()
+        {
+            // check for new connection / disconnection
+            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
+            {
+                GamePadCapabilities capabilities = GamePad.GetCapabilities(playerIndex);
+                if (capabilities.IsConnected)
+                {
+                    if (!players.ContainsKey(playerIndex))
+                    {
+                        Debug.Print("New Connected controller:" + playerIndex);
+                        //add player FIXME hard code
+                        CreatePlayer(playerIndex, new Vector2(5, 5));
+                    }
+                }
+                else
+                {
+                    if (DestroyPlayer(playerIndex))
+                    {
+                        //delete player
+                        Debug.Print("Disconnected:" + playerIndex);
+                    }
+                }
+            }
 
+        }
+
+        public Boolean CheckAllPrepared()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            var allPreparedFlag = true;
+            foreach (var player in players.Values)
+            {
+                if (!player.GetComponent<PlayerStates>().Prepared)
+                {
+                    allPreparedFlag = false;
+                }
+            }
+            return allPreparedFlag;
+        }
+
+
+    }
+
+    public class PlayerStates : Component
+    {
+        public Boolean Prepared;
+        public static Boolean Paused;
+
+        protected override void OnAwake()
+        {
+            Prepared = false;
+            Paused = false;
+        }
+
+        public void TogglePrepared()
+        {
+            if (Prepared)
+            {
+                Prepared = false;
+            }
+            else
+            {
+                Prepared = true;
+            }
+        }
+
+        public static void TogglePaused()
+        {
+            if (Paused)
+            {
+                Paused = false;
+            }
+            else
+            {
+                Paused = true;
+            }
+        }
     }
 }

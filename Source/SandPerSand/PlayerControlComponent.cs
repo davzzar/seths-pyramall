@@ -55,7 +55,7 @@ namespace SandPerSand
                     playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
                     if (GameStateManager.Instance.CurrentState == GameStateManager.GameState.Prepare)
                     {
-                        GameStateManager.Instance.PlayerPrepared[this.PlayerIndex] = true;
+                        this.Owner.GetComponent<PlayerStates>().TogglePrepared();
 
                     }
                     break;
