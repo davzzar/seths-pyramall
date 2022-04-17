@@ -55,7 +55,7 @@ namespace SandPerSand
                     playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
                     Animator animator = this.Owner.GetComponent<Animator>();
                     // FIXME hard code
-                    animator.NextAnime("anime_1");
+                    animator.NextAnime("Jump");
                     //if (GameStateManager.Instance.CurrentState == GameStateManager.GameState.Prepare)
                     //{
                     //    this.Owner.GetComponent<PlayerStates>().TogglePrepared();

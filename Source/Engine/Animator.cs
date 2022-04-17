@@ -13,6 +13,7 @@ namespace Engine
         private string currentAnimeKey = null;
         private string loadFromContentPath;
         private float passedTime = 0f;
+        private SpriteRenderer renderer;
 
         public Animation CurrentAnime
         {
@@ -35,8 +36,7 @@ namespace Engine
         protected override void Update()
         {
             base.Update();
-            this.passedTime += Time.DeltaTime * 1000 ;//TODO milliseconds
-            Debug.Print(passedTime + "," + CurrentAnime.CurrentFrame.Duration);
+            this.passedTime += Time.DeltaTime;
             if(passedTime >= CurrentAnime.CurrentFrame.Duration)
             {
                 passedTime = 0f;
@@ -45,20 +45,21 @@ namespace Engine
             }
         }
 
-        public Boolean NextAnime(String animeId)
+        public void NextAnime(string animName)
         {
-            if (this.animes.ContainsKey(animeId))
+            if (this.animes.ContainsKey(animName))
             {
-                this.currentAnimeKey = animeId;
-                return true;
+                this.currentAnimeKey = animName;
             }
-            return false;
+            else
+            {
+                throw new ArgumentException("Invalid AnimName!");
+            }
         }
 
         private void SyncRect()
         {
             // TODO handle exceptions
-            var renderer = this.Owner.GetComponent<SpriteRenderer>();
             renderer.SourceRect = CurrentAnime.CurrentFrame.SourceRect;
 
         }
@@ -88,17 +89,14 @@ namespace Engine
                 throw new NullReferenceException("Load tiledS Failed");
             }
 
-            // TODO load texture as SpriteRenderer if there is none;
-            string texturePath = tiledS.Image.source;
-            string textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
-            Texture2D texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
-            var renderer = this.Owner.AddComponent<SpriteRenderer>();
-            renderer.LoadFromContent(textureAssetName);
-
-            // TODO create SpriteRender Compounent
+            // TODO load texture in SpriteRenderer;
+            // TODO better Tiled project structure and accurate paths
+            var textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
+            this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
+            this.renderer.LoadFromContent(textureAssetName);
 
             // foreach tile, check if it is anime
-            int animeId = 0;
             foreach (TiledTile tile in tiledS.Tiles)
             {
                 if (tile.animation != null)
@@ -109,25 +107,62 @@ namespace Engine
                     List<Frame> frameList = new List<Frame>();
                     foreach (TiledTileAnimation tiledFrame in tile.animation)
                     {
-                        float duration = tiledFrame.duration;
+                        // Calculate source rectangle of the frame
                         int tileId = tiledFrame.tileid;
                         Rectangle sourceRectangle = new Rectangle(
                             tileId * tiledS.TileWidth % texture.Width,
                             tileId * tiledS.TileWidth / texture.Width * tiledS.TileHeight,
                             tiledS.TileWidth,
                             tiledS.TileHeight);
-                        // create new frame
+                        // Calculate duration in seconds
+                        float duration = tiledFrame.duration / 1000f;
+                        // Create new Frame
                         frameList.Add(new Frame(sourceRectangle, duration));
                     }
-                    // FIXME proper animation id
-                    animes.Add("anime_" + animeId++ ,new Animation(frameList.ToArray()));
+                    var newAnim = new Animation(frameList.ToArray());
+
+                    var animIsEntry = false;
+                    foreach (TiledProperty p in tile.properties)
+                    {
+                        // TODO hard code
+                        switch (p.name)
+                        {
+                            case "AnimName":
+                                newAnim.Name = p.value;
+                                break;
+                            case "AnimIsLoop":
+                                // TODO not used
+                                newAnim.IsLoop = bool.Parse(p.value);
+                                break;
+                            case "AnimIsEntry":
+                                animIsEntry = bool.Parse(p.value);
+                                break;
+                        }
+                    }
+                    if (newAnim.Name == null)
+                    {
+                        throw new ArgumentNullException(nameof(newAnim.Name));
+                    }
+                    if (animIsEntry)
+                    {
+                        if (this.currentAnimeKey == null)
+                        {
+                            this.currentAnimeKey = newAnim.Name;
+                        }
+                        else
+                        {
+                            throw new ArgumentException("Multiple animation entries!");
+                        }
+                    }
+                    animes.Add(newAnim.Name, newAnim);
                 }
 
             }
-            //FIXME proper default current anime
-            this.currentAnimeKey = "anime_0";
+            if (this.currentAnimeKey == null)
+            {
+                throw new ArgumentNullException("No entry animation defined!");
+            }
             SyncRect();
-
         }
     }
 
@@ -143,11 +178,15 @@ namespace Engine
                 return Frames[FrameItr];
             }
         }
+        public bool IsLoop;
+        public string Name;
 
         public Animation(Frame[] frameArray)
         {
             Frames = frameArray;
             FrameItr = 0;
+            IsLoop = true;
+            Name = null;
         }
 
         public void NextFrame()
