@@ -25,7 +25,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -86,11 +86,13 @@ namespace SandPerSand
         {
             var playerGo = new GameObject();
             playerGo.Transform.Position = new Vector2(5, 5);
-            
 
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("Smiley");
-            
+
+            //var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
+            //playerRenderer.LoadFromContent("Smiley");
+            var playerAnimator = playerGo.AddComponent<Animator>();
+            playerAnimator.LoadFromContent("SmileyAnimated");
+
             var playerCollider = playerGo.AddComponent<PolygonCollider>();
             playerCollider.Outline = new[]
             {

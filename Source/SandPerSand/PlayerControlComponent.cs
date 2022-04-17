@@ -53,11 +53,14 @@ namespace SandPerSand
             {
                 case ButtonState.Pressed:
                     playerRB.ApplyLinearImpulse(Vector2.UnitY * JumpForce);
-                    if (GameStateManager.Instance.CurrentState == GameStateManager.GameState.Prepare)
-                    {
-                        this.Owner.GetComponent<PlayerStates>().TogglePrepared();
+                    Animator animator = this.Owner.GetComponent<Animator>();
+                    // FIXME hard code
+                    animator.NextAnime("anime_1");
+                    //if (GameStateManager.Instance.CurrentState == GameStateManager.GameState.Prepare)
+                    //{
+                    //    this.Owner.GetComponent<PlayerStates>().TogglePrepared();
 
-                    }
+                    //}
                     break;
             }
 
