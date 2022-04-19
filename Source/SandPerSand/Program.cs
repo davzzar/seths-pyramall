@@ -81,6 +81,12 @@ namespace SandPerSand
             var tileMapComp = tileMapGo.AddComponent<TileMap>();
             tileMapComp.LoadFromContent("test_map");
         }
+
+        private static void CreateGUI()
+        {
+            var guiGo = new GameObject();
+            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+        }
         
         private static void CreateGamePadTest()
         {
@@ -399,6 +405,7 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
+                CreateGUI();
                 Debug.Print("Loaded Scene 2");
                 for (int i = 0; i < 4; ++i)
                 {

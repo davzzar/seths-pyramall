@@ -36,6 +36,7 @@ namespace SandPerSand
         {
             if (players.ContainsKey(index))
             {
+                GraphicalUserInterface.Instance.destroyPlayerInfo(index);
                 players[index].Destroy();
                 players.Remove(index);
                 return true;
@@ -48,6 +49,7 @@ namespace SandPerSand
 
         public void CreatePlayer(PlayerIndex playerIndex, Vector2 position)
         {
+            GraphicalUserInterface.Instance.renderPlayerInfo(playerIndex);
             if (players.ContainsKey(playerIndex))
             {
                 if (players[playerIndex] != null)
