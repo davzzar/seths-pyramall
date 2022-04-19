@@ -10,18 +10,28 @@ namespace SandPerSand
 {
     public class GameStateManager : Behaviour
     {
-
-        public static GameStateManager Instance
+        private static GameStateManager instance;
+        internal static GameStateManager Instance
         {
             get
             {
-                return GameObject.FindComponent<GameStateManager>();
+                if (instance == null)
+                {
+                    throw new InvalidOperationException(
+                        "No GameStateManager component in the game. Please create one.");
+                }
+                return instance;
             }
         }
 
         public GameStateManager()
         {
-
+            if (instance != null)
+            {
+                throw new InvalidOperationException("Can't create more than one GameStateManager");
+            }
+            instance = this;
+            this.CurrentState = GameState.Prepare;
         }
 
         private static GameState currentState;
@@ -44,26 +54,12 @@ namespace SandPerSand
             InRound
         }
 
-        // transfer variable used in Prepare state
-        // at prepare state, keep checking for new gamepad and update the dictionary
-        // once a gamepad is connected, add its PlayerIndex as key in the dict, with value false
-        // once a gamepad is disconnected, delete its key in the dict
-        // once all values in the dictionary are true, transfer to InRound state
-        
-
-        protected override void OnEnable()
-        {
-            this.CurrentState = GameState.Prepare;
-            Instance.CurrentState = GameState.Prepare;
-        }
-
-
-
         protected override void Update()
         {
             switch (CurrentState)
             {
                 case GameState.Prepare:
+                    // at prepare state, PlayersManager keep checking for new gamepad
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {

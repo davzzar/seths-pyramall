@@ -11,21 +11,30 @@ namespace SandPerSand
 {
     public class PlayersManager : Component
     {
-        public static PlayersManager Instance
+        private static PlayersManager instance;
+        private Dictionary<PlayerIndex, GameObject> players;
+
+        internal static PlayersManager Instance
         {
             get
             {
-                return GameObject.FindComponent<PlayersManager>();
+                if(instance == null)
+                {
+                    throw new InvalidOperationException(
+                        "No PlayersManager in the game. Please create one.");
+                }
+                return instance;
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> players;
-
-
-        protected override void OnAwake()
+        public PlayersManager()
         {
-            base.OnAwake();
-            players = new Dictionary<PlayerIndex, GameObject>();
+            if (instance != null)
+            {
+                throw new InvalidOperationException("Can't create more than one PlayersManager");
+            }
+            instance = this;
+           this.players = new Dictionary<PlayerIndex, GameObject>();
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
@@ -96,7 +105,7 @@ namespace SandPerSand
                     if (!players.ContainsKey(playerIndex))
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
-                        //add player FIXME hard code
+                        //add player FIXME hard coding
                         CreatePlayer(playerIndex, new Vector2(5, 5));
                     }
                 }
