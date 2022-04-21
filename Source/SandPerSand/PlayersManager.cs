@@ -100,6 +100,18 @@ namespace SandPerSand
 
         }
 
+        private Vector2 GetRandomInitialPos()
+        {
+            Random rd = new Random();
+            int totalPosNum = InitialPositions.ToArray().Length;
+            if (totalPosNum <= 0)
+            {
+                throw new InvalidOperationException("No initial position " +
+                    "registered. Please add at least one 'Entry' Tile on map.");
+            }
+            return InitialPositions[rd.Next(0, totalPosNum)];
+        }
+
         public void CheckConnections()
         {
             // check for new connection / disconnection
@@ -111,9 +123,7 @@ namespace SandPerSand
                     if (!players.ContainsKey(playerIndex))
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
-                        //add player FIXME hard coding
-                        Random rd = new Random();
-                        CreatePlayer(playerIndex, InitialPositions[rd.Next(0, InitialPositions.ToArray().Length)]);
+                        CreatePlayer(playerIndex, GetRandomInitialPos());
                     }
                 }
                 else
