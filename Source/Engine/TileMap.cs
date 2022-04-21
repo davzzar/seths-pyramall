@@ -51,12 +51,13 @@ namespace Engine
             var outlinesByGridId = ParseTilesetsObjects(tiledsetsByFirstGridId);
 
             // Init layers with properties
-            this.Layers = ParseLayersProperties(sourceTiledMap.Layers);
+            this.Layers = InitLayers(sourceTiledMap.Layers);
 
             // Load each Tile on each Layer
             foreach(Layer layer in this.Layers)
             {
-                ParseTiles(layer,sourceTiledMap,tiledsetsByFirstGridId,outlinesByGridId);
+                layer.ParseProperties();
+                layer.ParseTiles(sourceTiledMap,tiledsetsByFirstGridId,outlinesByGridId);
             }
 
             this.loadFromContentMapPath = null;
@@ -135,34 +136,56 @@ namespace Engine
             return outlinesByGridId;
         }
 
-        private Layer[] ParseLayersProperties(TiledLayer[] tiledLayers)
+        private Layer[] InitLayers(TiledLayer[] tiledLayers)
         {
             var layers = new Layer[tiledLayers.Length];
             for (var i = 0; i < tiledLayers.Length; ++i)
             {
-                var tiledLayer = tiledLayers[i];
-                var layerDepth = 0f;
-
-                foreach (TiledProperty p in tiledLayer.properties)
-                {
-                    // TODO hard code
-                    if (p.name == "depth")
-                    {
-                        layerDepth = float.Parse(p.value);
-                        break;
-                    }
-                }
-                layers[i] = new Layer(tiledLayer, layerDepth);
+                layers[i] = new Layer(tiledLayers[i]);
             }
             return layers;
         }
+    }
 
-        private void ParseTiles(Layer layer,TiledMap sourceTiledMap,
+    public class Layer
+    {
+        public readonly TiledLayer TiledLayer;
+        public float Depth;
+        public GameObject[] TileGos;
+
+        public Layer(TiledLayer tiledLayer)
+        {
+            TiledLayer = tiledLayer;
+            Depth = 0f;
+            TileGos = null;
+        }
+
+        public void GetPropertey(String propertyName)
+        {
+        }
+
+        public void ParseProperties()
+        {
+            this.Depth = 0f;
+            foreach (TiledProperty p in TiledLayer.properties)
+            {
+                // TODO hard code
+                if (p.name == "depth")
+                {
+                    this.Depth = float.Parse(p.value);
+                    break;
+                }
+            }
+
+        }
+
+
+        public void ParseTiles(TiledMap sourceTiledMap,
             Dictionary<int, TiledTileset> tiledsetsByFirstGridId,
             Dictionary<int, Vector2[]> outlinesByGridId)
         {
             // Parse layer properties TODO better structure
-            var sourceLayer = layer.TiledLayer;
+            var sourceLayer = this.TiledLayer;
             var tileGoList = new List<GameObject>();
 
             for (int layerTileItr = 0; layerTileItr < sourceLayer.data.Length; ++layerTileItr)
@@ -197,7 +220,7 @@ namespace Engine
                 var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
                 tileRenderer.Texture = texture;
                 tileRenderer.SourceRect = sourceRectangle;
-                tileRenderer.Depth = layer.Depth;
+                tileRenderer.Depth = this.Depth;
 
                 // Add collider and other compounents for the Tile GameObject
                 if (outlinesByGridId.ContainsKey(gridId))
@@ -221,21 +244,8 @@ namespace Engine
                 tileGoList.Add(newTileGo);
             }
             // Register Tile GameObjects
-            layer.TileGos = tileGoList.ToArray();
+            this.TileGos = tileGoList.ToArray();
         }
 
-
-        public class Layer
-        {
-            public readonly TiledLayer TiledLayer;
-            public readonly float Depth;
-            public GameObject[] TileGos;
-            public Layer(TiledLayer tiledLayer, float depth)
-            {
-                TiledLayer = tiledLayer;
-                Depth = depth;
-                TileGos = null;
-            }
-        }
     }
 }

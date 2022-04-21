@@ -4,6 +4,8 @@
   <property name="depth" type="float" value="1"/>
  </properties>
  <image source="TilesetTexture2.png" trans="ff00ff" width="256" height="256"/>
+ <tile id="0" type="Entry"/>
+ <tile id="1" type="Exit"/>
  <tile id="5">
   <objectgroup draworder="index" id="2">
    <object id="1" x="0" y="0" width="32" height="32"/>
