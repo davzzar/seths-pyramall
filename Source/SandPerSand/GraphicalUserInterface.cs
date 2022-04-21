@@ -19,41 +19,54 @@ namespace SandPerSand
         }
 
 
-        private GameObject midscreentext;
+        private GameObject guiGo;
         private GuiTextRenderer midScreenTextComp;
-        private Dictionary<PlayerIndex, GuiTextRenderer> players;
-
-        private Dictionary<PlayerIndex, Vector2> positions;
+        private Dictionary<PlayerIndex, RenderPlayer> renderPlayers;
+        private Dictionary<PlayerIndex, Vector2> positions, positionsUnits;
+        private Dictionary<string, Vector2> object_size, delta_object;
         protected override void OnAwake()
         {
-
             positions = new Dictionary<PlayerIndex, Vector2>{
-                { PlayerIndex.One, new Vector2(0.1f, 0.1f) },
-                { PlayerIndex.Two, new Vector2(0.9f, 0.1f)},
-                { PlayerIndex.Three, new Vector2(0.1f, 0.9f)},
-                { PlayerIndex.Four, new Vector2(0.9f, 0.9f)}
+                { PlayerIndex.One, new Vector2(0f, 0f) },
+                { PlayerIndex.Two, new Vector2(1f, 0f)},
+                { PlayerIndex.Three, new Vector2(0f, 1f)},
+                { PlayerIndex.Four, new Vector2(1f, 1f)}
             };
 
-            players = new Dictionary<PlayerIndex, GuiTextRenderer>();
-            //foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
-            //{
-            //    players.Add(playerIndex, null);
-            //    renderPlayerInfo(playerIndex);
-            //}
+            positionsUnits = new Dictionary<PlayerIndex, Vector2>{
+                { PlayerIndex.One, new Vector2(0f, 0f) },
+                { PlayerIndex.Two, new Vector2(-2f, 0f)},
+                { PlayerIndex.Three, new Vector2(0f, -1f)},
+                { PlayerIndex.Four, new Vector2(-2f, -1f)}
+            };
+
+            object_size = new Dictionary<string, Vector2>{
+                { "small", new Vector2(0.5f, 0.5f)},
+                { "big" , new Vector2(1f, 1f)}
+            };
+
+            delta_object = new Dictionary<string, Vector2>{
+                { "minor_item", new Vector2(1f, 0.5f)},
+                { "major_item" , new Vector2(1.5f, 0.5f)},
+                { "char", new Vector2(0f, 0f)},
+                { "coins" , new Vector2(1.5f, 0f)}
+            };
+
+            renderPlayers = new Dictionary<PlayerIndex, RenderPlayer>();
         }
 
 
     public GraphicalUserInterface()
         {
 
-            midscreentext = new GameObject();
-            midscreentext.Transform.LocalPosition = new Vector2(0.0f, 0f);
+            guiGo = new GameObject();
+            guiGo.Transform.LocalPosition = new Vector2(0.0f, 0f);
         }
 
 
         public void renderStartInfo()
         {
-            midScreenTextComp = midscreentext.AddComponent<GuiTextRenderer>();
+            midScreenTextComp = guiGo.AddComponent<GuiTextRenderer>();
             midScreenTextComp.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
             midScreenTextComp.Text = "To Start The Game press A";
             midScreenTextComp.FontSize = 30f;
@@ -69,24 +82,92 @@ namespace SandPerSand
 
         public void renderPlayerInfo(PlayerIndex playerIndex)
         {
-            var midScreenTextComp = midscreentext.AddComponent<GuiTextRenderer>();
-            players[playerIndex] = midscreentext.AddComponent<GuiTextRenderer>();
-            players[playerIndex].Text = "Player" + playerIndex;
-            players[playerIndex].PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            players[playerIndex].ScreenPosition = positions[playerIndex];
-            Debug.Print(playerIndex.ToString());
+            renderPlayers[playerIndex] = new RenderPlayer();
+
+            renderPlayers[playerIndex].character = guiGo.AddComponent<GuiSpriteRenderer>();
+            renderPlayers[playerIndex].character.LoadFromContent("player" + playerIndex.ToString());
+            renderPlayers[playerIndex].character.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
+            renderPlayers[playerIndex].character.screenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].character.screenPositionUnits = positionsUnits[playerIndex] + delta_object["char"];
+            renderPlayers[playerIndex].character.sizeUnits = object_size["big"];
+            renderPlayers[playerIndex].character.size = new Vector2(0f, 0f);
+
+            renderPlayers[playerIndex].majorItem = guiGo.AddComponent<GuiSpriteRenderer>();
+            renderPlayers[playerIndex].majorItem.LoadFromContent("TilesetItems");
+            renderPlayers[playerIndex].majorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
+            renderPlayers[playerIndex].majorItem.screenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].majorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["major_item"];
+            renderPlayers[playerIndex].majorItem.sourceWindow = new Rectangle(0, 0, 32, 32);
+            renderPlayers[playerIndex].majorItem.sizeUnits = object_size["small"];
+            renderPlayers[playerIndex].majorItem.size = new Vector2(0f, 0f);
+
+            renderPlayers[playerIndex].minorItem = guiGo.AddComponent<GuiSpriteRenderer>();
+            renderPlayers[playerIndex].minorItem.LoadFromContent("TilesetItems");
+            renderPlayers[playerIndex].minorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
+            renderPlayers[playerIndex].minorItem.screenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].minorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
+            renderPlayers[playerIndex].minorItem.sourceWindow = new Rectangle(0, 0, 32, 32);
+            renderPlayers[playerIndex].minorItem.sizeUnits = object_size["small"];
+            renderPlayers[playerIndex].minorItem.size = new Vector2(0f,0f);
+
+            renderPlayers[playerIndex].coins = guiGo.AddComponent<GuiSpriteRenderer>();
+            renderPlayers[playerIndex].coins.LoadFromContent("TilesetCoins");
+            renderPlayers[playerIndex].coins.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
+            renderPlayers[playerIndex].coins.screenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].coins.screenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
+            renderPlayers[playerIndex].coins.sizeUnits = object_size["small"];
+            renderPlayers[playerIndex].coins.size = new Vector2(0f, 0f);
+            renderPlayers[playerIndex].coins.sourceWindow = new Rectangle(0, 0, 32, 32);
+
+            renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
+            renderPlayers[playerIndex].numOfCoins.Text = "00x";
+            renderPlayers[playerIndex].numOfCoins.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
+            renderPlayers[playerIndex].numOfCoins.ScreenPosition = positions[playerIndex] + new Vector2(0.059f,0.01f);
         }
 
         public void destroyPlayerInfo(PlayerIndex playerIndex)
         {
-            players[playerIndex].Destroy();
+            renderPlayers[playerIndex].character.Destroy();
+            renderPlayers[playerIndex].majorItem.Destroy();
+            renderPlayers[playerIndex].minorItem.Destroy();
+            renderPlayers[playerIndex].coins.Destroy();
+            renderPlayers[playerIndex].numOfCoins.Destroy();
+        }
+
+        public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
+        {
+
+        }
+
+        public void removeItem(PlayerIndex playerIndex, Boolean Major)
+        {
+
+        }
+
+        public void renderCoins(PlayerIndex playerIndex, int coins)
+        {
+            if (coins < 10)
+            {
+                renderPlayers[playerIndex].numOfCoins.Text = "0" + coins.ToString() + "x";
+            }
+            else if (coins < 100)
+            {
+                renderPlayers[playerIndex].numOfCoins.Text = coins.ToString() + "x";
+            }
+            else
+            {
+                renderPlayers[playerIndex].numOfCoins.Text = "99x";
+            }
         }
 
     }
 
-    struct playerInfo
+    class RenderPlayer
     {
-        public string minor_item;
-        public string major_item;
+        public GuiSpriteRenderer character { get; set; }
+        public GuiSpriteRenderer majorItem { get; set; }
+        public GuiSpriteRenderer minorItem { get; set; }
+        public GuiSpriteRenderer coins { get; set; }
+        public GuiTextRenderer numOfCoins { get; set; }
     }
 }

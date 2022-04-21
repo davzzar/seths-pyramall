@@ -68,6 +68,22 @@ namespace Engine
                 SpriteEffects.None, depth);
         }
 
+        public static void DrawGuiSprite(Texture2D texture, Color color, Vector2 size, Vector2 position, float rotation)
+        {
+            var scale = Vector2.One;
+            scale.X = size.X / texture.Width;
+            scale.Y = size.Y / texture.Height;
+            instance.spriteBatch.Draw(texture, position, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+        }
+
+        public static void DrawGuiSprite(Texture2D texture, Color color, Rectangle sourceRectangle, Vector2 size, Vector2 position, float rotation)
+        {
+            var scale = Vector2.One;
+            scale.X = size.X / sourceRectangle.Width;
+            scale.Y = size.Y / sourceRectangle.Height;
+            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, 0f,  Vector2.Zero, scale, SpriteEffects.None, 0f);
+        }
+
         public static void DrawGuiText(SpriteFont font, string text, float fontSize, Color color, Vector2 position, float rotation)
         {
             var height = FontManager.GetFontInfo(font).Height;

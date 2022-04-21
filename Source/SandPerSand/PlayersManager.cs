@@ -87,6 +87,39 @@ namespace SandPerSand
 
         }
 
+        public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
+            //returns true if item was added. False if it is already full
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            Boolean success = state.addItemToInventory(item, Major);
+            if (success)
+            {
+                GraphicalUserInterface.Instance.renderItem(player, item, Major);
+            }
+            return success;
+        }
+
+        public string useItem(PlayerIndex player, Boolean Major)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            GraphicalUserInterface.Instance.removeItem(player, Major);
+            return state.useItem(Major);
+        }
+
+        public void addCoins(PlayerIndex player, int coins)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            GraphicalUserInterface.Instance.renderCoins(player, coins);
+            state.addCoins(coins);
+        }
+        public Boolean spendCoins(PlayerIndex player, int coins)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            (Boolean, int) tmp = state.spendCoins(coins);
+            GraphicalUserInterface.Instance.renderCoins(player, tmp.Item2);
+            return tmp.Item1;
+        }
+
         public void CheckConnections()
         {
             // check for new connection / disconnection
@@ -138,11 +171,17 @@ namespace SandPerSand
     {
         public Boolean Prepared;
         public static Boolean Paused;
+        public string minor_item;
+        public string major_item;
+        public int coins;
 
         protected override void OnAwake()
         {
             Prepared = false;
             Paused = false;
+            minor_item = null;
+            major_item = null;
+            coins = 0;
         }
 
         public void TogglePrepared()
@@ -166,6 +205,65 @@ namespace SandPerSand
             else
             {
                 Paused = true;
+            }
+        }
+
+        public Boolean addItemToInventory(string item, Boolean Major)
+        {
+            //returns true if item was added
+            if (Major)
+            {
+                if(major_item == null)
+                {
+                    major_item = item;
+                    return true;
+                }
+            }
+            else
+            {
+                if (minor_item == null)
+                {
+                    minor_item = item;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string useItem(Boolean Major)
+            //returns null if no item
+        {
+            if (Major)
+            {
+                string tmp = major_item;
+                major_item = null;
+                return tmp;
+            }
+            else
+            {
+                string tmp = minor_item;
+                minor_item=null;
+                return tmp;
+            }
+        }
+
+        public int addCoins(int amount)
+        {
+            coins += amount;
+            return coins;
+        }
+
+        public (Boolean, int) spendCoins(int amount)
+            //returns true when action was successfull
+        {
+            if(coins > amount)
+            {
+                coins = amount = coins;
+                return (true, coins);
+            }
+            else
+            {
+                return (false, coins);
             }
         }
     }

@@ -47,6 +47,7 @@ namespace Engine
             {
                 Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth);
             }
+            
         }
 
         /// <inheritdoc />
