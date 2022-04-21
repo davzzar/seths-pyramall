@@ -8,11 +8,11 @@ using TiledCS;
 
 namespace Engine
 {
-    public sealed class TileMap : Component
+    public sealed class TileMap<T> : Component where T : Layer,new()
     {
         private string loadFromContentMapPath;
 
-        public Layer[] Layers
+        public T[] Layers
         {
             get;
             set;
@@ -76,6 +76,12 @@ namespace Engine
                 {
                     throw new NullReferenceException("Load tiledS Failed");
                 }
+                if (tiledS.Tiles.Length != tiledS.TileCount)
+                {
+                    throw new InvalidDataException("Invalid TiledSet! " +
+                        "Each Tile Must have a entry in .tsx file! Please " +
+                        "ensure this by assign each Tile a Type in Tiled Editor!");
+                }
 
                 // Associate each Tiledset with its firstgid
                 tiledsetsByFirstGridId.Add(tiledMS.firstgid, tiledS);
@@ -136,12 +142,13 @@ namespace Engine
             return outlinesByGridId;
         }
 
-        private Layer[] InitLayers(TiledLayer[] tiledLayers)
+        private T[] InitLayers(TiledLayer[] tiledLayers)
         {
-            var layers = new Layer[tiledLayers.Length];
+            var layers = new T[tiledLayers.Length];
             for (var i = 0; i < tiledLayers.Length; ++i)
             {
-                layers[i] = new Layer(tiledLayers[i]);
+                layers[i] = new T();
+                layers[i].TiledLayer = tiledLayers[i];
             }
             return layers;
         }
@@ -149,41 +156,35 @@ namespace Engine
 
     public class Layer
     {
-        public readonly TiledLayer TiledLayer;
-        public float Depth;
-        public GameObject[] TileGos;
+        public TiledLayer TiledLayer { get; set; }
+        public GameObject[] TileGos { get; set; }
 
-        public Layer(TiledLayer tiledLayer)
+        public Layer()
         {
-            TiledLayer = tiledLayer;
-            Depth = 0f;
+            TiledLayer = null;
             TileGos = null;
         }
 
-        public void GetPropertey(String propertyName)
+        public virtual void ParseProperties()
         {
-        }
-
-        public void ParseProperties()
-        {
-            this.Depth = 0f;
-            foreach (TiledProperty p in TiledLayer.properties)
+            if (TiledLayer == null)
             {
-                // TODO hard code
-                if (p.name == "depth")
-                {
-                    this.Depth = float.Parse(p.value);
-                    break;
-                }
+                throw new InvalidOperationException("Can't parse properties" +
+                    "before TiledLayer is ready");
             }
 
         }
 
 
-        public void ParseTiles(TiledMap sourceTiledMap,
+        public virtual void ParseTiles(TiledMap sourceTiledMap,
             Dictionary<int, TiledTileset> tiledsetsByFirstGridId,
             Dictionary<int, Vector2[]> outlinesByGridId)
         {
+            if (TiledLayer == null)
+            {
+                throw new InvalidOperationException("Can't parse Tiles" +
+                    "before TiledLayer is ready");
+            }
             // Parse layer properties TODO better structure
             var sourceLayer = this.TiledLayer;
             var tileGoList = new List<GameObject>();
@@ -202,13 +203,6 @@ namespace Engine
                 // Get Texture <- (Tileset)
                 // TODO handle no texture: tiledS.Image == null
                 string textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
-                Texture2D texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
-                // Get SourceRectangle <- (Tileset, Texture, TilesetTile)
-                Rectangle sourceRectangle = new Rectangle(
-                    tileId * tiledS.TileWidth % texture.Width,
-                    tileId * tiledS.TileWidth / texture.Width * tiledS.TileHeight,
-                    tiledS.TileWidth,
-                    tiledS.TileHeight);
 
                 // Get (X,Y)OnLayer <- (Layer, LayerTile)
                 int x = layerTileItr % sourceLayer.width;
@@ -218,9 +212,8 @@ namespace Engine
                 var newTileGo = new GameObject();
                 newTileGo.Transform.Position = new Vector2(x, y);
                 var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
-                tileRenderer.Texture = texture;
-                tileRenderer.SourceRect = sourceRectangle;
-                tileRenderer.Depth = this.Depth;
+                tileRenderer.LoadFromContent(textureAssetName);
+                tileRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
 
                 // Add collider and other compounents for the Tile GameObject
                 if (outlinesByGridId.ContainsKey(gridId))
@@ -235,11 +228,6 @@ namespace Engine
                     }
                 }
 
-                //TODO add behavior compounents here
-                //TODO group some tiles to a parent object then add script on the parent
-                //TODO to simplify, only certain layers contains tiles that need to be combined?
-                //TODO get parameters e.g moving routes from Tiled map objects
-
                 // Register Tile GameObject
                 tileGoList.Add(newTileGo);
             }
@@ -248,4 +236,6 @@ namespace Engine
         }
 
     }
+
+
 }

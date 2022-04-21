@@ -13,6 +13,11 @@ namespace SandPerSand
     {
         private static PlayersManager instance;
         private Dictionary<PlayerIndex, GameObject> players;
+        private List<Vector2> initialPositions;
+        public List<Vector2> InitialPositions
+        {
+            get => this.initialPositions;
+        }
 
         internal static PlayersManager Instance
         {
@@ -34,7 +39,8 @@ namespace SandPerSand
                 throw new InvalidOperationException("Can't create more than one PlayersManager");
             }
             instance = this;
-           this.players = new Dictionary<PlayerIndex, GameObject>();
+            this.players = new Dictionary<PlayerIndex, GameObject>();
+            this.initialPositions = new List<Vector2>();
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
@@ -106,7 +112,8 @@ namespace SandPerSand
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
                         //add player FIXME hard coding
-                        CreatePlayer(playerIndex, new Vector2(5, 5));
+                        Random rd = new Random();
+                        CreatePlayer(playerIndex, InitialPositions[rd.Next(0, InitialPositions.ToArray().Length)]);
                     }
                 }
                 else

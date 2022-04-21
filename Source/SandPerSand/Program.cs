@@ -78,7 +78,7 @@ namespace SandPerSand
         {
             var tileMapGo = new GameObject();
 
-            var tileMapComp = tileMapGo.AddComponent<TileMap>();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent("test_map");
         }
         
@@ -405,9 +405,10 @@ namespace SandPerSand
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
+                CreateMultiGamePadTest2();
                 CreateMap();
                 CreateCamera();
-                CreateMultiGamePadTest2();
+                
 
             }
         }
