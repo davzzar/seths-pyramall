@@ -66,6 +66,11 @@ namespace SandPerSand
                     var entryScript = newTileGo.AddComponent<EntryScript>();
                     break;
                 case "Exit":
+                    var exitScript = newTileGo.AddComponent<ExitScript>();
+                    var exitRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    exitRenderer.LoadFromContent(textureAssetName);
+                    exitRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    exitRenderer.Depth = this.Depth;
                     break;
 
             }

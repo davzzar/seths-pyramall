@@ -24,6 +24,21 @@ namespace SandPerSand
             }
         }
 
+        private bool exitTrigger;
+        public bool TriggerExit()
+        {
+            if(currentState== GameState.InRound||
+                currentState== GameState.CountDown)
+            {
+                if (exitTrigger == false)
+                {
+                    exitTrigger = true;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public GameStateManager()
         {
             if (instance != null)
@@ -31,10 +46,10 @@ namespace SandPerSand
                 throw new InvalidOperationException("Can't create more than one GameStateManager");
             }
             instance = this;
-            this.CurrentState = GameState.Prepare;
+            currentState = GameState.Prepare;
         }
 
-        private static GameState currentState;
+        private GameState currentState;
 
         public GameState CurrentState
         {
@@ -42,18 +57,11 @@ namespace SandPerSand
             {
                 return currentState;
             }
-            set
-            {
-                currentState = value;
-            }
         }
 
-        public enum GameState
-        {
-            Prepare,
-            InRound
-        }
 
+
+        private float countDowncounter;
         protected override void Update()
         {
             switch (CurrentState)
@@ -63,11 +71,46 @@ namespace SandPerSand
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
-                        CurrentState = GameState.InRound;
+                        currentState = GameState.InRound;
                         Debug.Print("GameState: Prepare-> InRound");
                     }
                     break;
+                case GameState.InRound:
+                    if (exitTrigger)
+                    {
+                        currentState = GameState.CountDown;
+                        exitTrigger = false;
+                        Debug.Print("GameState: InRound-> CountDown");
+                        //
+                        countDowncounter = 0f;
+                    }
+                    break;
+                case GameState.CountDown:
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 10f)
+                    {
+                        currentState = GameState.RoundCheck;
+                        countDowncounter = 0f;
+                        // Debug
+                        Debug.Print("GameState: CountDown-> RoundCheck");
+                        foreach(var item in PlayersManager.Instance.Players)
+                        {
+                            Debug.Print("Player "+ item.Key + " : Rank " +
+                                item.Value.GetComponent<PlayerStates>().RoundRank);
+                        }
+                    }
+                    break;
+                case GameState.RoundCheck:
+                    break;
             }
         }
+    }
+
+    public enum GameState
+    {
+        Prepare,
+        InRound,
+        CountDown,
+        RoundCheck,
     }
 }

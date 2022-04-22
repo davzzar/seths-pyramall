@@ -13,6 +13,11 @@ namespace SandPerSand
     {
         private static PlayersManager instance;
         private Dictionary<PlayerIndex, GameObject> players;
+        public Dictionary<PlayerIndex, GameObject> Players
+        {
+            get => this.players;
+        }
+
         private List<Vector2> initialPositions;
         public List<Vector2> InitialPositions
         {
@@ -31,6 +36,7 @@ namespace SandPerSand
                 return instance;
             }
         }
+
 
         public PlayersManager()
         {
@@ -162,22 +168,30 @@ namespace SandPerSand
     {
         public Boolean Prepared;
         public static Boolean Paused;
+        public bool Exited { get; set; }
+        public int RoundRank { get; set; }
 
         protected override void OnAwake()
         {
             Prepared = false;
             Paused = false;
+            Exited = false;
+            RoundRank = -1;
         }
 
         public void TogglePrepared()
         {
+            // Debug
+            var playerIndex = this.Owner.GetComponent<PlayerControlComponent>().PlayerIndex;
             if (Prepared)
             {
                 Prepared = false;
+                Debug.Print("Player" + playerIndex + "UnPrepared.");
             }
             else
             {
                 Prepared = true;
+                Debug.Print("Player" + playerIndex + "Prepared.");
             }
         }
 
