@@ -24,10 +24,18 @@ namespace SandPerSand
 
 
 
+        private PlayerIndex playerIndex;
         public PlayerIndex PlayerIndex
         {
-            get;
-            set;
+            get => this.playerIndex;
+            set {
+                if(this.playerIndex == value)
+                {
+                    return;
+                }
+                this.playerIndex = value;
+                inputHandler = new InputHandler(this.PlayerIndex);
+            }
         }
 
 
@@ -52,6 +60,17 @@ namespace SandPerSand
             horizontalDirection = inputHandler.getLeftThumbstickDirX();
             computeHorrizontalSpeed();
 
+            // 22 Apr merge : TODO Probably NOT the best place to check Buttons.A TogglePrepared
+            switch (inputHandler.getButtonState(Buttons.A))
+            {
+                case ButtonState.Pressed:
+                    if (GameStateManager.Instance.CurrentState == GameState.Prepare)
+                    {
+                        this.Owner.GetComponent<PlayerStates>().TogglePrepared();
+
+                    }
+                    break;
+            }
 
             // Update the input handler's state
             inputHandler.UpdateState();
