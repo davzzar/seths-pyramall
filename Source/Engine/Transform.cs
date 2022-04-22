@@ -5,6 +5,9 @@ using Microsoft.Xna.Framework;
 
 namespace Engine
 {
+    /// <summary>
+    /// The transformation component that is part of every game object.
+    /// </summary>
     public sealed class Transform : Component
     {
         private Transform parent;

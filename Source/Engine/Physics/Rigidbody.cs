@@ -22,6 +22,7 @@ namespace Engine
         private bool isKinematic;
         private float linearDamping;
         private float mass;
+        private bool ignoreCCD;
 
         public float AngularDamping
         {
@@ -78,6 +79,20 @@ namespace Engine
                 if (this.body != null)
                 {
                     this.body.IgnoreGravity = value;
+                }
+            }
+        }
+
+        public bool IgnoreCCD
+        {
+            get => this.ignoreCCD;
+            set
+            {
+                this.ignoreCCD = value;
+
+                if (this.body != null)
+                {
+                    this.body.IgnoreCCD = value;
                 }
             }
         }
@@ -210,6 +225,7 @@ namespace Engine
             Debug.Assert(this.body != null);
             this.body.AngularDamping = this.angularDamping;
             this.body.FixedRotation = this.freezeRotation;
+            this.body.IgnoreCCD = this.ignoreCCD;
             this.body.IgnoreGravity  = this.ignoreGravity;
             this.body.LinearDamping = this.linearDamping;
             this.body.Mass = this.mass;

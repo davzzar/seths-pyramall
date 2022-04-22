@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -20,25 +21,25 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
             
-            CreateFpsText(); 
+            CreateFpsText();
+
+            Collider.ShowGizmos = true;
             
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
-            //engine.VSync = false;
-            //engine.IsFixedTimeStep = false;
+            engine.VSync = false;
+            engine.IsFixedTimeStep = false;
 
-            // Create InputHandler and PlayerComponent
-            
             // Start the engine, this call blocks until the game is closed
             engine.Run();
 
         }
 
-        private static void CreateCamera()
+        private static GameObject CreateCamera()
         {
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
@@ -47,6 +48,8 @@ namespace SandPerSand
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
+
+            return cameraGo;
         }
 
         private static void CreateOriginMarker()
@@ -74,12 +77,12 @@ namespace SandPerSand
             fpsGo.AddComponent<FpsCounterComponent>();
         }
 
-        private static void CreateMap()
+        private static void CreateMap(string mapName)
         {
             var tileMapGo = new GameObject();
 
-            var tileMapComp = tileMapGo.AddComponent<TileMap>();
-            tileMapComp.LoadFromContent("test_map");
+            var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
+            tileMapComp.LoadFromContent(mapName);
         }
 
         private static void CreateGUI()
@@ -88,14 +91,14 @@ namespace SandPerSand
             var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
         }
         
-        private static void CreateGamePadTest()
+        private static GameObject CreatePlayer(Vector2 position)
         {
             var playerGo = new GameObject();
-            playerGo.Transform.Position = new Vector2(5, 5);
-            
+            playerGo.Transform.Position = position;
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("Smiley");
+            playerRenderer.LoadFromContent("ProtoPlayer");
+            playerRenderer.Depth = 0f;
             
             var playerCollider = playerGo.AddComponent<PolygonCollider>();
             playerCollider.Outline = new[]
@@ -110,20 +113,13 @@ namespace SandPerSand
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-            
+            //playerRB.IgnoreCCD = true;
+
+            playerGo.AddComponent<GroundCheckComponent>();
             playerGo.AddComponent<PlayerControlComponent>();
+            playerGo.AddComponent<TracerRendererComponent>();
 
-            // And some ground
-            //var groundGo = new GameObject();
-            //groundGo.Transform.LocalPosition = new Vector2(0f, -302);
-            //groundGo.Transform.LossyScale = new Vector2(600, 600);
-
-            //var groundColl = groundGo.AddComponent<CircleCollider>();
-            //groundColl.Radius = 1;
-
-            //var groundRenderer = groundGo.AddComponent<SpriteRenderer>();
-            //groundRenderer.LoadFromContent("Smiley");
-
+            return playerGo;
         }
 
         private static void CreateMultiGamePadTest()
@@ -307,10 +303,27 @@ namespace SandPerSand
             }
         }
 
+        private static void CreateSandPhysics()
+        {
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            sandSim.ResolutionX = 200;
+            sandSim.ResolutionY = 200;
+            sandSim.SimulationStepTime = 1f / 40;
+            sandSim.MaxLayer = 4;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+            
+            sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
+        }
+
         /// <summary>
         /// The scene manager component uses loading components to load scenes.<br/>
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
-        /// Once the user presses the numpad key relating to the index of that scene loader, it will be executed.
+        /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
         private class SceneManagerComponent : Behaviour
         {
@@ -333,7 +346,7 @@ namespace SandPerSand
 
                 for (var i = 0; i < this.SceneLoaderTypes.Count && i < 10; i++)
                 {
-                    var key = (Keys)(Keys.NumPad0 + i);
+                    var key = (Keys)(Keys.D1 + i);
                     if (state.IsKeyDown(key))
                     {
                         this.RunSceneLoader(i);
@@ -373,11 +386,12 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 0");
-                CreateMap();
+                CreateMap("debug_map");
                 CreateCamera();
-                CreateGamePadTest();
+                CreateSandPhysics();
+                CreatePlayer(new Vector2(5,5));
 
+                Debug.Print("Loaded Scene 0: Debug with Sand");
             }
         }
 
@@ -388,12 +402,28 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 1");
-               
-                CreateMap();
+                CreateMap("debug_map");
                 CreateCamera();
-                CreateGamePadTest();
+                CreatePlayer(new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
+                
+                Debug.Print("Loaded Scene 1: Debug with Physics");
+            }
+        }
+
+        private class LoadScene2 : Component
+        {
+            protected override void OnAwake()
+            {
+                CreateMap("controller_testing_map");
+                var cameraGo = CreateCamera();
+                var playerGo = CreatePlayer(new Vector2(3, 1));
+
+                // add camera as a player child GO as a hacky way to make it follow them
+                cameraGo.Transform.Parent = playerGo.Transform;
+                cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
+
+                Debug.Print("Loaded Scene 2: Controller Testing");
             }
         }
 
@@ -401,20 +431,22 @@ namespace SandPerSand
         /// Loads the scene with multiplayer test; multiple players would be
         /// automatically created with regard to number of connected GamePad.
         /// </summary>
-        private class LoadScene2 : Component
+        private class LoadSceneMultiplayer : Component
         {
             protected override void OnAwake()
             {
                 CreateGUI();
                 Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene Multiplayer");
                 for (int i = 0; i < 4; ++i)
                 {
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
-                CreateMap();
-                CreateCamera();
                 CreateMultiGamePadTest2();
+                CreateMap("test_map");
+                CreateCamera();
+                
 
             }
         }

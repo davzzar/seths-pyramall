@@ -28,7 +28,7 @@ namespace Engine
         }
 
         [Conditional("DEBUG")]
-        public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color)
+        public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color, float thickness = 1f)
         {
             // calculate the distance between the two vectors
             float distance = Vector2.Distance(point1, point2);
@@ -36,17 +36,29 @@ namespace Engine
             // calculate the rotation between the two vectors
             float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
 
-            DrawLine(in point1, distance, angle, color);
+            DrawLine(in point1, distance, angle, color, thickness);
         }
 
         [Conditional("DEBUG")]
-        public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color)
+        public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color, float thickness = 1f)
         {
             GrowBufferOnDemand();
             
             //color *= GizmosAlpha;
-            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, 1f));
+            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, thickness));
             numEntries++;
+        }
+
+        [Conditional("DEBUG")]
+        public static void DrawRect(in Vector2 center, in Vector2 size, Color color)
+        {
+            var min = center - size / 2f;
+            var max = center + size / 2f;
+
+            DrawLine(in min, new Vector2(min.X, max.Y), color);
+            DrawLine(in max, new Vector2(min.X, max.Y), color);
+            DrawLine(in min, new Vector2(max.X, min.Y), color);
+            DrawLine(in max, new Vector2(max.X, min.Y), color);
         }
 
         [Conditional("DEBUG")]
@@ -102,8 +114,7 @@ namespace Engine
                 data = newData;
             }
         }
-
-        [StructLayout(LayoutKind.Sequential)]
+        
         private readonly struct CommandEntry
         {
             public readonly CommandType Type;

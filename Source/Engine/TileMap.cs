@@ -8,11 +8,21 @@ using TiledCS;
 
 namespace Engine
 {
-    public sealed class TileMap : Component
+    public sealed class TileMap<T> : Component where T : Layer,new()
     {
         private string loadFromContentMapPath;
 
-        public Layer[] Layers
+        private TiledMap sourceMap;
+
+        public Vector2 Size {
+            get {
+                return new Vector2(sourceMap.Width, sourceMap.Height);
+            }
+        }
+
+        public bool Infinite { get { return sourceMap.Infinite; } }
+
+        public T[] Layers
         {
             get;
             set;
@@ -42,21 +52,23 @@ namespace Engine
                 return;
             }
             // Load tmx file
-            var sourceTiledMap = new TiledMap($"Content/{this.loadFromContentMapPath}.tmx");
+            var tiledMap = new TiledMap($"Content/{this.loadFromContentMapPath}.tmx");
+            this.sourceMap = tiledMap;
 
             // Load tsx file
-            var tiledsetsByFirstGridId = LoadTilesets(sourceTiledMap.Tilesets);
+            var tiledsetsByFirstGridId = LoadTilesets(tiledMap.Tilesets);
 
             // Parse objects (colliders) for each Grid in each Tilesets
             var outlinesByGridId = ParseTilesetsObjects(tiledsetsByFirstGridId);
 
             // Init layers with properties
-            this.Layers = ParseLayersProperties(sourceTiledMap.Layers);
+            this.Layers = InitLayers(tiledMap.Layers);
 
             // Load each Tile on each Layer
             foreach(Layer layer in this.Layers)
             {
-                ParseTiles(layer,sourceTiledMap,tiledsetsByFirstGridId,outlinesByGridId);
+                layer.ParseLayerProperties();
+                layer.ParseTiles(tiledMap,tiledsetsByFirstGridId,outlinesByGridId);
             }
 
             this.loadFromContentMapPath = null;
@@ -74,6 +86,12 @@ namespace Engine
                 if (tiledS == null)
                 {
                     throw new NullReferenceException("Load tiledS Failed");
+                }
+                if (tiledS.Tiles.Length != tiledS.TileCount)
+                {
+                    throw new InvalidDataException("Invalid TiledSet! " +
+                        "Each Tile Must have a entry in .tsx file! Please " +
+                        "ensure this by assign each Tile a Type in Tiled Editor!");
                 }
 
                 // Associate each Tiledset with its firstgid
@@ -123,8 +141,8 @@ namespace Engine
                             var outline = new Vector2[] {
                             translatePoint(new Vector2(obj.x, obj.y)),
                             translatePoint(new Vector2(obj.x+ obj.width, obj.y)),
-                            translatePoint(new Vector2(obj.x + obj.width, obj.y + obj.width)),
-                            translatePoint(new Vector2(obj.x, obj.y + obj.width))
+                            translatePoint(new Vector2(obj.x + obj.width, obj.y + obj.height)),
+                            translatePoint(new Vector2(obj.x, obj.y + obj.height))
                             };
                             outlinesByGridId.Add(gridId, outline);
                         }
@@ -135,107 +153,110 @@ namespace Engine
             return outlinesByGridId;
         }
 
-        private Layer[] ParseLayersProperties(TiledLayer[] tiledLayers)
+        private T[] InitLayers(TiledLayer[] tiledLayers)
         {
-            var layers = new Layer[tiledLayers.Length];
+            var layers = new T[tiledLayers.Length];
             for (var i = 0; i < tiledLayers.Length; ++i)
             {
-                var tiledLayer = tiledLayers[i];
-                var layerDepth = 0f;
-
-                foreach (TiledProperty p in tiledLayer.properties)
-                {
-                    // TODO hard code
-                    if (p.name == "depth")
-                    {
-                        layerDepth = float.Parse(p.value);
-                        break;
-                    }
-                }
-                layers[i] = new Layer(tiledLayer, layerDepth);
+                layers[i] = new T();
+                layers[i].TiledLayer = tiledLayers[i];
             }
             return layers;
         }
+    }
 
-        private void ParseTiles(Layer layer,TiledMap sourceTiledMap,
+    public class Layer
+    {
+        public TiledLayer TiledLayer { get; set; }
+        public GameObject[] TileGos { get; set; }
+
+        public Layer()
+        {
+            TiledLayer = null;
+            TileGos = null;
+        }
+
+        public virtual void ParseLayerProperties()
+        {
+            if (TiledLayer == null)
+            {
+                throw new InvalidOperationException("Can't parse properties" +
+                    "before TiledLayer is ready");
+            }
+
+        }
+
+
+        public void ParseTiles(TiledMap sourceTiledMap,
             Dictionary<int, TiledTileset> tiledsetsByFirstGridId,
             Dictionary<int, Vector2[]> outlinesByGridId)
         {
-            // Parse layer properties TODO better structure
-            var sourceLayer = layer.TiledLayer;
+            if (TiledLayer == null)
+            {
+                throw new InvalidOperationException("Can't parse Tiles" +
+                    "before TiledLayer is ready");
+            }
+
             var tileGoList = new List<GameObject>();
 
-            for (int layerTileItr = 0; layerTileItr < sourceLayer.data.Length; ++layerTileItr)
+            for (int layerTileItr = 0; layerTileItr < TiledLayer.data.Length; ++layerTileItr)
             {
-                // Get gridId, firstGridId, tileId
-                int gridId = sourceLayer.data[layerTileItr];
+                // Start with gridId and firstGridId
+                int gridId = TiledLayer.data[layerTileItr];
                 if (gridId <= 0)
                     continue;
                 int firstGridId = sourceTiledMap.GetTiledMapTileset(gridId).firstgid;
-                int tileId = gridId - firstGridId;
 
-                // Get Tileset <- (LayerTile)
-                TiledTileset tiledS = tiledsetsByFirstGridId[firstGridId];
-                // Get Texture <- (Tileset)
-                // TODO handle no texture: tiledS.Image == null
-                string textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
-                Texture2D texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
-                // Get SourceRectangle <- (Tileset, Texture, TilesetTile)
-                Rectangle sourceRectangle = new Rectangle(
-                    tileId * tiledS.TileWidth % texture.Width,
-                    tileId * tiledS.TileWidth / texture.Width * tiledS.TileHeight,
-                    tiledS.TileWidth,
-                    tiledS.TileHeight);
+                // Get (X,Y) OnLayer
+                int x = layerTileItr % TiledLayer.width;
+                int y = -layerTileItr / TiledLayer.height + TiledLayer.height - 1;
 
-                // Get (X,Y)OnLayer <- (Layer, LayerTile)
-                int x = layerTileItr % sourceLayer.width;
-                int y = -layerTileItr / sourceLayer.height + sourceLayer.height - 1;
-
-                // Create Tile GameObject
+                // Create GameObject
                 var newTileGo = new GameObject();
                 newTileGo.Transform.Position = new Vector2(x, y);
-                var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
-                tileRenderer.Texture = texture;
-                tileRenderer.SourceRect = sourceRectangle;
-                tileRenderer.Depth = layer.Depth;
 
-                // Add collider and other compounents for the Tile GameObject
+                // Get tileId
+                int tileId = gridId - firstGridId;
+
+                // Get Tileset
+                TiledTileset tiledS = tiledsetsByFirstGridId[firstGridId];
+
+                // Get outline (if applicable)
+                Vector2[] outline = null;
                 if (outlinesByGridId.ContainsKey(gridId))
                 {
-                    var outline = outlinesByGridId[gridId];
-
-                    var tileCollider = newTileGo.AddComponent<PolygonCollider>();
-
-                    if (outline.Length >= 3)
-                    {
-                        tileCollider.Outline = outline;
-                    }
+                    outline = outlinesByGridId[gridId];
                 }
 
-                //TODO add behavior compounents here
-                //TODO group some tiles to a parent object then add script on the parent
-                //TODO to simplify, only certain layers contains tiles that need to be combined?
-                //TODO get parameters e.g moving routes from Tiled map objects
+                // Parse Tile
+                ParseTile(newTileGo, tileId, tiledS, outline);
 
                 // Register Tile GameObject
                 tileGoList.Add(newTileGo);
             }
             // Register Tile GameObjects
-            layer.TileGos = tileGoList.ToArray();
+            this.TileGos = tileGoList.ToArray();
         }
 
-
-        public class Layer
+        public virtual void ParseTile(GameObject newTileGo, int tileId,
+            TiledTileset tiledS, Vector2[] outline)
         {
-            public readonly TiledLayer TiledLayer;
-            public readonly float Depth;
-            public GameObject[] TileGos;
-            public Layer(TiledLayer tiledLayer, float depth)
+            string textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            var tiledT = tiledS.Tiles[tileId];
+
+            var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
+            tileRenderer.LoadFromContent(textureAssetName);
+            tileRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+
+            // Add collider and other compounents for the Tile GameObject
+            if (outline!=null && outline.Length >= 3)
             {
-                TiledLayer = tiledLayer;
-                Depth = depth;
-                TileGos = null;
+                var tileCollider = newTileGo.AddComponent<PolygonCollider>();
+                tileCollider.Outline = outline;
             }
         }
+
     }
+
+
 }

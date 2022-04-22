@@ -10,21 +10,46 @@ namespace SandPerSand
 {
     public class GameStateManager : Behaviour
     {
-
-        public static GameStateManager Instance
+        private static GameStateManager instance;
+        internal static GameStateManager Instance
         {
             get
             {
-                return GameObject.FindComponent<GameStateManager>();
+                if (instance == null)
+                {
+                    throw new InvalidOperationException(
+                        "No GameStateManager component in the game. Please create one.");
+                }
+                return instance;
             }
+        }
+
+        private bool exitTrigger;
+        public bool TriggerExit()
+        {
+            if(currentState== GameState.InRound||
+                currentState== GameState.CountDown)
+            {
+                if (exitTrigger == false)
+                {
+                    exitTrigger = true;
+                    return true;
+                }
+            }
+            return false;
         }
 
         public GameStateManager()
         {
-
+            if (instance != null)
+            {
+                throw new InvalidOperationException("Can't create more than one GameStateManager");
+            }
+            instance = this;
+            currentState = GameState.Prepare;
         }
 
-        private static GameState currentState;
+        private GameState currentState;
 
         public GameState CurrentState
         {
@@ -32,46 +57,60 @@ namespace SandPerSand
             {
                 return currentState;
             }
-            set
-            {
-                currentState = value;
-            }
-        }
-
-        public enum GameState
-        {
-            Prepare,
-            InRound
-        }
-
-        // transfer variable used in Prepare state
-        // at prepare state, keep checking for new gamepad and update the dictionary
-        // once a gamepad is connected, add its PlayerIndex as key in the dict, with value false
-        // once a gamepad is disconnected, delete its key in the dict
-        // once all values in the dictionary are true, transfer to InRound state
-        
-
-        protected override void OnEnable()
-        {
-            this.CurrentState = GameState.Prepare;
-            Instance.CurrentState = GameState.Prepare;
         }
 
 
 
+        private float countDowncounter;
         protected override void Update()
         {
             switch (CurrentState)
             {
                 case GameState.Prepare:
+                    // at prepare state, PlayersManager keep checking for new gamepad
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
-                        CurrentState = GameState.InRound;
+                        currentState = GameState.InRound;
                         Debug.Print("GameState: Prepare-> InRound");
                     }
                     break;
+                case GameState.InRound:
+                    if (exitTrigger)
+                    {
+                        currentState = GameState.CountDown;
+                        exitTrigger = false;
+                        Debug.Print("GameState: InRound-> CountDown");
+                        //
+                        countDowncounter = 0f;
+                    }
+                    break;
+                case GameState.CountDown:
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 10f)
+                    {
+                        currentState = GameState.RoundCheck;
+                        countDowncounter = 0f;
+                        // Debug
+                        Debug.Print("GameState: CountDown-> RoundCheck");
+                        foreach(var item in PlayersManager.Instance.Players)
+                        {
+                            Debug.Print("Player "+ item.Key + " : Rank " +
+                                item.Value.GetComponent<PlayerStates>().RoundRank);
+                        }
+                    }
+                    break;
+                case GameState.RoundCheck:
+                    break;
             }
         }
+    }
+
+    public enum GameState
+    {
+        Prepare,
+        InRound,
+        CountDown,
+        RoundCheck,
     }
 }

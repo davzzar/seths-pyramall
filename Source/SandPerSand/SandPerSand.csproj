@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.csproj" />
+    <ProjectReference Include="..\TiledCS\src\TiledCS.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,13 +20,25 @@
       <Generator>mgcb</Generator>
       <CustomToolNamespace>MonoGame.Content.Builder.Task</CustomToolNamespace>
     </None>
+    <None Update="Content\test_map.tmx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\tiles\sandpersand.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="Content\tiles\sandpersand2.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Content\test_map.tmx">
+    <None Update="Content\debug_map.tmx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+	<None Update="Content\controller_testing_map.tmx">
+	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+    <None Update="Content\test_level_1.tmx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\tiles\sandpersand_brown.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

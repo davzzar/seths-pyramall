@@ -41,6 +41,18 @@ namespace Engine
             }
         }
 
+        public Vertices Polygon
+        {
+            get
+            {
+                var vertices = new Vertices(this.outline);
+                vertices.Scale(this.Transform.Scale);
+                vertices.Rotate(this.Transform.Rotation);
+                vertices.Translate(this.Transform.Position);
+                return vertices;
+            }
+        }
+
         public PolygonCollider()
         {
             this.outline = new List<Vector2>();

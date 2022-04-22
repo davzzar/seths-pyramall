@@ -11,21 +11,42 @@ namespace SandPerSand
 {
     public class PlayersManager : Component
     {
-        public static PlayersManager Instance
+        private static PlayersManager instance;
+        private Dictionary<PlayerIndex, GameObject> players;
+        public Dictionary<PlayerIndex, GameObject> Players
+        {
+            get => this.players;
+        }
+
+        private List<Vector2> initialPositions;
+        public List<Vector2> InitialPositions
+        {
+            get => this.initialPositions;
+        }
+
+        internal static PlayersManager Instance
         {
             get
             {
-                return GameObject.FindComponent<PlayersManager>();
+                if(instance == null)
+                {
+                    throw new InvalidOperationException(
+                        "No PlayersManager in the game. Please create one.");
+                }
+                return instance;
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> players;
 
-
-        protected override void OnAwake()
+        public PlayersManager()
         {
-            base.OnAwake();
-            players = new Dictionary<PlayerIndex, GameObject>();
+            if (instance != null)
+            {
+                throw new InvalidOperationException("Can't create more than one PlayersManager");
+            }
+            instance = this;
+            this.players = new Dictionary<PlayerIndex, GameObject>();
+            this.initialPositions = new List<Vector2>();
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
@@ -119,6 +140,17 @@ namespace SandPerSand
             GraphicalUserInterface.Instance.renderCoins(player, tmp.Item2);
             return tmp.Item1;
         }
+        private Vector2 GetRandomInitialPos()
+        {
+            Random rd = new Random();
+            int totalPosNum = InitialPositions.ToArray().Length;
+            if (totalPosNum <= 0)
+            {
+                throw new InvalidOperationException("No initial position " +
+                    "registered. Please add at least one 'Entry' Tile on map.");
+            }
+            return InitialPositions[rd.Next(0, totalPosNum)];
+        }
 
         public void CheckConnections()
         {
@@ -131,8 +163,7 @@ namespace SandPerSand
                     if (!players.ContainsKey(playerIndex))
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
-                        //add player FIXME hard code
-                        CreatePlayer(playerIndex, new Vector2(5, 5));
+                        CreatePlayer(playerIndex, GetRandomInitialPos());
                     }
                 }
                 else
@@ -174,6 +205,8 @@ namespace SandPerSand
         public string minor_item;
         public string major_item;
         public int coins;
+        public bool Exited { get; set; }
+        public int RoundRank { get; set; }
 
         protected override void OnAwake()
         {
@@ -182,17 +215,23 @@ namespace SandPerSand
             minor_item = null;
             major_item = null;
             coins = 0;
+            Exited = false;
+            RoundRank = -1;
         }
 
         public void TogglePrepared()
         {
+            // Debug
+            var playerIndex = this.Owner.GetComponent<PlayerControlComponent>().PlayerIndex;
             if (Prepared)
             {
                 Prepared = false;
+                Debug.Print("Player" + playerIndex + "UnPrepared.");
             }
             else
             {
                 Prepared = true;
+                Debug.Print("Player" + playerIndex + "Prepared.");
             }
         }
 

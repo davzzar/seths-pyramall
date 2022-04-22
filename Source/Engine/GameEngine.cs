@@ -5,6 +5,11 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Engine
 {
+    /// <summary>
+    /// The game engine in the core of the whole game.<br/>
+    /// It is a singleton class and can exist at most once.<br/>
+    /// To start a game, instantiate the game engine, create game objects and add components to initialize the game and then start the game using <b>GameEngine.Run()</b>. 
+    /// </summary>
     public sealed class GameEngine : Game
     {
         private static GameEngine instance;
@@ -25,18 +30,25 @@ namespace Engine
 
         private bool isExiting;
 
-        private Stopwatch timer = new Stopwatch();
+        private readonly Stopwatch timer = new Stopwatch();
 
         internal RenderPipeline RenderPipeline { get; }
 
         internal GraphicsDeviceManager GraphicsDeviceManager { get; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the render loop should be synced with the screen refresh rate.
+        /// </summary>
         public bool VSync
         {
             get => this.GraphicsDeviceManager.SynchronizeWithVerticalRetrace;
             set => this.GraphicsDeviceManager.SynchronizeWithVerticalRetrace = value;
         }
 
+        /// <summary>
+        /// Instantiates a new instance of the GameEngine type.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">There can't exist more than one instance of GameEngine at any given time.</exception>
         public GameEngine()
         {
             if (instance != null)
@@ -58,6 +70,9 @@ namespace Engine
             Graphics.Init();
         }
 
+        /// <summary>
+        /// Destroys the current GameEngine instance, effectively ending the game.
+        /// </summary>
         public void Destroy()
         {
             if (this.isExiting)

@@ -17,7 +17,7 @@ namespace Engine
 
         private SpriteBatch spriteBatch;
 
-        internal static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
+        public static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
 
         internal static SpriteBatch SpriteBatch => instance.spriteBatch;
 
