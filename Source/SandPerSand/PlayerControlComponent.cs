@@ -25,9 +25,9 @@ namespace SandPerSand
         private Vector2 velocity;
 
         // Input
-        private float horizontalDirection;
-        private bool desiredJump = false;
         private const Buttons jumpButton = Buttons.A;
+        private bool PressedJump => InputHandler.getButtonState(jumpButton) == ButtonState.Pressed;
+        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
 
         // Horizontal movement
         private float horizontalSpeed;
@@ -47,12 +47,24 @@ namespace SandPerSand
         private const float defaultGravityMultiplier = 1f;
         private float gravityScale = defaultGravityMultiplier;
 
+        // We can only jump whem we are on the ground and we either just pressed jump or have it buffered,
+        // OR if we pressed jump during coyote time.
+        private bool CanJump =>
+            isGrounded && (PressedJump || BufferedJump) || !isGrounded && PressedJump && CanUseCoyote;
+
         //Coyote Time
         private float timeOfLeavingGround; // the last time we were on the ground
         private float coyoteTimeBuffer = 0.1f;
         private bool coyoteEnabled;
         // we can use a coyote jump when its enables, we are midair, and within the coyote time buffer.
-        private bool canUseCoyote => coyoteEnabled && !isGrounded && timeOfLeavingGround + coyoteTimeBuffer > Time.GameTime;
+        private bool CanUseCoyote => coyoteEnabled && !isGrounded && timeOfLeavingGround + coyoteTimeBuffer > Time.GameTime;
+
+        // Jump press buffer
+        private float timeOfLastJumpPress;
+        private float jumpPressBuffer = 0.25f;
+        // we jump immediately once we are grounded and have a buffered jump
+        private bool BufferedJump => timeOfLastJumpPress + jumpPressBuffer > Time.GameTime;
+        
 
 
         public PlayerControlComponent()
@@ -86,27 +98,25 @@ namespace SandPerSand
             // if we just landed, we re-enable coyote time
             if (wasGrounded && !isGrounded) timeOfLeavingGround = Time.GameTime;
             else if (!wasGrounded && isGrounded) coyoteEnabled = true;
-            
 
-
-            // gather this frame's inputs
-            horizontalDirection = InputHandler.getLeftThumbstickDirX(magnitudeThreshold:0.1f);
-            // TODO abstract concrete button and state away.
-            /// We |= the desired jump to flip it one once the jump button is pressed.
-            /// We will manually reset this to false once a jump was executed.
-            desiredJump |= InputHandler.getButtonState(jumpButton) == ButtonState.Pressed;
+            if (PressedJump)
+            {
+                timeOfLastJumpPress = Time.GameTime;
+            }
 
             // compute velocities
             ComputeGravityScale();
             ComputeHorizontalSpeed();
             ComputeVerticalSpeed();
 
-            // do jump if we pressed jump button within the frame
-            // TODO add jump buffer / jump delay of c. 0.25 seconds
-            if (desiredJump)
+            // do jump if conditions are met
+            
+            if (CanJump)
             {
-                desiredJump = false;
-                
+                coyoteEnabled = false;
+                timeOfLeavingGround = float.MinValue; // disable jump buffer, so that we don't get infinite jumps...
+
+
                 PerformJump();
             }
 
@@ -146,23 +156,26 @@ namespace SandPerSand
         {
             tr.Text = $"H. Vel.: {horizontalSpeed:F3}, V. Vel.: {verticalSpeed:F3}\n" +
                       $"H. Accel: {currentAcceleration}, Gravity Scale: {gravityScale}\n" +
-                      $"isGrounded: {isGrounded}, CanUseCoyote: {canUseCoyote}\n\n" +
+                      $"isGrounded: {isGrounded}\n" +
+                      $"pressedJump: {PressedJump}\n" +
+                      $"CanUseCoyote: {CanUseCoyote}\n" +
+                      $"BufferedJump: {BufferedJump}\n\n" +
                       $"Pos: {this.Transform.Position}";
         }
 
         private void ComputeHorizontalSpeed()
         {
             // NOTE: Check assumes there is a dead zone on the stick input.
-            if (horizontalDirection != 0)
+            if (HorizontalDirection != 0)
             {
                 // use the appropriate acceleration
                 currentAcceleration = isGrounded ? maxAcceleration : maxArialAcceleration;
 
                 // Set horizontal move speed
-                horizontalSpeed += horizontalDirection * currentAcceleration * Time.DeltaTime;
+                horizontalSpeed += HorizontalDirection * currentAcceleration * Time.DeltaTime;
 
                 // clamped by max frame movement
-                float absHorizontalDirection = MathF.Abs(horizontalDirection);
+                float absHorizontalDirection = MathF.Abs(HorizontalDirection);
                 horizontalSpeed = MathHelper.Clamp(horizontalSpeed, -maxHorizontalSpeed, maxHorizontalSpeed);
 
                 //TODO Add jump apex bonus speed
@@ -200,17 +213,13 @@ namespace SandPerSand
             if (verticalSpeed < maxFallingSpeed) verticalSpeed = maxFallingSpeed; 
         }
 
+
         /// <summary>
         /// Trigger on jump input. Compute and add jump speed to current vertical velocity.
         /// </summary>
         private void PerformJump()
         {
-            if (isGrounded || canUseCoyote) // would add multi-jump check here
-            {
-                // disable coyote (until next time we land, see above)
-                coyoteEnabled = false;
-
-                // reset vertical speed so we don't get shitty "half-jumps" or velocity negated jumps
+            // reset vertical speed so we don't get shitty "half-jumps" or velocity negated jumps
                 verticalSpeed = 0;
 
                 // get the jumping speed via sqrt(-2gh) from high school
@@ -223,7 +232,6 @@ namespace SandPerSand
                 }
 
                 verticalSpeed += jumpSpeed;
-            }
         }
 
 
@@ -236,7 +244,7 @@ namespace SandPerSand
             var pos = this.Transform.Position;
             var stickLineOrigin = pos + (-Vector2.UnitX + Vector2.UnitY);
 
-            var stickDir = new Vector2(horizontalDirection, InputHandler.getLeftThumbstickDirY(magnitudeThreshold: 0f));
+            var stickDir = new Vector2(HorizontalDirection, InputHandler.getLeftThumbstickDirY(magnitudeThreshold: 0f));
             Gizmos.DrawRect(stickLineOrigin, 0.5f * Vector2.One, Color.Black);
             Gizmos.DrawLine(stickLineOrigin, stickLineOrigin + stickDir, Color.Black);
 
