@@ -99,13 +99,14 @@ namespace SandPerSand
             playerCollider.Friction = 0.0f;
 
             var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = true;
+            playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
+            playerRB.IgnoreGravity = true;
 
             playerGo.AddComponent<GroundCheckComponent>();
 
             var controlComp = playerGo.AddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = new DummyInputHandler(PlayerIndex.One);
+            controlComp.InputHandler = new InputHandler(PlayerIndex.One);
 
             //FOR DEBUG (updated in the PlayerControlComponent)
             var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
