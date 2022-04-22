@@ -37,9 +37,9 @@ namespace SandPerSand
             {
                 var origin = pos0 + Vector2.UnitX * (i / (float)(resolution - 1));
                 var ray = new Ray(origin, -Vector2.UnitY);
-                Gizmos.DrawLine(origin, origin - Vector2.UnitY, Color.Yellow);
+                Gizmos.DrawLine(origin, origin - Vector2.UnitY * maxRayLength, Color.Yellow);
                 // if there was a collision
-                if (Physics.RayCast(ray, out var hit, maxRayLength, groundLayer))
+                    if (Physics.RayCast(ray, out var hit, maxRayLength, groundLayer))
                 {
                     Gizmos.DrawLine(origin, hit.Point, Color.Red);
                     // check the angle of hit to see if we're colliding with a floor.   
