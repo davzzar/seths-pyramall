@@ -26,7 +26,11 @@ namespace SandPerSand
 
         // Input
         private const Buttons jumpButton = Buttons.A;
-        private bool PressedJump => InputHandler.getButtonState(jumpButton) == ButtonState.Pressed;
+        private bool JumpButtonPressed => InputHandler.getButtonState(jumpButton) == ButtonState.Pressed;
+        private bool JumpButtonReleased => InputHandler.getButtonState(jumpButton) == ButtonState.Released;
+        private bool JumpBottonUp => InputHandler.getButtonState(jumpButton) == ButtonState.Up;
+        private bool JumpBottonHeld => InputHandler.getButtonState(jumpButton) == ButtonState.Held;
+
         private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
 
         // Horizontal movement
@@ -39,18 +43,16 @@ namespace SandPerSand
 
         // Vertical movement
         private float verticalSpeed;
-        private const float jumpHeight = 10f; // explicit jump height       
+        private const float jumpHeight = 5f; // explicit jump height       
         private const float maxFallingSpeed = -20f;
+        
+        // Player Gravity
         private const float gravity = -9.8f; // a la Unity
         private const float climbGravityMultiplier = 1.7f;
         private const float fallGravityMultiplier = 6f;
         private const float defaultGravityMultiplier = 1f;
         private float gravityScale = defaultGravityMultiplier;
 
-        // We can only jump whem we are on the ground and we either just pressed jump or have it buffered,
-        // OR if we pressed jump during coyote time.
-        private bool CanJump =>
-            isGrounded && (PressedJump || BufferedJump) || !isGrounded && PressedJump && CanUseCoyote;
 
         //Coyote Time
         private float timeOfLeavingGround; // the last time we were on the ground
@@ -60,11 +62,22 @@ namespace SandPerSand
         private bool CanUseCoyote => coyoteEnabled && !isGrounded && timeOfLeavingGround + coyoteTimeBuffer > Time.GameTime;
 
         // Jump press buffer
-        private float timeOfLastJumpPress;
+        private float timeOfLastAirbornJumpPress;
         private float jumpPressBuffer = 0.25f;
         // we jump immediately once we are grounded and have a buffered jump
-        private bool BufferedJump => timeOfLastJumpPress + jumpPressBuffer > Time.GameTime;
-        
+        private bool BufferedJump => timeOfLastAirbornJumpPress + jumpPressBuffer > Time.GameTime;
+        private bool HasLaunched => wasGrounded && !isGrounded;
+        private bool HasLanded => !wasGrounded && isGrounded;
+
+        // We can only jump whem we are on the ground and we either just pressed jump or have it buffered,
+        // OR if we pressed jump during coyote time.
+        // TODO find a way to factor out the JumpButtonPressed bool to have JumpButtonPressed && WillJump as the condition.
+        //private bool CanJump => ((BufferedJump && isGrounded) || isGrounded) || (!isGrounded && CanUseCoyote);
+        private bool WillJump =>
+            isGrounded && JumpButtonPressed || HasLanded && BufferedJump || !isGrounded && JumpButtonPressed && CanUseCoyote;
+
+        private bool jumpEnded = true;
+        private const float JumpVelocityFalloff = 3f;
 
 
         public PlayerControlComponent()
@@ -96,12 +109,12 @@ namespace SandPerSand
             
             // update the time of leaving ground if we left ground this frame
             // if we just landed, we re-enable coyote time
-            if (wasGrounded && !isGrounded) timeOfLeavingGround = Time.GameTime;
-            else if (!wasGrounded && isGrounded) coyoteEnabled = true;
+            if (HasLaunched) timeOfLeavingGround = Time.GameTime;
+            else if (HasLanded) coyoteEnabled = true;
 
-            if (PressedJump)
+            if (JumpButtonPressed)
             {
-                timeOfLastJumpPress = Time.GameTime;
+                if (!isGrounded) { timeOfLastAirbornJumpPress = Time.GameTime; }
             }
 
             // compute velocities
@@ -109,16 +122,18 @@ namespace SandPerSand
             ComputeHorizontalSpeed();
             ComputeVerticalSpeed();
 
-            // do jump if conditions are met
-            
-            if (CanJump)
+            if (WillJump)
             {
                 coyoteEnabled = false;
+                jumpEnded = false;
                 timeOfLeavingGround = float.MinValue; // disable jump buffer, so that we don't get infinite jumps...
-
 
                 PerformJump();
             }
+
+            // if jump is released while mid-air and we're moving up
+            // (since now we only move up while jumping, will need to explicitly model a jump later)
+            if (JumpBottonUp && !isGrounded && !jumpEnded && verticalSpeed > 0) jumpEnded = true;
 
             // Apply computed velocity
             rigidBody.LinearVelocity = new Vector2(horizontalSpeed, verticalSpeed);
@@ -131,9 +146,12 @@ namespace SandPerSand
         {
             if (isGrounded) gravityScale = defaultGravityMultiplier;
 
-            else if (verticalSpeed < 0) gravityScale = fallGravityMultiplier;
+            else if (verticalSpeed < JumpVelocityFalloff) gravityScale = fallGravityMultiplier;
             
-            else if (verticalSpeed > 0) gravityScale = climbGravityMultiplier;
+            else if (verticalSpeed > 0)
+            {
+                gravityScale = jumpEnded ? fallGravityMultiplier : climbGravityMultiplier;
+            }
             
             // when we are at rest gravity still acts on us.
             // We may not want this due to friction or whatever, but I'll leave it for now.
@@ -157,7 +175,7 @@ namespace SandPerSand
             tr.Text = $"H. Vel.: {horizontalSpeed:F3}, V. Vel.: {verticalSpeed:F3}\n" +
                       $"H. Accel: {currentAcceleration}, Gravity Scale: {gravityScale}\n" +
                       $"isGrounded: {isGrounded}\n" +
-                      $"pressedJump: {PressedJump}\n" +
+                      $"jumpEnded: {jumpEnded}\n" +
                       $"CanUseCoyote: {CanUseCoyote}\n" +
                       $"BufferedJump: {BufferedJump}\n\n" +
                       $"Pos: {this.Transform.Position}";
