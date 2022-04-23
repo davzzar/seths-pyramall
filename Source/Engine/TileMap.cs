@@ -165,16 +165,17 @@ namespace Engine
             return layers;
         }
 
-        public Dictionary<string, int> getItemTilesIds()
+        public Dictionary<string, (int,string)> getItemTilesIdsAndPaths()
         {
             Dictionary<int, TiledTileset> tiledsetsByFirstGridId = LoadTilesets(sourceMap.Tilesets);
 
-            var GridIdByItemId = new Dictionary<string, int>();
+            var GridIdByItemId = new Dictionary<string, (int, string)>();
 
             foreach (var item in tiledsetsByFirstGridId)
             {
                 int firstGridId = item.Key;
                 TiledTileset tiledS = item.Value;
+                string path = tiledS.Image.source;
 
                 foreach (TiledTile tiledT in tiledS.Tiles)
                 {
@@ -191,7 +192,7 @@ namespace Engine
                         }
                         if(item_id != null)
                         {
-                            GridIdByItemId.Add(item_id, gridId);
+                            GridIdByItemId.Add(item_id, (gridId, path));
                         }
 
                     }

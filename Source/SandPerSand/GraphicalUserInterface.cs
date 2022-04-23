@@ -93,20 +93,18 @@ namespace SandPerSand
             renderPlayers[playerIndex].character.size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].majorItem = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].majorItem.LoadFromContent("TilesetItems");
+            renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
             renderPlayers[playerIndex].majorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
             renderPlayers[playerIndex].majorItem.screenPosition = positions[playerIndex];
             renderPlayers[playerIndex].majorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["major_item"];
-            renderPlayers[playerIndex].majorItem.sourceWindow = new Rectangle(0, 0, 32, 32);
             renderPlayers[playerIndex].majorItem.sizeUnits = object_size["small"];
             renderPlayers[playerIndex].majorItem.size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].minorItem = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].minorItem.LoadFromContent("TilesetItems");
+            renderPlayers[playerIndex].minorItem.LoadFromContent("GUI/Item_slot");
             renderPlayers[playerIndex].minorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
             renderPlayers[playerIndex].minorItem.screenPosition = positions[playerIndex];
             renderPlayers[playerIndex].minorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
-            renderPlayers[playerIndex].minorItem.sourceWindow = new Rectangle(0, 0, 32, 32);
             renderPlayers[playerIndex].minorItem.sizeUnits = object_size["small"];
             renderPlayers[playerIndex].minorItem.size = new Vector2(0f,0f);
 
@@ -137,18 +135,20 @@ namespace SandPerSand
         public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
         {
             TileMap<MyLayer> map = GameObject.FindComponent<TileMap<MyLayer>>();
-            var mapping = map.getItemTilesIds();
-            var tiled_id = mapping[item];
+            var mapping = map.getItemTilesIdsAndPaths();
+            var tiled_id_and_path = mapping[item];
+            int tiled_id = tiled_id_and_path.Item1;
+            string tiled_string = tiled_id_and_path.Item2;
             Debug.Print(tiled_id.ToString());
             if (Major)
             {
-                renderPlayers[playerIndex].majorItem.LoadFromContent("TilesetItems");
+                renderPlayers[playerIndex].majorItem.LoadFromContent(tiled_string);
                 renderPlayers[playerIndex].majorItem.SetSourceRectangle(tiled_id, 32, 32);
             }
             else
             {
                 Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
-                renderPlayers[playerIndex].minorItem.LoadFromContent("TilesetItems");
+                renderPlayers[playerIndex].minorItem.LoadFromContent(tiled_string);
                 renderPlayers[playerIndex].minorItem.SetSourceRectangle(tiled_id, 32, 32);
                 Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
             }
