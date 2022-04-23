@@ -26,7 +26,7 @@ namespace Engine
         public ScreenPositionMode PositionMode { get; set; } = ScreenPositionMode.Absolute;
 
         public Color Color { get; set; }
-        public Texture2D Texture { get; set; }
+        public Texture2D texture { get; set; }
         public Vector2 size { get; set; }
         public Vector2 sizeUnits { get; set; }
         public Vector2 screenPosition { get; set; }
@@ -46,7 +46,7 @@ namespace Engine
         public override void Draw()
         {
             float Unit = Graphics.ScreenSize.Y * 0.1f;
-            if (this.Texture == null)
+            if (this.texture == null)
             {
                 return;
             }
@@ -69,11 +69,11 @@ namespace Engine
 
                 if (this.sourceWindow == null)
                 {
-                    Graphics.DrawGuiSprite(this.Texture, this.Color, tmp_size, screenPos, 0f);
+                    Graphics.DrawGuiSprite(this.texture, this.Color, tmp_size, screenPos, 0f);
                 }
                 else
                 {
-                    Graphics.DrawGuiSprite(this.Texture, this.Color, this.sourceWindow.Value, tmp_size, screenPos, 0f);
+                    Graphics.DrawGuiSprite(this.texture, this.Color, this.sourceWindow.Value, tmp_size, screenPos, 0f);
                 }
 
             }
@@ -111,10 +111,24 @@ namespace Engine
         {
             if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
             {
-                this.Texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
+                this.texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
                 this.loadFromContentPath = null;
             }
             this.canRender = true;
+        }
+
+        public void SetSourceRectangle(int tileId, int tileWidth, int tileHeight)
+        {
+            if (this.texture == null)
+            {
+                throw new InvalidOperationException("Can't set source rectangle before texture is ready!");
+            }
+
+            this.sourceWindow = new Rectangle(
+                    (tileId - 1) * tileWidth % texture.Width,
+                    (tileId - 1) * (tileWidth / texture.Width * tileHeight) % texture.Height,
+                    tileWidth,
+                    tileHeight);
         }
 
 

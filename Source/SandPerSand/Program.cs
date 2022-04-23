@@ -444,7 +444,7 @@ namespace SandPerSand
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
                 CreateMultiGamePadTest2();
-                CreateMap("test_map");
+                CreateMap("test_level_1");
                 CreateCamera();
                 
 

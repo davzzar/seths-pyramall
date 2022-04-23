@@ -136,7 +136,22 @@ namespace SandPerSand
 
         public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
         {
-
+            TileMap<MyLayer> map = GameObject.FindComponent<TileMap<MyLayer>>();
+            var mapping = map.getItemTilesIds();
+            var tiled_id = mapping[item];
+            Debug.Print(tiled_id.ToString());
+            if (Major)
+            {
+                renderPlayers[playerIndex].majorItem.LoadFromContent("TilesetItems");
+                renderPlayers[playerIndex].majorItem.SetSourceRectangle(tiled_id, 32, 32);
+            }
+            else
+            {
+                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
+                renderPlayers[playerIndex].minorItem.LoadFromContent("TilesetItems");
+                renderPlayers[playerIndex].minorItem.SetSourceRectangle(tiled_id, 32, 32);
+                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
+            }
         }
 
         public void removeItem(PlayerIndex playerIndex, Boolean Major)

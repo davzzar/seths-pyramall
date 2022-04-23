@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using TiledCS;
+using System.Diagnostics;
 
 namespace Engine
 {
@@ -162,6 +163,41 @@ namespace Engine
                 layers[i].TiledLayer = tiledLayers[i];
             }
             return layers;
+        }
+
+        public Dictionary<string, int> getItemTilesIds()
+        {
+            Dictionary<int, TiledTileset> tiledsetsByFirstGridId = LoadTilesets(sourceMap.Tilesets);
+
+            var GridIdByItemId = new Dictionary<string, int>();
+
+            foreach (var item in tiledsetsByFirstGridId)
+            {
+                int firstGridId = item.Key;
+                TiledTileset tiledS = item.Value;
+
+                foreach (TiledTile tiledT in tiledS.Tiles)
+                {
+                    int gridId = tiledT.id + firstGridId;
+                    if(tiledT.type == "Item" && tiledT.properties != null)
+                    {
+                        string item_id = null;
+                        foreach(TiledProperty property in tiledT.properties)
+                        {
+                            if(property.name == "item_id")
+                            {
+                                item_id = property.value;
+                            }
+                        }
+                        if(item_id != null)
+                        {
+                            GridIdByItemId.Add(item_id, gridId);
+                        }
+
+                    }
+                }
+            }
+            return GridIdByItemId;
         }
     }
 
