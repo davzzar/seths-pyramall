@@ -64,18 +64,23 @@ namespace SandPerSand
         }
 
 
-        public void renderStartInfo()
+        public void renderMidScreenText(string midScreenText)
         {
             midScreenTextComp = guiGo.AddComponent<GuiTextRenderer>();
             midScreenTextComp.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            midScreenTextComp.Text = "To Start The Game press A";
+            midScreenTextComp.Text = midScreenText;
             midScreenTextComp.FontSize = 30f;
             midScreenTextComp.IsActive = true;
-            midScreenTextComp.ScreenPosition = new Vector2(0.25f, 0.5f);
+            midScreenTextComp.ScreenPosition = new Vector2(0.35f, 0.5f);
             midScreenTextComp.Depth = 0;
         }
 
-        public void destroyStartInfo()
+        public void updateMidScreenText(string midScreenText)
+        {
+            midScreenTextComp.Text = midScreenText;
+        }
+
+        public void destroyMidScreenText()
         {
             midScreenTextComp.Destroy();
         }

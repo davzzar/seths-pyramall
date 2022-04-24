@@ -47,7 +47,7 @@ namespace SandPerSand
             }
             instance = this;
             currentState = GameState.Prepare;
-            GraphicalUserInterface.Instance.renderStartInfo();
+            GraphicalUserInterface.Instance.renderMidScreenText("To Start The Game press A");
         }
 
         private GameState currentState;
@@ -73,7 +73,7 @@ namespace SandPerSand
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
                         currentState = GameState.InRound;
-                        GraphicalUserInterface.Instance.destroyStartInfo();
+                        GraphicalUserInterface.Instance.destroyMidScreenText();
                         Debug.Print("GameState: Prepare-> InRound");
                     }
                     break;
@@ -85,6 +85,7 @@ namespace SandPerSand
                         Debug.Print("GameState: InRound-> CountDown");
                         //
                         countDowncounter = 0f;
+                        GraphicalUserInterface.Instance.renderMidScreenText(Math.Floor(10 * (10f - countDowncounter)) / 10 + "seconds to finish the round");
                     }
                     break;
                 case GameState.CountDown:
@@ -100,7 +101,16 @@ namespace SandPerSand
                             Debug.Print("Player "+ item.Key + " : Rank " +
                                 item.Value.GetComponent<PlayerStates>().RoundRank);
                         }
+
+                        string ranks = "";
+                        //display ranks on screen
+                        foreach (var item in PlayersManager.Instance.Players)
+                        {
+                            ranks += "Player " + item.Key + " : Rank " + item.Value.GetComponent<PlayerStates>().RoundRank + "\n";
+                        }
+                        GraphicalUserInterface.Instance.updateMidScreenText(ranks);
                     }
+                    GraphicalUserInterface.Instance.updateMidScreenText(Math.Floor(10 * (10f - countDowncounter)) / 10 + "seconds to finish the round");
                     break;
                 case GameState.RoundCheck:
                     break;
