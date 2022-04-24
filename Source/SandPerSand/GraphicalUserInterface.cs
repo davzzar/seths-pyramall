@@ -56,7 +56,7 @@ namespace SandPerSand
         }
 
 
-    public GraphicalUserInterface()
+        public GraphicalUserInterface()
         {
 
             guiGo = new GameObject();
@@ -64,18 +64,23 @@ namespace SandPerSand
         }
 
 
-        public void renderStartInfo()
+        public void renderMidScreenText(string midScreenText)
         {
             midScreenTextComp = guiGo.AddComponent<GuiTextRenderer>();
             midScreenTextComp.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            midScreenTextComp.Text = "To Start The Game press A";
+            midScreenTextComp.Text = midScreenText;
             midScreenTextComp.FontSize = 30f;
             midScreenTextComp.IsActive = true;
-            midScreenTextComp.ScreenPosition = new Vector2(0.25f, 0.5f);
+            midScreenTextComp.ScreenPosition = new Vector2(0.35f, 0.5f);
             midScreenTextComp.Depth = 0;
         }
 
-        public void destroyStartInfo()
+        public void updateMidScreenText(string midScreenText)
+        {
+            midScreenTextComp.Text = midScreenText;
+        }
+
+        public void destroyMidScreenText()
         {
             midScreenTextComp.Destroy();
         }
@@ -106,7 +111,7 @@ namespace SandPerSand
             renderPlayers[playerIndex].minorItem.screenPosition = positions[playerIndex];
             renderPlayers[playerIndex].minorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
             renderPlayers[playerIndex].minorItem.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].minorItem.size = new Vector2(0f,0f);
+            renderPlayers[playerIndex].minorItem.size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].coins = guiGo.AddComponent<GuiSpriteRenderer>();
             renderPlayers[playerIndex].coins.LoadFromContent("TilesetCoins");
@@ -120,7 +125,7 @@ namespace SandPerSand
             renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
             renderPlayers[playerIndex].numOfCoins.Text = "00x";
             renderPlayers[playerIndex].numOfCoins.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].numOfCoins.ScreenPosition = positions[playerIndex] + new Vector2(0.059f,0.01f);
+            renderPlayers[playerIndex].numOfCoins.ScreenPosition = positions[playerIndex] + new Vector2(0.059f, 0.01f);
         }
 
         public void destroyPlayerInfo(PlayerIndex playerIndex)

@@ -31,6 +31,11 @@ namespace SandPerSand
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
 
+            CreateGUI();
+            CreateMap("debug_map");
+            CreateMultiGamePadTest2();
+
+
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
             //engine.IsFixedTimeStep = false;
@@ -384,7 +389,6 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                CreateGUI();
                 Debug.Print("Loaded Scene 2");
                 Debug.Print("Loaded Scene Multiplayer");
                 for (int i = 0; i < 4; ++i)
@@ -392,8 +396,7 @@ namespace SandPerSand
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
-                CreateMultiGamePadTest2();
-                CreateMap("test_level_1");
+                CreateMap("debug_map");
                 CreateCamera();
                 
 
