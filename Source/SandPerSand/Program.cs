@@ -29,7 +29,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1), typeof(LoadScene2) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -37,6 +37,7 @@ namespace SandPerSand
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
+
         }
 
         private static GameObject CreateCamera()
@@ -81,7 +82,7 @@ namespace SandPerSand
         {
             var tileMapGo = new GameObject();
 
-            var tileMapComp = tileMapGo.AddComponent<TileMap>();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
         }
         
@@ -120,6 +121,57 @@ namespace SandPerSand
             tracer.TraceLength = 60;
 
             return playerGo;
+        }
+
+        private static void CreateMultiGamePadTest()
+        {
+            GameObject createPlayer(PlayerIndex playerIndex, Vector2 position)
+            {
+                var playerGo = new GameObject();
+                playerGo.Transform.Position = position;
+
+
+                var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
+                playerRenderer.LoadFromContent("Smiley");
+
+                var playerCollider = playerGo.AddComponent<PolygonCollider>();
+                playerCollider.Outline = new[]
+                {
+                new Vector2(-0.5f, -0.5f),
+                new Vector2(0.5f, -0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-0.5f, 0.5f)
+                };
+                playerCollider.Friction = 0.0f;
+
+                var playerRB = playerGo.AddComponent<RigidBody>();
+                playerRB.IsKinematic = false;
+                playerRB.FreezeRotation = true;
+
+                var playerCon = playerGo.AddComponent<PlayerControlComponent>();
+                playerCon.PlayerIndex = playerIndex;
+
+                return playerGo;
+            }
+
+            int positionX = 3;
+            int positionY = 6;
+
+            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex))) {
+                GamePadCapabilities capabilities = GamePad.GetCapabilities(playerIndex);
+                if (capabilities.IsConnected)
+                {
+                    createPlayer(playerIndex, new Vector2(positionX+=2, positionY));
+                }
+            }
+        }
+
+        private static void CreateMultiGamePadTest2()
+        {
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
+
         }
 
         private static void CreatePerformanceTest(int count)
@@ -257,7 +309,7 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            var map = GameObject.FindComponent<TileMap>();
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
@@ -381,6 +433,28 @@ namespace SandPerSand
                 cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
 
                 Debug.Print("Loaded Scene 2: Controller Testing");
+            }
+        }
+
+        /// <summary>
+        /// Loads the scene with multiplayer test; multiple players would be
+        /// automatically created with regard to number of connected GamePad.
+        /// </summary>
+        private class LoadSceneMultiplayer : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+                CreateMultiGamePadTest2();
+                CreateMap("test_map");
+                CreateCamera();
+                
+
             }
         }
     }

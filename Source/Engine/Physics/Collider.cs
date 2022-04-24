@@ -165,11 +165,19 @@ namespace Engine
             }
 
             this.Owner.LayerChanged += this.OwnerOnLayerChanged;
+
+#if DEBUG
+            this.OnDrawGizmos += this.DrawGizmosInternal;
+#endif
         }
         
         /// <inheritdoc />
         protected override void OnDisable()
         {
+#if DEBUG
+            this.OnDrawGizmos -= this.DrawGizmosInternal;
+#endif
+
             this.Owner.LayerChanged -= this.OwnerOnLayerChanged;
 
             if (this.owningRigidBody != null && this.owningRigidBody.Body != null)
@@ -187,24 +195,6 @@ namespace Engine
 
             this.fixture = null;
         }
-
-        #if DEBUG
-
-        protected override void Update()
-        {
-            if (ShowGizmos)
-            {
-                this.DrawGizmos();
-
-                var p0 = this.Transform.TransformPoint(Vector2.Zero);
-                var pRight = this.Transform.TransformPoint(Vector2.UnitX * 0.3f);
-                var pUp = this.Transform.TransformPoint(Vector2.UnitY * 0.3f);
-                //Gizmos.DrawLine(p0, pRight, Color.Blue);
-                //Gizmos.DrawLine(p0, pUp, Color.Red);
-            }
-        }
-
-        #endif
 
         /// <summary>
         /// Creates a shape representation of this collider, will be used in the internal physics calculations.
@@ -237,6 +227,24 @@ namespace Engine
             this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
             this.fixture.Friction = this.friction;
         }
+
+#if DEBUG
+
+        private void DrawGizmosInternal()
+        {
+            if (ShowGizmos)
+            {
+                this.DrawGizmos();
+
+                var p0 = this.Transform.TransformPoint(Vector2.Zero);
+                var pRight = this.Transform.TransformPoint(Vector2.UnitX * 0.3f);
+                var pUp = this.Transform.TransformPoint(Vector2.UnitY * 0.3f);
+                //Gizmos.DrawLine(p0, pRight, Color.Blue);
+                //Gizmos.DrawLine(p0, pUp, Color.Red);
+            }
+        }
+
+#endif
 
         private void OwnerOnLayerChanged(object sender, (int oldLayer, int newLayer) e)
         {
