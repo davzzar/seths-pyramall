@@ -96,8 +96,9 @@ namespace SandPerSand
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
                     GraphicalUserInterface.Instance.updateMidScreenText(String.Format("{0:0.0}", 10f - countDowncounter) + " Seconds to Finish the Round");
-                    if (countDowncounter >= 10f)
+                    if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
+                        PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
                         Debug.Print("GameState: CountDown-> RoundCheck");

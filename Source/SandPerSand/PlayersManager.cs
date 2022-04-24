@@ -183,7 +183,41 @@ namespace SandPerSand
             return false;
         }
 
+        public Boolean CheckAllExit()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            var allExitedFlag = true;
+            foreach (var player in players.Values)
+            {
+                if (!player.GetComponent<PlayerStates>().Exited)
+                {
+                    allExitedFlag = false;
+                }
+            }
+            return allExitedFlag;
+        }
 
+        public void finalizeRanks()
+        {
+            int notExited = 1;
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                {
+                    notExited ++;
+                }
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                {
+                    player.GetComponent<PlayerStates>().RoundRank = notExited;
+                }
+            }
+        }
     }
 
     public class PlayerStates : Behaviour
