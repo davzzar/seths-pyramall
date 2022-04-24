@@ -86,6 +86,13 @@ namespace SandPerSand
             tileMapComp.LoadFromContent(mapName);
         }
 
+        private static void CreateGUI()
+        {
+            var guiGo = new GameObject();
+            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+        }
+        
+
         private static void CreateMultiGamePadTest()
         {
             int positionX = 3;
@@ -377,6 +384,8 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
+                CreateGUI();
+                Debug.Print("Loaded Scene 2");
                 Debug.Print("Loaded Scene Multiplayer");
                 for (int i = 0; i < 4; ++i)
                 {
@@ -384,7 +393,7 @@ namespace SandPerSand
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
                 CreateMultiGamePadTest2();
-                CreateMap("test_map");
+                CreateMap("test_level_1");
                 CreateCamera();
                 
 

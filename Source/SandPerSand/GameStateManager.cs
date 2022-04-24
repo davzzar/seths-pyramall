@@ -47,6 +47,7 @@ namespace SandPerSand
             }
             instance = this;
             currentState = GameState.Prepare;
+            GraphicalUserInterface.Instance.renderStartInfo();
         }
 
         private GameState currentState;
@@ -72,6 +73,7 @@ namespace SandPerSand
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
                         currentState = GameState.InRound;
+                        GraphicalUserInterface.Instance.destroyStartInfo();
                         Debug.Print("GameState: Prepare-> InRound");
                     }
                     break;

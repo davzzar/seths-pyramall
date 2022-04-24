@@ -29,6 +29,9 @@
     <None Update="Content\tiles\sandpersand2.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+	<None Update="Content\tiles\sandpersand_brown.tsx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
     <None Update="Content\debug_map.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -38,7 +41,10 @@
     <None Update="Content\test_level_1.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Content\tiles\sandpersand_brown.tsx">
+	<None Update="Content\test_level_1.tmx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
+    <None Update="Content\tiles\TilesetItems.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
