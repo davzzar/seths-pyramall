@@ -85,75 +85,9 @@ namespace SandPerSand
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
         }
-        
-        private static GameObject CreatePlayer(Vector2 position)
-        {
-            var playerGo = new GameObject
-            {
-                Transform =
-                {
-                    Position = position
-                }
-            };
-
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("ProtoPlayer");
-            playerRenderer.Depth = 0f;
-
-            var playerCollider = playerGo.AddComponent<CircleCollider>();
-            playerCollider.Radius = 1f;
-            playerCollider.Friction = 0.0f;
-
-            var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = false;
-            playerRB.FreezeRotation = true;
-            playerRB.IgnoreGravity = true;
-
-            playerGo.AddComponent<GroundCheckComponent>();
-
-            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = new InputHandler(PlayerIndex.One);
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = playerGo.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
-
-            return playerGo;
-        }
 
         private static void CreateMultiGamePadTest()
         {
-            GameObject createPlayer(PlayerIndex playerIndex, Vector2 position)
-            {
-                var playerGo = new GameObject();
-                playerGo.Transform.Position = position;
-
-
-                var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-                playerRenderer.LoadFromContent("Smiley");
-
-                var playerCollider = playerGo.AddComponent<PolygonCollider>();
-                playerCollider.Outline = new[]
-                {
-                new Vector2(-0.5f, -0.5f),
-                new Vector2(0.5f, -0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(-0.5f, 0.5f)
-                };
-                playerCollider.Friction = 0.0f;
-
-                var playerRB = playerGo.AddComponent<RigidBody>();
-                playerRB.IsKinematic = false;
-                playerRB.FreezeRotation = true;
-
-                var playerCon = playerGo.AddComponent<PlayerControlComponent>();
-                playerCon.PlayerIndex = playerIndex;
-
-                return playerGo;
-            }
-
             int positionX = 3;
             int positionY = 6;
 
@@ -161,7 +95,7 @@ namespace SandPerSand
                 GamePadCapabilities capabilities = GamePad.GetCapabilities(playerIndex);
                 if (capabilities.IsConnected)
                 {
-                    createPlayer(playerIndex, new Vector2(positionX+=2, positionY));
+                    PlayerGo.Create(playerIndex, new Vector2(positionX+=2, positionY));
                 }
             }
         }
@@ -171,7 +105,6 @@ namespace SandPerSand
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
-
         }
 
         private static void CreatePerformanceTest(int count)
@@ -390,7 +323,7 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                CreatePlayer(new Vector2(5,5));
+                PlayerGo.Create(PlayerIndex.One, new Vector2(5,5));
 
                 Debug.Print("Loaded Scene 0: Debug with Sand");
             }
@@ -405,7 +338,7 @@ namespace SandPerSand
             {
                 CreateMap("debug_map");
                 CreateCamera();
-                CreatePlayer(new Vector2(5, 5));
+                PlayerGo.Create(PlayerIndex.One, new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
                 
                 Debug.Print("Loaded Scene 1: Debug with Physics");
@@ -418,7 +351,7 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                var playerGo = CreatePlayer(new Vector2(10, 1));
+                var playerGo = PlayerGo.Create(PlayerIndex.One, new Vector2(10, 1));
 
                 var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
                 cameraSwitcherComp.Parent = playerGo;

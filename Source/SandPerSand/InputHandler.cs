@@ -23,6 +23,11 @@ namespace SandPerSand
         // Point of this class is to implement GENERAL gamepad input
 
         private PlayerIndex playerIndex;
+        public PlayerIndex PlayerIndex
+        {
+            get { return playerIndex; }
+            set { playerIndex = value; }
+        }
         private GamePadState currState;
         private GamePadState prevState;
 
@@ -145,7 +150,7 @@ namespace SandPerSand
         public void UpdateState()
         {
             prevState = currState;
-            currState = GamePad.GetState(playerIndex);
+            currState = GamePad.GetState(PlayerIndex);
         }
     }
 
