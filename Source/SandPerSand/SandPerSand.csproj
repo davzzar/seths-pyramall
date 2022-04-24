@@ -33,6 +33,12 @@
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
     <None Update="Content\debug_map.tmx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\tiles\SmileyAnimated.tsx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Content\test_map.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 	<None Update="Content\controller_testing_map.tmx">
@@ -41,9 +47,6 @@
     <None Update="Content\test_level_1.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-	<None Update="Content\test_level_1.tmx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</None>
     <None Update="Content\tiles\TilesetItems.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

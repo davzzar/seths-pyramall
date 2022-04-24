@@ -129,8 +129,10 @@ namespace SandPerSand
 
             // Update the input handler's state
             InputHandler.UpdateState();
-            
+
+            #if DEBUG
             ShowDebug();
+            #endif
         }
 
         /// <summary>
