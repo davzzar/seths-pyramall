@@ -12,41 +12,35 @@ namespace SandPerSand
     public class PlayersManager : Behaviour
     {
         private static PlayersManager instance;
-        private Dictionary<PlayerIndex, GameObject> players;
-        public Dictionary<PlayerIndex, GameObject> Players
-        {
-            get => this.players;
-        }
-
-        private List<Vector2> initialPositions;
-        public List<Vector2> InitialPositions
-        {
-            get => this.initialPositions;
-        }
-
         internal static PlayersManager Instance
         {
             get
             {
-                if(instance == null)
+                if (instance == null)
                 {
-                    throw new InvalidOperationException(
-                        "No PlayersManager in the game. Please create one.");
+                    instance = new PlayersManager();
+                    players = new Dictionary<PlayerIndex, GameObject>();
+                    initialPositions = new List<Vector2>();
                 }
                 return instance;
             }
         }
 
+        private static Dictionary<PlayerIndex, GameObject> players;
+        public Dictionary<PlayerIndex, GameObject> Players
+        {
+            get => players;
+        }
+
+        private static List<Vector2> initialPositions;
+        public List<Vector2> InitialPositions
+        {
+            get => initialPositions;
+        }
+
 
         public PlayersManager()
         {
-            if (instance != null)
-            {
-                throw new InvalidOperationException("Can't create more than one PlayersManager");
-            }
-            instance = this;
-            this.players = new Dictionary<PlayerIndex, GameObject>();
-            this.initialPositions = new List<Vector2>();
         }
 
         public GameObject GetPlayer(PlayerIndex index) {

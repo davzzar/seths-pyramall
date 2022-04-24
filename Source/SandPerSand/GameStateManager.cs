@@ -11,18 +11,6 @@ namespace SandPerSand
     public class GameStateManager : Behaviour
     {
         private static GameStateManager instance;
-        internal static GameStateManager Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    throw new InvalidOperationException(
-                        "No GameStateManager component in the game. Please create one.");
-                }
-                return instance;
-            }
-        }
 
         private bool exitTrigger;
         public bool TriggerExit()
@@ -41,16 +29,23 @@ namespace SandPerSand
 
         public GameStateManager()
         {
-            if (instance != null)
-            {
-                throw new InvalidOperationException("Can't create more than one GameStateManager");
-            }
-            instance = this;
-            currentState = GameState.Prepare;
-            GraphicalUserInterface.Instance.renderStartInfo();
         }
 
-        private GameState currentState;
+        public static GameStateManager Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = new GameStateManager();
+                    currentState = GameState.Prepare;
+                    GraphicalUserInterface.Instance.renderStartInfo();
+                }
+                return instance;
+            }
+        }
+
+        private static GameState currentState;
 
         public GameState CurrentState
         {
