@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace SandPerSand
 {
-    public class PlayersManager : Component
+    public class PlayersManager : Behaviour
     {
         private static PlayersManager instance;
         private Dictionary<PlayerIndex, GameObject> players;
@@ -75,35 +75,12 @@ namespace SandPerSand
                 {
                     players[playerIndex].Destroy();
                 }
-                players[playerIndex] = new GameObject();
+                players[playerIndex] = PlayerGo.Create(playerIndex, position);
             }
             else
             {
-                players.Add(playerIndex, new GameObject());
+                players.Add(playerIndex, PlayerGo.Create(playerIndex, position));
             }
-
-            var playerGo = players[playerIndex];
-            playerGo.Transform.Position = position;
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("Smiley");
-
-            var playerCollider = playerGo.AddComponent<PolygonCollider>();
-            playerCollider.Outline = new[]
-            {
-                new Vector2(-0.5f, -0.5f),
-                new Vector2(0.5f, -0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(-0.5f, 0.5f)
-            };
-            playerCollider.Friction = 0.0f;
-            var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = false;
-            playerRB.FreezeRotation = true;
-            var playerCon = playerGo.AddComponent<PlayerControlComponent>();
-            playerCon.PlayerIndex = playerIndex;
-            var playerStates = playerGo.AddComponent<PlayerStates>();
-
-
         }
 
         private Vector2 GetRandomInitialPos()
@@ -164,12 +141,14 @@ namespace SandPerSand
 
     }
 
-    public class PlayerStates : Component
+    public class PlayerStates : Behaviour
     {
         public Boolean Prepared;
         public static Boolean Paused;
         public bool Exited { get; set; }
         public int RoundRank { get; set; }
+        public InputHandler InputHandler { get; set; }
+        private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
 
         protected override void OnAwake()
         {
@@ -179,10 +158,21 @@ namespace SandPerSand
             RoundRank = -1;
         }
 
+        /// <summary>
+        /// The update handles state transitions.
+        /// </summary>
+        protected override void Update()
+        {
+            if (PrepareButtonPressed && GameStateManager.Instance.CurrentState == GameState.Prepare)
+            {
+                TogglePrepared();
+            }
+        }
+
         public void TogglePrepared()
         {
             // Debug
-            var playerIndex = this.Owner.GetComponent<PlayerControlComponent>().PlayerIndex;
+            var playerIndex = InputHandler.PlayerIndex;
             if (Prepared)
             {
                 Prepared = false;
