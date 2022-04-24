@@ -41,6 +41,7 @@ namespace SandPerSand
 
         public PlayersManager()
         {
+            Debug.Print("player manager created");
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
@@ -164,6 +165,22 @@ namespace SandPerSand
                 }
             }
             return allPreparedFlag;
+        }
+
+        public Boolean CheckOneExit()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().Exited)
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
 

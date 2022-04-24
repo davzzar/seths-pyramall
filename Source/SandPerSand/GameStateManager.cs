@@ -12,15 +12,20 @@ namespace SandPerSand
     {
         private static GameStateManager instance;
 
-        private bool exitTrigger;
+        public bool exitTrigger;
         public bool TriggerExit()
         {
+            Debug.Print("exit trigger script is run");
+            Debug.Print(currentState.ToString());
+            Debug.Print(exitTrigger.ToString());
             if(currentState== GameState.InRound||
                 currentState== GameState.CountDown)
             {
+                Debug.Print("reached if statement");
                 if (exitTrigger == false)
                 {
                     exitTrigger = true;
+                    Debug.Print(this.exitTrigger.ToString());
                     return true;
                 }
             }
@@ -29,6 +34,11 @@ namespace SandPerSand
 
         public GameStateManager()
         {
+            if (instance != null)
+            {
+                throw new InvalidOperationException("Can't create more than one GameStateManager");
+            }
+            Debug.Print("gamestatemanager is created");
         }
 
         public static GameStateManager Instance
@@ -39,7 +49,7 @@ namespace SandPerSand
                 {
                     instance = new GameStateManager();
                     currentState = GameState.Prepare;
-                    GraphicalUserInterface.Instance.renderStartInfo();
+                    GraphicalUserInterface.Instance.renderMidScreenText("To Start The Game Press A");
                 }
                 return instance;
             }
@@ -68,26 +78,27 @@ namespace SandPerSand
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
                         currentState = GameState.InRound;
-                        GraphicalUserInterface.Instance.destroyStartInfo();
+                        GraphicalUserInterface.Instance.destroyMidScreenText();
                         Debug.Print("GameState: Prepare-> InRound");
                     }
                     break;
                 case GameState.InRound:
-                    if (exitTrigger)
+                    if (PlayersManager.Instance.CheckOneExit())
                     {
                         currentState = GameState.CountDown;
                         exitTrigger = false;
                         Debug.Print("GameState: InRound-> CountDown");
                         //
                         countDowncounter = 0f;
+                        GraphicalUserInterface.Instance.renderMidScreenText( "10.0 Seconds to Finish the Round");
                     }
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
+                    GraphicalUserInterface.Instance.updateMidScreenText(String.Format("{0:0.0}", 10f - countDowncounter) + " Seconds to Finish the Round");
                     if (countDowncounter >= 10f)
                     {
                         currentState = GameState.RoundCheck;
-                        countDowncounter = 0f;
                         // Debug
                         Debug.Print("GameState: CountDown-> RoundCheck");
                         foreach(var item in PlayersManager.Instance.Players)
@@ -95,6 +106,15 @@ namespace SandPerSand
                             Debug.Print("Player "+ item.Key + " : Rank " +
                                 item.Value.GetComponent<PlayerStates>().RoundRank);
                         }
+
+                        string ranks = "";
+                        //display ranks on screen
+                        foreach (var item in PlayersManager.Instance.Players)
+                        {
+                            ranks += item.Value.GetComponent<PlayerStates>().RoundRank + " - Player " + item.Key + "\n";
+                        }
+                        GraphicalUserInterface.Instance.updateMidScreenText(ranks);
+
                     }
                     break;
                 case GameState.RoundCheck:
