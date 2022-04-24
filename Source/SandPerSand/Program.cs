@@ -21,11 +21,11 @@ namespace SandPerSand
             var engine = new GameEngine();
 
             // Initialize the scene by adding some game objects and components
-            
-            CreateFpsText();
 
+            #if DEBUG
+            CreateFpsText();
             Collider.ShowGizmos = true;
-            
+            #endif
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
@@ -91,23 +91,8 @@ namespace SandPerSand
             var guiGo = new GameObject();
             var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
         }
-        
 
         private static void CreateMultiGamePadTest()
-        {
-            int positionX = 3;
-            int positionY = 6;
-
-            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex))) {
-                GamePadCapabilities capabilities = GamePad.GetCapabilities(playerIndex);
-                if (capabilities.IsConnected)
-                {
-                    PlayerGo.Create(playerIndex, new Vector2(positionX+=2, positionY));
-                }
-            }
-        }
-
-        private static void CreateMultiGamePadTest2()
         {
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -392,7 +377,7 @@ namespace SandPerSand
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
-                CreateMultiGamePadTest2();
+                CreateMultiGamePadTest();
                 CreateMap("test_level_1");
                 CreateCamera();
                 
