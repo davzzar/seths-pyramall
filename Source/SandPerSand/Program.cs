@@ -87,8 +87,13 @@ namespace SandPerSand
         
         private static GameObject CreatePlayer(Vector2 position)
         {
-            var playerGo = new GameObject();
-            playerGo.Transform.Position = position;
+            var playerGo = new GameObject
+            {
+                Transform =
+                {
+                    Position = position
+                }
+            };
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("ProtoPlayer");
@@ -111,8 +116,6 @@ namespace SandPerSand
             //FOR DEBUG (updated in the PlayerControlComponent)
             var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
             textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-
-
             var tracer = playerGo.AddComponent<TracerRendererComponent>();
             tracer.TraceLength = 60;
 
