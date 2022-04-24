@@ -128,26 +128,20 @@ namespace Engine
         }
 
         /// <summary>
-        /// Port of Unity's MoveTowards utility function for floats.
-        /// Source: https://github.com/Unity-Technologies/UniteAustinTechnicalPresentation/blob/48cbbffc485b7b9fd5d48a861136d60a644c740f/StressTesting/Assets/Scripts/Systems/Jobs/MathUtils.cs#L40
-        /// </summary>
+        /// FreyaHolmee/Mathfs implementation of MoveTowards utility function for floats.
+        /// Source: https://github.com/FreyaHolmer/Mathfs/blob/master/Mathfs.cs#L783
         public static float MoveTowards(in float current, in float target, in float maxDistanceDelta)
         {
-            float delta = target - current;
-
-            // if we are more than a single step away
-            if (delta > maxDistanceDelta)
-            {
-                if (delta > 0f) return current + delta * maxDistanceDelta;
-                return current;
-            }
-            return target;
+            if (MathF.Abs(target - current) <= maxDistanceDelta)
+                return target;
+            return current + MathF.Sign(target - current) * maxDistanceDelta;
         }
 
         /// <summary>
         /// Port of Unity's MoveTowards utility function for Vector2.
         /// Source: https://github.com/Unity-Technologies/UniteAustinTechnicalPresentation/blob/48cbbffc485b7b9fd5d48a861136d60a644c740f/StressTesting/Assets/Scripts/Systems/Jobs/MathUtils.cs#L40
         /// </summary>
+        [Obsolete("MoveTowards for 2Vector is deprecated since it may not work in the inverse case.")]
         public static Vector2 MoveTowards(in Vector2 current, in Vector2 target, in float maxDistanceDelta)
         {
             Vector2 delta = target - current;

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -31,8 +32,8 @@ namespace SandPerSand
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
-            engine.VSync = false;
-            engine.IsFixedTimeStep = false;
+            //engine.VSync = false;
+            //engine.IsFixedTimeStep = false;
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
@@ -87,31 +88,37 @@ namespace SandPerSand
         
         private static GameObject CreatePlayer(Vector2 position)
         {
-            var playerGo = new GameObject();
-            playerGo.Transform.Position = position;
+            var playerGo = new GameObject
+            {
+                Transform =
+                {
+                    Position = position
+                }
+            };
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
             playerRenderer.LoadFromContent("ProtoPlayer");
             playerRenderer.Depth = 0f;
-            
-            var playerCollider = playerGo.AddComponent<PolygonCollider>();
-            playerCollider.Outline = new[]
-            {
-                new Vector2(-0.5f, -0.5f), 
-                new Vector2(0.5f, -0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(-0.5f, 0.5f)
-            };
+
+            var playerCollider = playerGo.AddComponent<CircleCollider>();
+            playerCollider.Radius = 1f;
             playerCollider.Friction = 0.0f;
 
             var playerRB = playerGo.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
-            //playerRB.IgnoreCCD = true;
+            playerRB.IgnoreGravity = true;
 
             playerGo.AddComponent<GroundCheckComponent>();
-            playerGo.AddComponent<PlayerControlComponent>();
-            playerGo.AddComponent<TracerRendererComponent>();
+
+            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
+            controlComp.InputHandler = new InputHandler(PlayerIndex.One);
+
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
+            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
+            var tracer = playerGo.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
 
             return playerGo;
         }
@@ -411,7 +418,15 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                var playerGo = CreatePlayer(new Vector2(3, 1));
+                var playerGo = CreatePlayer(new Vector2(10, 1));
+
+                var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
+                cameraSwitcherComp.Parent = playerGo;
+                /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
+                cameraSwitcherComp.GlobalHeight = 30f;*/
+                cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
+                cameraSwitcherComp.GlobalHeight = 15f;
+                cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
 
                 // add camera as a player child GO as a hacky way to make it follow them
                 cameraGo.Transform.Parent = playerGo.Transform;
