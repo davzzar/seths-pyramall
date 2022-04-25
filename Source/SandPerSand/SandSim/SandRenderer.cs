@@ -10,11 +10,19 @@ namespace SandPerSand.SandSim
 {
     public sealed class SandRenderer : Renderer
     {
+        private Texture2D sandTexture;
+
+        private Color[] sandTextureData;
+
         public SandGrid SandGrid { get; set; }
 
-        public Texture2D ObstacleTexture { get; set; }
+        public Texture2D Pixel { get; private set; }
 
-        public Texture2D SandTexture { get; set; }
+        public Color SandSourceColor { get; set; } = Color.Orange;
+
+        public Color StableSandColor { get; set; } = Color.Yellow;
+
+        public Color FlowingSandColor { get; set; } = Color.LightYellow;
 
         public int MaxLayer { get; set; } = 1;
 
@@ -23,10 +31,10 @@ namespace SandPerSand.SandSim
         {
             base.OnAwake();
 
-            if (this.ObstacleTexture == null)
+            if (this.Pixel == null)
             {
-                this.ObstacleTexture = new Texture2D(Graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
-                this.ObstacleTexture.SetData(new[] { Color.White });
+                this.Pixel = new Texture2D(Graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
+                this.Pixel.SetData(new[] { Color.White });
             }
         }
 
@@ -40,7 +48,21 @@ namespace SandPerSand.SandSim
 
             this.DrawGizmos();
 
-            var offset = new Vector2(0, this.SandGrid.CellSize.Y);
+            if (this.sandTexture == null || this.sandTexture.Width != this.SandGrid.ResolutionX ||
+                this.sandTexture.Height != this.SandGrid.ResolutionY)
+            {
+                this.sandTexture?.Dispose();
+                this.sandTexture = new Texture2D(Graphics.GraphicsDevice, this.SandGrid.ResolutionX,
+                    this.SandGrid.ResolutionY, false, SurfaceFormat.Color);
+            }
+
+            if (this.sandTextureData == null ||
+                this.sandTextureData.Length != this.sandTexture.Width * this.sandTexture.Height)
+            {
+                this.sandTextureData = new Color[this.sandTexture.Width * this.sandTexture.Height];
+            }
+
+            //var offset = new Vector2(0, this.SandGrid.CellSize.Y);
             
             for (var y = 0; y < this.SandGrid.ResolutionY; y++)
             {
@@ -53,31 +75,41 @@ namespace SandPerSand.SandSim
                     {
                         if (cell.IsSandSource)
                         {
-                            color = Color.Orange;
+                            color = this.SandSourceColor;
                         }
                         else if (cell.IsSandStable)
                         {
-                            color = Color.Yellow;
+                            color = this.StableSandColor;
                         }
                         else
                         {
-                            color = Color.Lerp(Color.Yellow, Color.LightYellow, (cell.Layer + 1) / (float)this.MaxLayer);
+                            color = Color.Lerp(this.StableSandColor, this.FlowingSandColor, (cell.Layer + 1) / (float)this.MaxLayer);
                         }
                     }
                     else if (cell.HasObstacle && y < this.SandGrid.ResolutionY - 1 && this.SandGrid[x, y+1].HasSand)
                     {
-                        color = Color.Yellow;
+                        color = this.StableSandColor;
                     }
                     else
                     {
-                        continue;
+                        color = Color.Transparent;
+                        // continue;
                     }
 
-                    var pivot = this.SandGrid.IndexToMinPoint(in x, in y) + offset;
-                    var matrix = Matrix3x3.CreateTRS(pivot, 0f, this.SandGrid.CellSize);
-                    Graphics.Draw(this.ObstacleTexture, color, ref matrix, 0.9f);
+                    this.sandTextureData[(this.SandGrid.ResolutionY - y - 1) * this.SandGrid.ResolutionX + x] = color;
+
+                    // var pivot = this.SandGrid.IndexToMinPoint(in x, in y) + offset;
+                    // var matrix = Matrix3x3.CreateTRS(pivot, 0f, this.SandGrid.CellSize);
+                    // Graphics.Draw(this.Pixel, color, ref matrix, 0.9f);
                 }
             }
+
+            this.sandTexture.SetData(this.sandTextureData);
+
+            var size = this.SandGrid.CellSize * new Vector2(this.SandGrid.ResolutionX, this.SandGrid.ResolutionY);
+            var pivot = new Vector2(-0.5f, size.Y - 0.5f);// + size * 0.5f;
+            var matrix = Matrix3x3.CreateTRS(pivot, 0f, size);
+            Graphics.Draw(this.sandTexture, Color.White, ref matrix, 0.9f);
         }
 
         [Conditional("DEBUG")]
