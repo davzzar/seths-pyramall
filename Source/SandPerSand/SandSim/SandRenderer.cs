@@ -64,6 +64,10 @@ namespace SandPerSand.SandSim
                             color = Color.Lerp(Color.Yellow, Color.LightYellow, (cell.Layer + 1) / (float)this.MaxLayer);
                         }
                     }
+                    else if (cell.HasObstacle && y < this.SandGrid.ResolutionY - 1 && this.SandGrid[x, y+1].HasSand)
+                    {
+                        color = Color.Yellow;
+                    }
                     else
                     {
                         continue;

@@ -97,7 +97,7 @@ namespace SandPerSand
             rightBorderComp.AffectsVertical = false;
 
             var leftBorderGo = new GameObject("Left border");
-            leftBorderGo.Transform.Position = new Vector2(51, 0);
+            leftBorderGo.Transform.Position = new Vector2(61, 0);
             var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
             leftBorderComp.AffectsVertical = false;
         }
