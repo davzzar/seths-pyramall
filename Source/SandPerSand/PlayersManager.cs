@@ -9,44 +9,39 @@ using System.Diagnostics;
 
 namespace SandPerSand
 {
-    public class PlayersManager : Component
+    public class PlayersManager : Behaviour
     {
         private static PlayersManager instance;
-        private Dictionary<PlayerIndex, GameObject> players;
-        public Dictionary<PlayerIndex, GameObject> Players
-        {
-            get => this.players;
-        }
-
-        private List<Vector2> initialPositions;
-        public List<Vector2> InitialPositions
-        {
-            get => this.initialPositions;
-        }
-
         internal static PlayersManager Instance
         {
             get
             {
-                if(instance == null)
+                if (instance == null)
                 {
-                    throw new InvalidOperationException(
-                        "No PlayersManager in the game. Please create one.");
+                    instance = new PlayersManager();
+                    players = new Dictionary<PlayerIndex, GameObject>();
+                    initialPositions = new List<Vector2>();
                 }
                 return instance;
             }
         }
 
+        private static Dictionary<PlayerIndex, GameObject> players;
+        public Dictionary<PlayerIndex, GameObject> Players
+        {
+            get => players;
+        }
+
+        private static List<Vector2> initialPositions;
+        public List<Vector2> InitialPositions
+        {
+            get => initialPositions;
+        }
+
 
         public PlayersManager()
         {
-            if (instance != null)
-            {
-                throw new InvalidOperationException("Can't create more than one PlayersManager");
-            }
-            instance = this;
-            this.players = new Dictionary<PlayerIndex, GameObject>();
-            this.initialPositions = new List<Vector2>();
+            Debug.Print("player manager created");
         }
 
         public GameObject GetPlayer(PlayerIndex index) {
@@ -57,6 +52,7 @@ namespace SandPerSand
         {
             if (players.ContainsKey(index))
             {
+                GraphicalUserInterface.Instance.destroyPlayerInfo(index);
                 players[index].Destroy();
                 players.Remove(index);
                 return true;
@@ -69,43 +65,53 @@ namespace SandPerSand
 
         public void CreatePlayer(PlayerIndex playerIndex, Vector2 position)
         {
+            GraphicalUserInterface.Instance.renderPlayerInfo(playerIndex);
             if (players.ContainsKey(playerIndex))
             {
                 if (players[playerIndex] != null)
                 {
                     players[playerIndex].Destroy();
                 }
-                players[playerIndex] = new GameObject();
+                players[playerIndex] = PlayerGo.Create(playerIndex, position);
             }
             else
             {
-                players.Add(playerIndex, new GameObject());
+                players.Add(playerIndex, PlayerGo.Create(playerIndex, position));
             }
-
-            var playerGo = players[playerIndex];
-            playerGo.Transform.Position = position;
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("Smiley");
-
-            var playerCollider = playerGo.AddComponent<PolygonCollider>();
-            playerCollider.Outline = new[]
-            {
-                new Vector2(-0.5f, -0.5f),
-                new Vector2(0.5f, -0.5f),
-                new Vector2(0.5f, 0.5f),
-                new Vector2(-0.5f, 0.5f)
-            };
-            playerCollider.Friction = 0.0f;
-            var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = false;
-            playerRB.FreezeRotation = true;
-            var playerCon = playerGo.AddComponent<PlayerControlComponent>();
-            playerCon.PlayerIndex = playerIndex;
-            var playerStates = playerGo.AddComponent<PlayerStates>();
-
-
         }
 
+        public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
+            //returns true if item was added. False if it is already full
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            Boolean success = state.addItemToInventory(item, Major);
+            if (success)
+            {
+                GraphicalUserInterface.Instance.renderItem(player, item, Major);
+            }
+            return success;
+        }
+
+        public string useItem(PlayerIndex player, Boolean Major)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            GraphicalUserInterface.Instance.removeItem(player, Major);
+            return state.useItem(Major);
+        }
+
+        public void addCoins(PlayerIndex player, int coins)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            GraphicalUserInterface.Instance.renderCoins(player, coins);
+            state.addCoins(coins);
+        }
+        public Boolean spendCoins(PlayerIndex player, int coins)
+        {
+            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
+            (Boolean, int) tmp = state.spendCoins(coins);
+            GraphicalUserInterface.Instance.renderCoins(player, tmp.Item2);
+            return tmp.Item1;
+        }
         private Vector2 GetRandomInitialPos()
         {
             Random rd = new Random();
@@ -113,7 +119,8 @@ namespace SandPerSand
             if (totalPosNum <= 0)
             {
                 throw new InvalidOperationException("No initial position " +
-                    "registered. Please add at least one 'Entry' Tile on map.");
+                    "registered. Please add at least one 'Entry' Tile on map and make sure " +
+                    "map is loaded before Players' creation");
             }
             return InitialPositions[rd.Next(0, totalPosNum)];
         }
@@ -129,7 +136,15 @@ namespace SandPerSand
                     if (!players.ContainsKey(playerIndex))
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
-                        CreatePlayer(playerIndex, GetRandomInitialPos());
+                        if (InitialPositions.ToArray().Length > 0)
+                        {
+                            CreatePlayer(playerIndex, GetRandomInitialPos());
+                        }
+                        else
+                        {
+                            Debug.Print("Cannot create Player" + playerIndex
+                                + ", because map is not loaded or no initial positions on map.");
+                        }
                     }
                 }
                 else
@@ -161,28 +176,97 @@ namespace SandPerSand
             return allPreparedFlag;
         }
 
+        public Boolean CheckOneExit()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().Exited)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
+        public Boolean CheckAllExit()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            var allExitedFlag = true;
+            foreach (var player in players.Values)
+            {
+                if (!player.GetComponent<PlayerStates>().Exited)
+                {
+                    allExitedFlag = false;
+                }
+            }
+            return allExitedFlag;
+        }
+
+        public void finalizeRanks()
+        {
+            int notExited = 1;
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                {
+                    notExited ++;
+                }
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                {
+                    player.GetComponent<PlayerStates>().RoundRank = notExited;
+                }
+            }
+        }
     }
 
-    public class PlayerStates : Component
+    public class PlayerStates : Behaviour
     {
         public Boolean Prepared;
         public static Boolean Paused;
+        public string minor_item;
+        public string major_item;
+        public int coins;
         public bool Exited { get; set; }
         public int RoundRank { get; set; }
+        public InputHandler InputHandler { get; set; }
+        private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
 
         protected override void OnAwake()
         {
             Prepared = false;
             Paused = false;
+            minor_item = null;
+            major_item = null;
+            coins = 0;
             Exited = false;
             RoundRank = -1;
+        }
+
+        /// <summary>
+        /// The update handles state transitions.
+        /// </summary>
+        protected override void Update()
+        {
+            if (PrepareButtonPressed && GameStateManager.Instance.CurrentState == GameState.Prepare)
+            {
+                TogglePrepared();
+            }
         }
 
         public void TogglePrepared()
         {
             // Debug
-            var playerIndex = this.Owner.GetComponent<PlayerControlComponent>().PlayerIndex;
+            var playerIndex = InputHandler.PlayerIndex;
             if (Prepared)
             {
                 Prepared = false;
@@ -204,6 +288,65 @@ namespace SandPerSand
             else
             {
                 Paused = true;
+            }
+        }
+
+        public Boolean addItemToInventory(string item, Boolean Major)
+        {
+            //returns true if item was added
+            if (Major)
+            {
+                if(major_item == null)
+                {
+                    major_item = item;
+                    return true;
+                }
+            }
+            else
+            {
+                if (minor_item == null)
+                {
+                    minor_item = item;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public string useItem(Boolean Major)
+            //returns null if no item
+        {
+            if (Major)
+            {
+                string tmp = major_item;
+                major_item = null;
+                return tmp;
+            }
+            else
+            {
+                string tmp = minor_item;
+                minor_item=null;
+                return tmp;
+            }
+        }
+
+        public int addCoins(int amount)
+        {
+            coins += amount;
+            return coins;
+        }
+
+        public (Boolean, int) spendCoins(int amount)
+            //returns true when action was successfull
+        {
+            if(coins > amount)
+            {
+                coins = amount = coins;
+                return (true, coins);
+            }
+            else
+            {
+                return (false, coins);
             }
         }
     }
