@@ -29,7 +29,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadScene1), typeof(LoadScene2),  typeof(LoadSceneMultiplayer),typeof(LoadScene0) });
 
             CreateGUI();
             CreateMultiGamePadTest();
@@ -50,7 +50,8 @@ namespace SandPerSand
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
-            var cameraController = cameraGo.AddComponent<CameraController>();
+            var cameraController = cameraGo.AddComponent<CameraController2>();
+            cameraController.Bounds = Aabb.FromMinMax(new Vector2(-2, -2f), new Vector2(51, 100f));
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -89,6 +90,16 @@ namespace SandPerSand
 
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
+
+            var rightBorderGo = new GameObject("Right border");
+            rightBorderGo.Transform.Position = new Vector2(-2, 0);
+            var rightBorderComp = rightBorderGo.AddComponent<CameraControlPoint>();
+            rightBorderComp.AffectsVertical = false;
+
+            var leftBorderGo = new GameObject("Left border");
+            leftBorderGo.Transform.Position = new Vector2(51, 0);
+            var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
+            leftBorderComp.AffectsVertical = false;
         }
 
         private static void CreateGUI()

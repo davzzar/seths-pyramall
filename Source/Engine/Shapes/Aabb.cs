@@ -78,6 +78,14 @@ namespace Engine
             this.max = center + extend;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public readonly Vector2 Clamp(in Vector2 point)
+        {
+            return new Vector2(
+                MathHelper.Clamp(point.X, this.min.X, this.max.X),
+                MathHelper.Clamp(point.Y, this.min.Y, this.max.Y));
+        }
+
         /// <summary>
         /// Finds the closest point on the bounding box.
         /// </summary>
