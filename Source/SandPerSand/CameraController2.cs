@@ -18,6 +18,10 @@ namespace SandPerSand
 
         public Aabb Bounds { get; set; } = new Aabb(0f, 0f, float.PositiveInfinity, float.PositiveInfinity);
 
+        public float ZoomSpeed { get; set; } = 6f;
+
+        public float MoveSpeed { get; set; } = 6f;
+
         public static void AddControlPoint([NotNull]CameraControlPoint controlPoint)
         {
             if (controlPoint == null)
@@ -108,29 +112,8 @@ namespace SandPerSand
             }
 
             // Update the camera 
-            this.camera.Transform.Position = center;
-            this.camera.Height = size.Y;
-        }
-    }
-
-    public sealed class CameraControlPoint : Component
-    {
-        public bool AffectsHorizontal { get; set; } = true;
-
-        public bool AffectsVertical { get; set; } = true;
-
-        public Border Margin { get; set; } = Border.Zero;
-
-        /// <inheritdoc />
-        protected override void OnAwake()
-        {
-            CameraController2.AddControlPoint(this);
-        }
-
-        /// <inheritdoc />
-        protected override void OnDestroy()
-        {
-            CameraController2.RemoveControlPoint(this);
+            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center, this.MoveSpeed * Time.DeltaTime);
+            this.camera.Height = MathHelper.Lerp(this.camera.Height, size.Y, this.ZoomSpeed * Time.DeltaTime);
         }
     }
 }

@@ -48,7 +48,7 @@ namespace SandPerSand
             tracer.TraceLength = 60;
 
             var cameraControlPoint = playerGo.AddComponent<CameraControlPoint>();
-            cameraControlPoint.Margin = new Border(3f, 20f, 3f, 10f);
+            cameraControlPoint.Margin = new Border(5, 15, 5, 10);
 
             return playerGo;
         }
