@@ -250,6 +250,25 @@ namespace SandPerSand
             sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
 
+        private static void CreateSandPhysics_level_1()
+        {
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            Debug.Print(map.Size.ToString());
+            sandSim.ResolutionX = 300;
+            sandSim.ResolutionY = 300;
+            sandSim.SimulationStepTime = 1f / 80;
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
+            sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
+            sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
+        }
+
         /// <summary>
         /// The scene manager component uses loading components to load scenes.<br/>
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
@@ -382,7 +401,8 @@ namespace SandPerSand
                 }
                 CreateMap("test_level_1");
                 CreateCamera();
-                
+                CreateSandPhysics_level_1();
+
 
             }
         }
