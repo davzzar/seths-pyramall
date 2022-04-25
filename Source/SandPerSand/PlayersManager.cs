@@ -119,7 +119,8 @@ namespace SandPerSand
             if (totalPosNum <= 0)
             {
                 throw new InvalidOperationException("No initial position " +
-                    "registered. Please add at least one 'Entry' Tile on map.");
+                    "registered. Please add at least one 'Entry' Tile on map and make sure " +
+                    "map is loaded before Players' creation");
             }
             return InitialPositions[rd.Next(0, totalPosNum)];
         }
@@ -135,7 +136,15 @@ namespace SandPerSand
                     if (!players.ContainsKey(playerIndex))
                     {
                         Debug.Print("New Connected controller:" + playerIndex);
-                        CreatePlayer(playerIndex, GetRandomInitialPos());
+                        if (InitialPositions.ToArray().Length > 0)
+                        {
+                            CreatePlayer(playerIndex, GetRandomInitialPos());
+                        }
+                        else
+                        {
+                            Debug.Print("Cannot create Player" + playerIndex
+                                + ", because map is not loaded or no initial positions on map.");
+                        }
                     }
                 }
                 else
