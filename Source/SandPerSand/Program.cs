@@ -108,7 +108,7 @@ namespace SandPerSand
             backgroundGo.Transform.LossyScale = new Vector2(60, 60);
             var background = backgroundGo.AddComponent<SpriteRenderer>();
             background.LoadFromContent("background");
-            background.Depth = 0f;
+            background.Depth = 2f;
         }
 
         private static void CreateMultiGamePadTest()
@@ -282,6 +282,8 @@ namespace SandPerSand
             sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
             sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
+
+            
         }
 
         /// <summary>
