@@ -41,6 +41,15 @@
     <None Update="Content\tiles\PlayerAnimated.tsx">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Content\tiles\PlayerAnimated2.tsx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>    
+    <None Update="Content\tiles\PlayerAnimated3.tsx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>    
+    <None Update="Content\tiles\PlayerAnimated4.tsx">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\test_map.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
