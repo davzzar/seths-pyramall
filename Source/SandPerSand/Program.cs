@@ -90,15 +90,15 @@ namespace SandPerSand
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
 
-            var rightBorderGo = new GameObject("Right border");
-            rightBorderGo.Transform.Position = new Vector2(-2, 0);
-            var rightBorderComp = rightBorderGo.AddComponent<CameraControlPoint>();
-            rightBorderComp.AffectsVertical = false;
-
-            var leftBorderGo = new GameObject("Left border");
-            leftBorderGo.Transform.Position = new Vector2(61, 0);
-            var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
-            leftBorderComp.AffectsVertical = false;
+            //var rightBorderGo = new GameObject("Right border");
+            //rightBorderGo.Transform.Position = new Vector2(-2, 0);
+            //var rightBorderComp = rightBorderGo.AddComponent<CameraControlPoint>();
+            //rightBorderComp.AffectsVertical = false;
+            //
+            //var leftBorderGo = new GameObject("Left border");
+            //leftBorderGo.Transform.Position = new Vector2(61, 0);
+            //var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
+            //leftBorderComp.AffectsVertical = false;
         }
 
         private static void CreateGUI()
