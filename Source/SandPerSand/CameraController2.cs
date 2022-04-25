@@ -63,17 +63,18 @@ namespace SandPerSand
             foreach (var controlPoint in controlPoints)
             {
                 var pos = controlPoint.Transform.Position;
+                var margin = controlPoint.Margin;
 
                 if (controlPoint.AffectsHorizontal)
                 {
-                    min.X = MathF.Min(min.X, pos.X);
-                    max.X = MathF.Max(max.X, pos.X);
+                    min.X = MathF.Min(min.X, pos.X - margin.Left);
+                    max.X = MathF.Max(max.X, pos.X + margin.Right);
                 }
 
                 if (controlPoint.AffectsVertical)
                 {
-                    min.Y = MathF.Min(min.Y, pos.Y);
-                    max.Y = MathF.Max(max.Y, pos.Y);
+                    min.Y = MathF.Min(min.Y, pos.Y - margin.Bottom);
+                    max.Y = MathF.Max(max.Y, pos.Y + margin.Top);
                 }
             }
 
@@ -113,6 +114,8 @@ namespace SandPerSand
         public bool AffectsHorizontal { get; set; } = true;
 
         public bool AffectsVertical { get; set; } = true;
+
+        public Border Margin { get; set; } = Border.Zero;
 
         /// <inheritdoc />
         protected override void OnAwake()
