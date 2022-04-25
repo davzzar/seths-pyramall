@@ -71,5 +71,18 @@ namespace SandPerSand
 
             return playerGo;
         }
+
+        public static GameObject AddAnim(GameObject playerGo)
+        {
+            // delete static sprite
+            playerGo.GetComponent<SpriteRenderer>().Destroy();
+
+            // animator need to be created after controlComp and input handler
+            var playerAnimator = playerGo.AddComponent<Animator>();
+            playerAnimator.LoadFromContent("PlayerAnimated");
+            var playerAnimatorController = playerGo.AddComponent<MyAnimatorController>();
+
+            return playerGo;
+        }
     }
 }
