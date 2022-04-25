@@ -23,6 +23,8 @@ namespace Engine
 
         public static Camera CurrentCamera => instance.currentCamera;
 
+        public static Color BackgroundColor { get; set; } = Color.CornflowerBlue;
+
         public static Vector2 ScreenSize
         {
             get

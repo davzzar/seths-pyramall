@@ -142,7 +142,7 @@ namespace Engine
         {
             this.isRendering = true;
 
-            Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
+            Graphics.GraphicsDevice.Clear(Graphics.BackgroundColor);
 
             foreach (var camera in this.cameras)
             {
