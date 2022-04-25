@@ -79,7 +79,25 @@ namespace SandPerSand
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = playerGo.AddComponent<Animator>();
-            playerAnimator.LoadFromContent("PlayerAnimated");
+            var playerIndex = playerGo.GetComponent<PlayerControlComponent>().InputHandler.PlayerIndex;
+
+            string animationPath = "";
+            switch (playerIndex)
+            {
+                case (PlayerIndex.One):
+                    animationPath = "PlayerAnimated";
+                    break;
+                case (PlayerIndex.Two):
+                    animationPath = "PlayerAnimated";
+                    break;
+                case (PlayerIndex.Three):
+                    animationPath = "PlayerAnimated";
+                    break;
+                case (PlayerIndex.Four):
+                    animationPath = "PlayerAnimated";
+                    break;
+            }
+            playerAnimator.LoadFromContent(animationPath);
             var playerAnimatorController = playerGo.AddComponent<MyAnimatorController>();
 
             return playerGo;
