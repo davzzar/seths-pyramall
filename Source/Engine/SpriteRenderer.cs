@@ -53,6 +53,30 @@ namespace Engine
             
         }
 
+        public void FlipHorizontal()
+        {
+            if (((int)this.Effect & (int)SpriteEffects.FlipHorizontally) == 0)
+            {
+                this.Effect |= SpriteEffects.FlipHorizontally;
+            }
+            else
+            {
+                this.Effect &= ~SpriteEffects.FlipHorizontally;
+            }
+        }
+
+        public void FlipVertical()
+        {
+            if (((int)this.Effect & (int)SpriteEffects.FlipVertically) == 0)
+            {
+                this.Effect |= SpriteEffects.FlipVertically;
+            }
+            else
+            {
+                this.Effect &= ~SpriteEffects.FlipVertically;
+            }
+        }
+
         /// <inheritdoc />
         protected override void OnEnable()
         {
