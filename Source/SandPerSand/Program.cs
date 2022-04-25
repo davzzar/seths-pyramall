@@ -33,6 +33,7 @@ namespace SandPerSand
 
             CreateGUI();
             CreateMultiGamePadTest();
+            CreateBackground();
 
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
@@ -94,6 +95,20 @@ namespace SandPerSand
         {
             var guiGo = new GameObject();
             var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+        }
+
+        private static void CreateBackground()
+        {
+            var backgroundParent = new GameObject();
+            var parentSway = backgroundParent.AddComponent<SwayComponent>();
+
+            var backgroundGo = new GameObject();
+            //backgroundGo.Transform.Parent = backgroundParent.Transform;
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LossyScale = new Vector2(60, 60);
+            var background = backgroundGo.AddComponent<SpriteRenderer>();
+            background.LoadFromContent("background");
+            background.Depth = 0f;
         }
 
         private static void CreateMultiGamePadTest()
