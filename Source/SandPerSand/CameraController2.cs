@@ -63,20 +63,22 @@ namespace SandPerSand
             foreach (var controlPoint in controlPoints)
             {
                 var pos = controlPoint.Transform.Position;
+                var margin = controlPoint.Margin;
 
                 if (controlPoint.AffectsHorizontal)
                 {
-                    min.X = MathF.Min(min.X, pos.X);
-                    max.X = MathF.Max(max.X, pos.X);
+                    min.X = MathF.Min(min.X, pos.X - margin.Left);
+                    max.X = MathF.Max(max.X, pos.X + margin.Right);
                 }
 
                 if (controlPoint.AffectsVertical)
                 {
-                    min.Y = MathF.Min(min.Y, pos.Y);
-                    max.Y = MathF.Max(max.Y, pos.Y);
+                    min.Y = MathF.Min(min.Y, pos.Y - margin.Bottom);
+                    max.Y = MathF.Max(max.Y, pos.Y + margin.Top);
                 }
             }
 
+            // If no horizontal or vertical data was set, set it to zero
             if (max.X < min.X)
             {
                 min.X = 0f;
@@ -89,10 +91,12 @@ namespace SandPerSand
                 max.Y = 0f;
             }
 
+            // Calculate the resulting camera rectangle with respect to the aspect ratio
             var center = (min + max) / 2f;
             var size = Vector2.Max(max - min, this.MinCameraSize);
             size.Y = MathF.Max(size.Y, size.X * this.camera.AspectRatio);
 
+            // Clamp the edges of the rectangles to the bounds
             if (center.Y + size.Y / 2f > this.Bounds.Max.Y)
             {
                 center.Y = this.Bounds.Min.Y - size.Y / 2f;
@@ -103,27 +107,9 @@ namespace SandPerSand
                 center.Y = this.Bounds.Min.Y + size.Y / 2f;
             }
 
-            this.camera.Transform.Position = center;
-            this.camera.Height = size.Y;
-        }
-    }
-
-    public sealed class CameraControlPoint : Component
-    {
-        public bool AffectsHorizontal { get; set; } = true;
-
-        public bool AffectsVertical { get; set; } = true;
-
-        /// <inheritdoc />
-        protected override void OnAwake()
-        {
-            CameraController2.AddControlPoint(this);
-        }
-
-        /// <inheritdoc />
-        protected override void OnDestroy()
-        {
-            CameraController2.RemoveControlPoint(this);
+            // Update the camera 
+            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center, 8 * Time.DeltaTime);
+            this.camera.Height = MathHelper.Lerp(this.camera.Height, size.Y, 8 * Time.DeltaTime);
         }
     }
 }

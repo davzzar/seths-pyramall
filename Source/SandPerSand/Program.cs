@@ -29,7 +29,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadScene1), typeof(LoadScene2),  typeof(LoadSceneMultiplayer),typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2),typeof(LoadScene0) });
 
             CreateGUI();
             CreateMultiGamePadTest();
@@ -96,7 +96,7 @@ namespace SandPerSand
             rightBorderComp.AffectsVertical = false;
 
             var leftBorderGo = new GameObject("Left border");
-            leftBorderGo.Transform.Position = new Vector2(51, 0);
+            leftBorderGo.Transform.Position = new Vector2(61, 0);
             var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
             leftBorderComp.AffectsVertical = false;
         }
