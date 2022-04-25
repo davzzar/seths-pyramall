@@ -145,7 +145,7 @@ namespace SandPerSand.SandSim
             this.number_of_updates = 0;
             this.raising_sand_current_depth = 1;
             this.raising_sand_needs_update = false;
-            this.raising_sand_step = 7;
+            this.raising_sand_step = 14;
             this.raising_sand_upper_margin = 10;
         }
 
