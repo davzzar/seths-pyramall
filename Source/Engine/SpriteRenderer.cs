@@ -23,10 +23,13 @@ namespace Engine
         
         public Rectangle? SourceRect { get; set; }
 
+        public SpriteEffects Effect { get; set; }
+
         public SpriteRenderer()
         {
             this.Color = Color.White;
             this.SourceRect = null;
+            this.Effect = SpriteEffects.None;
         }
         
         /// <inheritdoc />
@@ -41,11 +44,11 @@ namespace Engine
 
             if (this.SourceRect.HasValue)
             {
-                Graphics.Draw(this.texture, this.Color, this.SourceRect.Value, ref matrix, this.Depth);
+                Graphics.Draw(this.texture, this.Color, this.SourceRect.Value, ref matrix, this.Depth, this.Effect);
             }
             else
             {
-                Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth);
+                Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth, this.Effect);
             }
             
         }
