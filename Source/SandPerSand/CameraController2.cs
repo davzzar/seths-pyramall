@@ -16,6 +16,8 @@ namespace SandPerSand
 
         public Vector2 MinCameraSize { get; set; } = Vector2.One * 5;
 
+        public Aabb Bounds { get; set; } = new Aabb(0f, 0f, float.PositiveInfinity, float.PositiveInfinity);
+
         public static void AddControlPoint([NotNull]CameraControlPoint controlPoint)
         {
             if (controlPoint == null)
@@ -57,6 +59,7 @@ namespace SandPerSand
             var min = new Vector2(float.PositiveInfinity);
             var max = new Vector2(float.NegativeInfinity);
 
+            // Create rectangle from control points
             foreach (var controlPoint in controlPoints)
             {
                 var pos = controlPoint.Transform.Position;
@@ -88,10 +91,20 @@ namespace SandPerSand
 
             var center = (min + max) / 2f;
             var size = Vector2.Max(max - min, this.MinCameraSize);
-            var aspectRatio = this.camera.AspectRatio;
+            size.Y = MathF.Max(size.Y, size.X * this.camera.AspectRatio);
+
+            if (center.Y + size.Y / 2f > this.Bounds.Max.Y)
+            {
+                center.Y = this.Bounds.Min.Y - size.Y / 2f;
+            }
+
+            if (center.Y - size.Y / 2f < this.Bounds.Min.Y)
+            {
+                center.Y = this.Bounds.Min.Y + size.Y / 2f;
+            }
 
             this.camera.Transform.Position = center;
-            this.camera.Height = MathF.Max(size.X, size.Y * aspectRatio);
+            this.camera.Height = size.Y;
         }
     }
 
