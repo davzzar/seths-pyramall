@@ -32,7 +32,6 @@ namespace SandPerSand
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer),typeof(LoadScene2), typeof(LoadScene0), typeof(LoadScene1) });
 
             CreateGUI();
-            CreateMap("test_level_1");
             CreateMultiGamePadTest();
 
 
