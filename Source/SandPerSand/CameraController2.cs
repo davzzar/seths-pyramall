@@ -78,6 +78,7 @@ namespace SandPerSand
                 }
             }
 
+            // If no horizontal or vertical data was set, set it to zero
             if (max.X < min.X)
             {
                 min.X = 0f;
@@ -90,10 +91,12 @@ namespace SandPerSand
                 max.Y = 0f;
             }
 
+            // Calculate the resulting camera rectangle with respect to the aspect ratio
             var center = (min + max) / 2f;
             var size = Vector2.Max(max - min, this.MinCameraSize);
             size.Y = MathF.Max(size.Y, size.X * this.camera.AspectRatio);
 
+            // Clamp the edges of the rectangles to the bounds
             if (center.Y + size.Y / 2f > this.Bounds.Max.Y)
             {
                 center.Y = this.Bounds.Min.Y - size.Y / 2f;
@@ -104,6 +107,7 @@ namespace SandPerSand
                 center.Y = this.Bounds.Min.Y + size.Y / 2f;
             }
 
+            // Update the camera 
             this.camera.Transform.Position = center;
             this.camera.Height = size.Y;
         }
