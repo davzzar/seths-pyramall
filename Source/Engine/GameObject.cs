@@ -6,11 +6,23 @@ using BindingFlags = System.Reflection.BindingFlags;
 
 namespace Engine
 {
+    /// <summary>
+    /// The game object represents a single entity and can contain logic and data in the form of <see cref="Component"/>s.<br/>
+    /// Every game object contains a <see cref="Transform"/>, belongs to a specific <see cref="Scene"/> and has some metadata such as the <see cref="Name"/> and <see cref="Layer"/>.<br/>
+    /// To add logic and data, add components using <see cref="AddComponent{T}"/>.<br/>
+    /// To get one or multiple reference(s) to other components on a game object instance, use <see cref="GetComponent{T}"/> or <see cref="GetComponents{T}()"/> respectively.
+    /// </summary>
     public sealed class GameObject
     {
+        /// <summary>
+        /// Contains all components that belong to this game object (including behaviours)
+        /// </summary>
         private readonly List<Component> components = new List<Component>();
 
-        private readonly List<Behaviour> behaviors = new List<Behaviour>();
+        /// <summary>
+        /// Contains all behaviours that belong to this game object, they are stored separately to make the update call faster.
+        /// </summary>
+        private readonly List<Behaviour> behaviours = new List<Behaviour>();
 
         private bool isEnabled;
 
@@ -18,10 +30,50 @@ namespace Engine
 
         private GameObjectState state;
 
+        private int layer;
+
+        internal event EventHandler<(int oldLayer, int newLayer)> LayerChanged;
+
+        /// <summary>
+        /// Gets the <see cref="Transform"/> that belongs to this game object instance.
+        /// </summary>
         public Transform Transform { get; }
 
+        /// <summary>
+        /// Gets or sets a name for this game object instance.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the layer for this game object instance (range:[0, 31], default: 0)
+        /// </summary>
+        public int Layer
+        {
+            get => this.layer;
+            set
+            {
+                if (value < 0 || value > 31)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value));
+                }
+
+                if (this.layer == value)
+                {
+                    return;
+                }
+
+                var oldLayer = this.layer;
+                this.layer = value;
+
+                this.OnLayerChanged((oldLayer, this.layer));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this game object is enabled.<br/> 
+        /// </summary>
+        /// <seealso cref="IsEnabledInHierarchy"/>
+        /// <seealso cref="Behaviour.IsActive"/>
         public bool IsEnabled
         {
             get => this.isEnabled && this.IsAlive;
@@ -55,6 +107,13 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this game object is enabled in the hierarchy.<br/>
+        /// Components of this game object will only receive callbacks if <see cref="IsEnabledInHierarchy"/> is <b>true</b>.
+        /// </summary>
+        /// <seealso cref="IsEnabled"/>
+        /// <seealso cref="Engine.Transform.Parent"/>
+        /// <seealso cref="Behaviour.IsActiveInHierarchy"/>/>
         public bool IsEnabledInHierarchy
         {
             get
@@ -80,30 +139,57 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this game object is alive and can be used.
+        /// </summary>
         public bool IsAlive { get; private set; }
 
+        /// <summary>
+        /// Gets the scene to which this game object belongs.
+        /// </summary>
+        [NotNull]
         public Scene Scene { get; internal set; }
 
         internal GameObjectState State => this.state;
 
-        public GameObject()
+        /// <summary>
+        /// Creates a new game object and adds it to the <see cref="SceneManager.ScopedScene"/>.
+        /// </summary>
+        public GameObject() : this("New GameObject", SceneManager.ScopedScene)
+        { }
+
+        /// <summary>
+        /// Creates a new game object with a specific name and adds it to the <see cref="SceneManager.ScopedScene"/>
+        /// </summary>
+        public GameObject(string name) : this(name, SceneManager.ScopedScene)
+        { }
+
+        /// <summary>
+        /// Creates a new game object with a specific name and adds it to the given scene.
+        /// </summary>
+        public GameObject(string name, [NotNull]Scene scene)
         {
+            if (scene == null)
+            {
+                throw new ArgumentNullException(nameof(scene));
+            }
+
             this.state = GameObjectState.Creating;
             this.Transform = new Transform();
             this.components.Add(this.Transform);
             this.Transform.SetupInternal(this);
 
-            this.Name = "New GameObject";
+            this.Name = name ?? string.Empty;
             this.isEnabled = true;
             this.isChangingEnableState = false;
             this.IsAlive = false;
 
-            var containingScene = SceneManager.ActiveScene;
-            containingScene.AddGameObject(this);
-            this.Transform.SetContainingScene(containingScene);
+            this.Scene = scene;
+            this.Scene.AddGameObject(this);
+            this.Transform.SetContainingScene(this.Scene);
             this.state = GameObjectState.Created;
 
-            if (SceneManager.IsReady)
+            if (this.Scene.IsLoaded)
             {
                 this.OnAwakeInternal();
 
@@ -114,6 +200,14 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Adds a <see cref="Component"/> of the given type to the game object and returns a reference to the constructed component.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">The type cannot be null.</exception>
+        /// <exception cref="ArgumentException">The type needs to inherit from <see cref="Component"/>, cannot be abstract and must have a public constructor without arguments.</exception>
+        /// <exception cref="InvalidOperationException">Can't add a component to a dead game object.</exception>
+        /// <seealso cref="AddComponent{T}"/>
+        /// <seealso cref="GetOrAddComponent{T}"/>
         public Component AddComponent(Type type)
         {
             if (type == null)
@@ -124,6 +218,11 @@ namespace Engine
             if (!typeof(Component).IsAssignableFrom(type))
             {
                 throw new ArgumentException("The component type needs to inherit from Component.", nameof(type));
+            }
+
+            if (!this.IsAlive && this.Scene.IsLoaded)
+            {
+                throw new InvalidOperationException("Can't add a component to a dead game object.");
             }
 
             if (type.IsAbstract)
@@ -143,10 +242,16 @@ namespace Engine
             return component;
         }
 
+        /// <summary>
+        /// Adds a <see cref="Component"/> of the given type to the game object and returns a reference to the constructed component.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Can't add a component to a dead game object.</exception>
+        /// <seealso cref="AddComponent"/>
+        /// <seealso cref="GetOrAddComponent{T}"/>
         [NotNull]
         public T AddComponent<T>() where T : Component, new()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't add a component to a dead game object.");
             }
@@ -156,6 +261,13 @@ namespace Engine
             return t;
         }
         
+        /// <summary>
+        /// Gets a <see cref="Component"/> of the specific type that is part of this game object or <b>null</b> if the game object doesn't contain a component of that specific type.<br/>
+        /// If the game object contains multiple components of that specific type, the first found instance will be returned.
+        /// </summary>
+        /// <seealso cref="GetComponents{T}()"/>
+        /// <seealso cref="GetComponents{T}(IList{T})"/>
+        /// <seealso cref="GetOrAddComponent{T}"/>
         [CanBeNull]
         public T GetComponent<T>() where T : Component
         {
@@ -170,23 +282,29 @@ namespace Engine
             return null;
         }
 
+        /// <summary>
+        /// Gets all <see cref="Component"/>s of the specific type that are part of this game object.<br/>
+        /// Consider using <see cref="GetComponents{T}(IList{T})"/> instead to prevent internal memory allocation.
+        /// </summary>
+        /// <seealso cref="GetComponent{T}"/>
+        /// <seealso cref="GetComponents{T}()"/>
+        /// <seealso cref="GetOrAddComponent{T}"/>
         [NotNull, ItemNotNull]
         public T[] GetComponents<T>() where T : Component
         {
             var result = new List<T>();
-
-            foreach (var c in this.components)
-            {
-                if (c is T t)
-                {
-                    result.Add(t);
-                }
-            }
-
+            this.GetComponents(result);
             return result.ToArray();
         }
 
-        public void GetComponents<T>(IList<T> items) where T : Component
+        /// <summary>
+        /// Gets all <see cref="Component"/>s of the specific type that are part of this game object without allocating extra memory.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">The items cannot be null.</exception>
+        /// <seealso cref="GetComponent{T}"/>
+        /// <seealso cref="GetComponents{T}(IList{T})"/>
+        /// <seealso cref="GetOrAddComponent{T}"/> 
+        public void GetComponents<T>([NotNull]IList<T> items) where T : Component
         {
             if (items == null)
             {
@@ -202,6 +320,14 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Tries to get a <see cref="Component"/> of the specific type or creates a new component if the game object doesn't have one. 
+        /// </summary>
+        /// <seealso cref="AddComponent"/>
+        /// <seealso cref="AddComponent{T}"/>
+        /// <seealso cref="GetComponent{T}"/>
+        /// <seealso cref="GetComponents{T}()"/>
+        /// <seealso cref="GetComponents{T}(IList{T})"/>
         [NotNull]
         public T GetOrAddComponent<T>() where T : Component, new()
         {
@@ -215,9 +341,13 @@ namespace Engine
             return result;
         }
 
+        /// <summary>
+        /// Destroys this game object, all contained components and all children, effectively removing them from the game.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">Can't destroy a dead game object.</exception>
         public void Destroy()
         {
-            if (!this.IsAlive && SceneManager.IsReady)
+            if (!this.IsAlive && this.Scene.IsLoaded)
             {
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
@@ -231,6 +361,11 @@ namespace Engine
             this.Transform.containingScene.RemoveGameObject(this);
         }
 
+        /// <summary>
+        /// Finds a single <see cref="Component"/> of the specific type in the game, returns the first found instance or <b>null</b> if there exists no instance.
+        /// </summary>
+        /// <seealso cref="FindComponents{T}()"/>
+        /// <seealso cref="FindComponents{T}(IList{T})"/>
         public static T FindComponent<T>() where T : Component
         {
             foreach (var scene in SceneManager.OpenScenes)
@@ -249,7 +384,26 @@ namespace Engine
             return null;
         }
 
-        public static void FindComponents<T>(List<T> items) where T : Component
+        /// <summary>
+        /// Finds and returns all <see cref="Component"/>s of the specific type in the game.<br/>
+        /// Consider using <see cref="FindComponents{T}(IList{T})"/> instead to prevent internal memory allocation.
+        /// </summary>
+        /// <seealso cref="FindComponent{T}"/>
+        /// <seealso cref="FindComponents{T}(IList{T})"/>
+        public static T[] FindComponents<T>() where T : Component
+        {
+            var items = new List<T>();
+            FindComponents<T>(items);
+            return items.ToArray();
+        }
+
+        /// <summary>
+        /// Finds and returns all <see cref="Component"/>s of the specific type in the game without allocating extra memory.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">The items cannot be null.</exception>
+        /// <seealso cref="FindComponent{T}"/>
+        /// <seealso cref="FindComponents{T}()"/>
+        public static void FindComponents<T>(IList<T> items) where T : Component
         {
             if (items == null)
             {
@@ -269,9 +423,9 @@ namespace Engine
         {
             Debug.Assert(this.state == GameObjectState.Enabled);
 
-            for (var i = 0; i < this.behaviors.Count; i++)
+            for (var i = 0; i < this.behaviours.Count; i++)
             {
-                var behavior = this.behaviors[i];
+                var behavior = this.behaviours[i];
                 behavior.UpdateInternal();
             }
         }
@@ -287,7 +441,7 @@ namespace Engine
 
                 component.OnDestroyInternal();
                 this.components.Remove(component);
-                this.behaviors.RemoveSwapBack(b);
+                this.behaviours.RemoveSwapBack(b);
             }
             else
             {
@@ -320,9 +474,9 @@ namespace Engine
             this.isEnabled = true;
             this.state = GameObjectState.Enabling;
 
-            for (var i = 0; i < this.behaviors.Count; i++)
+            for (var i = 0; i < this.behaviours.Count; i++)
             {
-                var b = this.behaviors[i];
+                var b = this.behaviours[i];
                 b.OnEnableInternal();
             }
 
@@ -344,9 +498,9 @@ namespace Engine
             this.isEnabled = false;
             this.state = GameObjectState.Disabling;
 
-            for (var i = 0; i < this.behaviors.Count; i++)
+            for (var i = 0; i < this.behaviours.Count; i++)
             {
-                var b = this.behaviors[i];
+                var b = this.behaviours[i];
                 b.OnDisableInternal();
             }
 
@@ -383,9 +537,9 @@ namespace Engine
 
             if (component is Behaviour b)
             {
-                this.behaviors.Add(b);
+                this.behaviours.Add(b);
 
-                if (SceneManager.IsReady && this.state != GameObjectState.Awakening)
+                if (this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
                 {
                     b.OnAwakeInternal();
 
@@ -395,7 +549,7 @@ namespace Engine
                     }
                 }
             }
-            else if(SceneManager.IsReady && this.state != GameObjectState.Awakening)
+            else if(this.Scene.IsLoaded && this.state != GameObjectState.Awakening)
             {
                 component.OnAwakeInternal();
             }
@@ -433,6 +587,11 @@ namespace Engine
             {
                 this.Transform.GetChild(i).Owner.DisableHierarchyRecursive();
             }
+        }
+
+        private void OnLayerChanged((int oldLayer, int newLayer) e)
+        {
+            this.LayerChanged?.Invoke(this, e);
         }
 
         internal enum GameObjectState

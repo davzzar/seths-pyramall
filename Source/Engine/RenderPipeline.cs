@@ -17,6 +17,8 @@ namespace Engine
         private readonly List<GuiRenderer> guiRenderers = new List<GuiRenderer>();
         
         private bool isRendering;
+
+        internal event Action OnDrawGizmos;
         
         internal void Init()
         {
@@ -140,16 +142,17 @@ namespace Engine
         {
             this.isRendering = true;
 
+            Graphics.GraphicsDevice.Clear(Graphics.BackgroundColor);
+
             foreach (var camera in this.cameras)
             {
                 Graphics.BeginRender(camera);
-                Graphics.GraphicsDevice.Clear(Color.CornflowerBlue);
 
                 // Draw scene
                 if (this.renderers.Count > 0)
                 {
-                    Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend);
-
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.BackToFront, BlendState.AlphaBlend, SamplerState.PointClamp);
+                    
                     foreach (var renderer in this.renderers)
                     {
                         renderer.Draw();
@@ -159,12 +162,18 @@ namespace Engine
                 }
 
                 // Draw Gizmos if needed, don't sort draw calls
+                #if DEBUG
+
+                this.InvokeOnDrawGizmos();
+
                 if (Gizmos.CommandBufferCount > 0)
                 {
                     Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
                     Gizmos.OnRender();
                     Graphics.SpriteBatch.End();
                 }
+
+                #endif
 
                 // Draw gui elements
                 if (this.guiRenderers.Count > 0)
@@ -183,6 +192,11 @@ namespace Engine
             }
 
             this.isRendering = false;
+        }
+
+        private void InvokeOnDrawGizmos()
+        {
+            this.OnDrawGizmos?.Invoke();
         }
     }
 }

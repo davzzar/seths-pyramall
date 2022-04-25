@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Collision.Shapes;
 using tainicom.Aether.Physics2D.Common;
 
@@ -37,6 +38,26 @@ namespace Engine
             }
 
             return new CircleShape(this.radius * scale.X / 2f, this.Density);
+        }
+
+        /// <inheritdoc />
+        protected override void DrawGizmos()
+        {
+            const int numPoints = 16;
+
+            var p0 = this.Transform.TransformPoint(new Vector2(0f, 0.5f));
+            var pCur = p0;
+
+            for (var i = 0; i < numPoints; i++)
+            {
+                var a = MathF.PI * 2f * i / numPoints;
+                var pNext = this.Transform.TransformPoint(new Vector2(MathF.Sin(a) * 0.5f, MathF.Cos(a) * 0.5f));
+
+                Gizmos.DrawLine(pCur, pNext, Color.White);
+                pCur = pNext;
+            }
+
+            Gizmos.DrawLine(pCur, p0, Color.White);
         }
     }
 }

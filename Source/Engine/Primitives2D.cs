@@ -7,7 +7,8 @@ namespace Engine
 {
 	/// <summary>
 	/// </summary>
-	public static class Primitives2D
+	[Obsolete("Use Gizmos class instead.")]
+    public static class Primitives2D
 	{
 
 

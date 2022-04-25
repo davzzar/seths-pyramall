@@ -27,7 +27,8 @@ namespace Engine
             data = new CommandEntry[32];
         }
 
-        public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color)
+        [Conditional("DEBUG")]
+        public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color, float thickness = 1f)
         {
             // calculate the distance between the two vectors
             float distance = Vector2.Distance(point1, point2);
@@ -35,33 +36,32 @@ namespace Engine
             // calculate the rotation between the two vectors
             float angle = (float)Math.Atan2(point2.Y - point1.Y, point2.X - point1.X);
 
-            DrawLine(in point1, distance, angle, color);
+            DrawLine(in point1, distance, angle, color, thickness);
         }
 
-        public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color)
+        [Conditional("DEBUG")]
+        public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color, float thickness = 1f)
         {
             GrowBufferOnDemand();
             
             //color *= GizmosAlpha;
-            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, 1f));
+            data[numEntries] = new CommandEntry(CommandType.Line, in color, in from, in rotation, new Vector2(distance, thickness));
             numEntries++;
         }
 
-        public static void DrawRect(in Vector2 center, in Vector2 size, float rotation, Color color)
+        [Conditional("DEBUG")]
+        public static void DrawRect(in Vector2 center, in Vector2 size, Color color)
         {
-            throw new NotImplementedException();
+            var min = center - size / 2f;
+            var max = center + size / 2f;
+
+            DrawLine(in min, new Vector2(min.X, max.Y), color);
+            DrawLine(in max, new Vector2(min.X, max.Y), color);
+            DrawLine(in min, new Vector2(max.X, min.Y), color);
+            DrawLine(in max, new Vector2(max.X, min.Y), color);
         }
 
-        public static void FillRect(in Vector2 center, in Vector2 size, float rotation, Color color)
-        {
-            GrowBufferOnDemand();
-
-            color *= GizmosAlpha;
-            var pos = center + new Vector2(-size.X, size.Y) / 2f;
-            data[numEntries] = new CommandEntry(CommandType.Rect, in color, in pos, in rotation, in size);
-            numEntries++;
-        }
-
+        [Conditional("DEBUG")]
         internal static void OnRender()
         {
             InitRenderCache();
@@ -114,8 +114,7 @@ namespace Engine
                 data = newData;
             }
         }
-
-        [StructLayout(LayoutKind.Sequential)]
+        
         private readonly struct CommandEntry
         {
             public readonly CommandType Type;

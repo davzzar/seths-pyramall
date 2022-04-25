@@ -5,10 +5,17 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine
 {
+    /// <summary>
+    /// The camera component defines how the world is rendered to screen.<br/>
+    /// It can be thought of as a rectangle that is placed in the world and the content in the rectangle is rendered to screen.
+    /// </summary>
     public sealed class Camera : Behaviour
     {
         private float height;
 
+        /// <summary>
+        /// Gets or sets the height of the view rectangle in world units (usually meters).
+        /// </summary>
         public float Height
         {
             get => height;
@@ -28,6 +35,9 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets the matrix representing the transformation from world space to camera space.
+        /// </summary>
         public Matrix3x3 WorldToCameraSpace
         {
             get
@@ -41,9 +51,14 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets the aspect ratio of the <see cref="Camera"/>, depends on the screen width and height.
+        /// </summary>
         public float AspectRatio => Graphics.GraphicsDevice.Viewport.Height / (float)Graphics.GraphicsDevice.Viewport.Width;
         
-
+        /// <summary>
+        /// Gets the size of the screen area to which this camera is being rendered.
+        /// </summary>
         public Vector2 ScreenSize
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -51,6 +66,10 @@ namespace Engine
                 new Vector2(Graphics.GraphicsDevice.Viewport.Width, Graphics.GraphicsDevice.Viewport.Height);
         }
 
+        /// <summary>
+        /// WARNING: Don't use the constructor, use <see cref="GameObject.AddComponent{Camera}"/> instead.<br/>
+        /// Creates a new instance of the camera type.
+        /// </summary>
         public Camera()
         {
             this.height = 10f;

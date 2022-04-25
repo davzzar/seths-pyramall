@@ -1,32 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-
-namespace Engine
+﻿namespace Engine
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
+    using Microsoft.Xna.Framework;
+    using Microsoft.Xna.Framework.Graphics;
+
     public sealed class GuiTextRenderer : GuiRenderer
     {
-        public enum ScreenPositionMode
-        {
-            /// <summary>
-            /// The position is relative to the actual screen size where <b>(0, 0)</b> is the top left corner and <b>(1, 1)</b> is the bottom right corner of the screen.
-            /// </summary>
-            Relative,
-
-            /// <summary>
-            /// The position is absolute in pixel coordinates where <b>(0, 0)</b> is the top left corner and <b>(ScreenSize.Width, ScreenSize.Height)</b> is the bottom right corner of the screen.
-            /// </summary>
-            Absolute
-        }
-
         private string text;
         private SpriteFont font;
         private Vector2 textSize;
         private bool textSizeDirty;
         private bool canRender;
 
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
         public string Text
         {
             get => this.text;
@@ -34,7 +25,7 @@ namespace Engine
             {
                 if (value == null)
                 {
-                    value = "";
+                    value = string.Empty;
                 }
 
                 if (this.text == value)
@@ -48,6 +39,9 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets or sets the font.
+        /// </summary>
         public SpriteFont Font
         {
             get => this.font;
@@ -64,12 +58,18 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets or sets the font size.
+        /// </summary>
         public float FontSize { get; set; }
 
+        /// <summary>
+        /// Gets or sets the color.
+        /// </summary>
         public Color Color { get; set; }
 
         /// <summary>
-        /// The position of the text pivot on the screen.
+        /// Gets or sets the position of the text pivot on the screen.
         /// </summary>
         public Vector2 ScreenPosition { get; set; }
 
@@ -79,7 +79,7 @@ namespace Engine
         public ScreenPositionMode PositionMode { get; set; } = ScreenPositionMode.Absolute;
 
         /// <summary>
-        /// Transform independent text size
+        /// Gets the transform independent text size
         /// </summary>
         public Vector2 TextSize
         {
@@ -93,10 +93,13 @@ namespace Engine
                 return this.textSize;
             }
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GuiTextRenderer"/> class.
+        /// </summary>
         public GuiTextRenderer()
         {
-            this.text = "";
+            this.text = string.Empty;
             this.Color = Color.White;
             this.FontSize = 24f;
             this.textSizeDirty = true;
@@ -119,6 +122,7 @@ namespace Engine
             }
         }
 
+        /// <inheritdoc />
         protected override void OnAwake()
         {
             if (this.font == null)
@@ -127,6 +131,9 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Updates the text size with the exact pixel size.
+        /// </summary>
         private void UpdateTextSize()
         {
             if (this.font != null)
@@ -141,9 +148,28 @@ namespace Engine
             this.textSizeDirty = false;
         }
 
+        /// <summary>
+        /// Updates the canRender flag.
+        /// </summary>
         private void UpdateCanRender()
         {
             this.canRender = this.font != null && !string.IsNullOrWhiteSpace(this.text);
+        }
+
+        /// <summary>
+        /// The screen position mode.
+        /// </summary>
+        public enum ScreenPositionMode
+        {
+            /// <summary>
+            /// The position is relative to the actual screen size where <b>(0, 0)</b> is the top left corner and <b>(1, 1)</b> is the bottom right corner of the screen.
+            /// </summary>
+            Relative,
+
+            /// <summary>
+            /// The position is absolute in pixel coordinates where <b>(0, 0)</b> is the top left corner and <b>(ScreenSize.Width, ScreenSize.Height)</b> is the bottom right corner of the screen.
+            /// </summary>
+            Absolute
         }
     }
 }

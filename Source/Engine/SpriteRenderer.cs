@@ -47,6 +47,7 @@ namespace Engine
             {
                 Graphics.Draw(this.texture, this.Color, ref matrix, this.Depth);
             }
+            
         }
 
         /// <inheritdoc />
@@ -69,11 +70,24 @@ namespace Engine
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentPath != null && SceneManager.IsReady && this.IsActiveInHierarchy)
+            if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
             {
                 this.texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
                 this.loadFromContentPath = null;
             }
+        }
+
+        public void SetSourceRectangle(int tileId, int tileWidth,int tileHeight)
+        {
+            if (this.texture == null)
+            {
+                throw new InvalidOperationException("Can't set source rectangle before texture is ready!");
+            }
+            this.SourceRect = new Rectangle(
+                    tileId * tileWidth % texture.Width,
+                    tileId * tileWidth / texture.Width * tileHeight,
+                    tileWidth,
+                    tileHeight);
         }
     }
 }

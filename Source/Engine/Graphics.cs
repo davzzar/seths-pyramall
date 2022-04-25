@@ -17,11 +17,13 @@ namespace Engine
 
         private SpriteBatch spriteBatch;
 
-        internal static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
+        public static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
 
         internal static SpriteBatch SpriteBatch => instance.spriteBatch;
 
         public static Camera CurrentCamera => instance.currentCamera;
+
+        public static Color BackgroundColor { get; set; } = new Color(37, 9, 25);
 
         public static Vector2 ScreenSize
         {
@@ -66,6 +68,22 @@ namespace Engine
             scale *= fontSize / height;
             instance.spriteBatch.DrawString(font, text, position, color, radians, Vector2.Zero, scale,
                 SpriteEffects.None, depth);
+        }
+
+        public static void DrawGuiSprite(Texture2D texture, Color color, Vector2 size, Vector2 position, float rotation)
+        {
+            var scale = Vector2.One;
+            scale.X = size.X / texture.Width;
+            scale.Y = size.Y / texture.Height;
+            instance.spriteBatch.Draw(texture, position, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+        }
+
+        public static void DrawGuiSprite(Texture2D texture, Color color, Rectangle sourceRectangle, Vector2 size, Vector2 position, float rotation)
+        {
+            var scale = Vector2.One;
+            scale.X = size.X / sourceRectangle.Width;
+            scale.Y = size.Y / sourceRectangle.Height;
+            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, 0f,  Vector2.Zero, scale, SpriteEffects.None, 0f);
         }
 
         public static void DrawGuiText(SpriteFont font, string text, float fontSize, Color color, Vector2 position, float rotation)
