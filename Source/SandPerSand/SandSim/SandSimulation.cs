@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Engine;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -110,6 +111,9 @@ namespace SandPerSand.SandSim
             get => this.simulationStepTime;
             set => this.simulationStepTime = MathF.Max(value, 1e-5f);
         }
+
+        [CanBeNull]
+        public SandRenderer Renderer => this.sandRenderer;
 
         public int MaxSimulationSteps { get; set; }
 
