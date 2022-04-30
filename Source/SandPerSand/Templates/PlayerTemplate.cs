@@ -9,6 +9,7 @@ namespace SandPerSand
         public static GameObject MakePlayer(PlayerIndex playerIndex, Vector2 position)
         {
             var playerGo = new GameObject($"Player {playerIndex}");
+            playerGo.Transform.LocalPosition = position;
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
 
