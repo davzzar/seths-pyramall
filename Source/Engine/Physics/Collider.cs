@@ -105,7 +105,7 @@ namespace Engine
                     if (this.IsActiveInHierarchy)
                     {
                         this.owningRigidBody.Body.Remove(this.fixture);
-                        this.fixture = null;
+                        this.DestroyCurrentFixture();
                     }
                 }
 
@@ -117,21 +117,21 @@ namespace Engine
                     {
                         PhysicsManager.World.Remove(this.body);
                         this.body = null;
-                        this.fixture = null;
+                        this.DestroyCurrentFixture();
                     }
 
                     Debug.Assert(this.owningRigidBody.Body != null);
 
                     if (this.IsActiveInHierarchy)
                     {
-                        this.fixture = this.owningRigidBody.Body.CreateFixture(this.Shape);
+                        this.fixture = this.CreateFixture(this.owningRigidBody.Body);
                     }
                 }
                 else if (this.IsActiveInHierarchy)
                 {
                     this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                     Debug.Assert(this.body != null);
-                    this.fixture = this.body.CreateFixture(this.Shape);
+                    this.fixture = this.CreateFixture(this.body);
                 }
             }
         }
