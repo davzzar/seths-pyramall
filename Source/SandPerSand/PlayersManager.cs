@@ -237,9 +237,9 @@ namespace SandPerSand
     {
         public Boolean Prepared;
         public static Boolean Paused;
-        public string minor_item;
-        public string major_item;
-        public int coins;
+        public string MinorItem;
+        public string MajorItem;
+        public int Coins;
         public bool Exited { get; set; }
         public int RoundRank { get; set; }
         public InputHandler InputHandler { get; set; }
@@ -249,9 +249,9 @@ namespace SandPerSand
         {
             Prepared = false;
             Paused = false;
-            minor_item = null;
-            major_item = null;
-            coins = 0;
+            MinorItem = null;
+            MajorItem = null;
+            Coins = 0;
             Exited = false;
             RoundRank = -1;
         }
@@ -300,17 +300,17 @@ namespace SandPerSand
             //returns true if item was added
             if (Major)
             {
-                if(major_item == null)
+                if(MajorItem == null)
                 {
-                    major_item = item;
+                    MajorItem = item;
                     return true;
                 }
             }
             else
             {
-                if (minor_item == null)
+                if (MinorItem == null)
                 {
-                    minor_item = item;
+                    MinorItem = item;
                     return true;
                 }
             }
@@ -322,35 +322,35 @@ namespace SandPerSand
         {
             if (Major)
             {
-                string tmp = major_item;
-                major_item = null;
+                string tmp = MajorItem;
+                MajorItem = null;
                 return tmp;
             }
             else
             {
-                string tmp = minor_item;
-                minor_item=null;
+                string tmp = MinorItem;
+                MinorItem=null;
                 return tmp;
             }
         }
 
         public int addCoins(int amount)
         {
-            coins += amount;
-            return coins;
+            Coins += amount;
+            return Coins;
         }
 
         public (Boolean, int) spendCoins(int amount)
             //returns true when action was successfull
         {
-            if(coins > amount)
+            if(Coins > amount)
             {
-                coins = amount = coins;
-                return (true, coins);
+                Coins = amount = Coins;
+                return (true, Coins);
             }
             else
             {
-                return (false, coins);
+                return (false, Coins);
             }
         }
     }

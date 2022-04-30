@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using TiledCS;
 using Engine;
+using System.Diagnostics;
+
 
 namespace SandPerSand
 {
@@ -85,7 +87,16 @@ namespace SandPerSand
                     // Add Renderer
                     var coinRenderer = newTileGo.AddComponent<SpriteRenderer>();
                     var coinCollectable = newTileGo.AddComponent<Collectable>();
-                    coinCollectable.init(CollectableType.item, "magnet", outline);
+                    string itemId = "";
+                    foreach (TiledProperty property in tiledT.properties)
+                    {
+                        Debug.Print(property.ToString());
+                        if (property.name == "item_id")
+                        {
+                            itemId = property.value;
+                        }
+                    }
+                    coinCollectable.init(CollectableType.item, itemId, outline);
                     coinRenderer.LoadFromContent(textureAssetName);
                     coinRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     coinRenderer.Depth = this.Depth;
