@@ -25,28 +25,9 @@ namespace SandPerSand
 
         private void OnCollisionEnter(object sender, Collider e)
         {
-            throw new NotImplementedException();
+            Debug.Print("enter");
         }
 
-        protected override void Update()
-        {
-            foreach (var item in PlayersManager.Instance.Players)
-            {
-                var playerIndex = item.Key;
-                var player = item.Value;
-                var playerState = player.GetComponent<PlayerStates>();
-                if (!playerState.Exited)
-                {
-                    Vector2 distance = this.Transform.Position - player.Transform.Position;
-                    if (distance.Length() <= 1f)
-                    {
-                        Debug.Print("Player " + playerIndex + " collected." + CollectableID);
-                        // a player reached the exit
-                        //TODO record round ranking and other information somewhere
-                    }
-                }
-            }
-        }
     }
 
     public enum CollectableType
