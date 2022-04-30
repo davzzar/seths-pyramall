@@ -45,8 +45,13 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// The scene that matches the current context.<br/>
+        /// During <see cref="Component.OnAwake"/>, <see cref="Component.OnDestroy"/>, <see cref="Behaviour.Update"/>, <see cref="Behaviour.OnEnable"/>, <see cref="Behaviour.OnDisable"/>, <see cref="Renderer.Draw"/> and similar callbacks, the <see cref="ScopedScene"/> is the scene to which the current component belongs.<br/>
+        /// Otherwise it is the <see cref="ActiveScene"/>
+        /// </summary>
         [NotNull]
-        internal static Scene ScopedScene => scopedScene ?? ActiveScene;
+        public static Scene ScopedScene => scopedScene ?? ActiveScene;
 
         public static IReadOnlyList<Scene> OpenScenes { get; }
 

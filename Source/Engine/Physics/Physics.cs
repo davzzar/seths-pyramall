@@ -50,7 +50,7 @@ namespace Engine
             if (fraction < minFraction)
             {
                 minFraction = fraction;
-                hitResult = new RayCastHit(fixture, point, normal, fraction);
+                hitResult = new RayCastHit((Collider)fixture.Tag, point, normal, fraction);
             }
 
             return 1f;
