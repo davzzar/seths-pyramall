@@ -278,6 +278,11 @@ namespace SandPerSand.SandSim
                     continue;
                 }
 
+                if (collider.IsTrigger)
+                {
+                    continue;
+                }
+
                 if (collider is PolygonCollider pc)
                 {
                     this.sandFrontBuffer.AddPolygonObstacle(pc.Polygon);
