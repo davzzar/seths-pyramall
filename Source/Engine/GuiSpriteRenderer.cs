@@ -111,6 +111,7 @@ namespace Engine
         {
             if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
             {
+                Debug.Print(this.loadFromContentPath);
                 this.texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
                 this.loadFromContentPath = null;
             }

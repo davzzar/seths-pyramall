@@ -88,6 +88,7 @@ namespace SandPerSand
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             Boolean success = state.addItemToInventory(item, Major);
+            Debug.Print(item);
             if (success)
             {
                 GraphicalUserInterface.Instance.renderItem(player, item, Major);
@@ -105,8 +106,8 @@ namespace SandPerSand
         public void addCoins(PlayerIndex player, int coins)
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
-            GraphicalUserInterface.Instance.renderCoins(player, coins);
-            state.addCoins(coins);
+            int tot_coins = state.addCoins(coins);
+            GraphicalUserInterface.Instance.renderCoins(player, tot_coins);
         }
         public Boolean spendCoins(PlayerIndex player, int coins)
         {

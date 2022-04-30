@@ -72,25 +72,24 @@ namespace SandPerSand
                     exitRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     exitRenderer.Depth = this.Depth;
                     break;
-                case "Item":
+                case "Coin":
                     // Add Renderer
                     var itemRenderer = newTileGo.AddComponent<SpriteRenderer>();
                     var itemCollectable = newTileGo.AddComponent<Collectable>();
-                    itemCollectable.init(CollectableType.item, "magnet", outline);
+                    itemCollectable.init(CollectableType.coin, "Coin", outline);
                     itemRenderer.LoadFromContent(textureAssetName);
                     itemRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     itemRenderer.Depth = this.Depth;
                     break;
-                case "Coin":
+                case "Item":
                     // Add Renderer
                     var coinRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    var coinCollectable = newTileGo.AddComponent<Collectable>();
+                    coinCollectable.init(CollectableType.item, "magnet", outline);
                     coinRenderer.LoadFromContent(textureAssetName);
                     coinRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     coinRenderer.Depth = this.Depth;
-                    // Add collider and other compounents for the Tile GameObject
                     break;
-
-
             }
         }
 
