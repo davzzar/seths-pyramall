@@ -1,5 +1,6 @@
 ﻿using Engine;
 using Microsoft.Xna.Framework;
+using System;
 using System.Diagnostics;
 
 
@@ -10,12 +11,22 @@ namespace SandPerSand
         CollectableType collectableType;
         string CollectableID;
 
-        public void init(CollectableType type, string collectableID)
+        public void init(CollectableType type, string collectableID, Vector2[] outline)
         {
             this.collectableType = type;
             this.CollectableID = collectableID;
+
+            // Add collider and other compounents for the Tile GameObject
+            var collCollider = this.Owner.AddComponent<PolygonCollider>();
+            collCollider.Outline = outline;
+            collCollider.IsTrigger = true;
+            collCollider.CollisionEnter += OnCollisionEnter;
         }
 
+        private void OnCollisionEnter(object sender, Collider e)
+        {
+            throw new NotImplementedException();
+        }
 
         protected override void Update()
         {

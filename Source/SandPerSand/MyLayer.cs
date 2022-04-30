@@ -76,13 +76,10 @@ namespace SandPerSand
                     // Add Renderer
                     var itemRenderer = newTileGo.AddComponent<SpriteRenderer>();
                     var itemCollectable = newTileGo.AddComponent<Collectable>();
-                    itemCollectable.init(CollectableType.item, "magnet");
+                    itemCollectable.init(CollectableType.item, "magnet", outline);
                     itemRenderer.LoadFromContent(textureAssetName);
                     itemRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     itemRenderer.Depth = this.Depth;
-                    // Add collider and other compounents for the Tile GameObject
-                    var tileCollider = newTileGo.AddComponent<CircleCollider>();
-                    tileCollider.isTrigger = true;
                     break;
                 case "Coin":
                     // Add Renderer
