@@ -297,12 +297,18 @@ namespace Engine
 
         private void OnSeparation(Fixture sender, Fixture other, Contact contact)
         {
-            this.OnCollisionExit((Collider)other.Tag);
+            if (!this.IsTrigger || !((Collider)other.Tag).IsTrigger)
+            {
+                this.OnCollisionExit((Collider)other.Tag);
+            }
         }
 
         private bool OnCollision(Fixture sender, Fixture other, Contact contact)
         {
-            this.OnCollisionEnter((Collider)other.Tag);
+            if (!this.IsTrigger || !((Collider)other.Tag).IsTrigger)
+            {
+                this.OnCollisionEnter((Collider)other.Tag);
+            }
 
             return !this.IsTrigger;
         }
