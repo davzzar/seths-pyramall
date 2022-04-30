@@ -21,8 +21,8 @@ namespace SandPerSand.SandSim
         public Color SandSourceColor { get; set; } = Color.Orange;
 
         public Color StableSandColor { get; set; } = new Color(202, 103, 2);
-        // How different the stable sand can be
-        public int StableSandColourRange = 251;
+        public int[,] StableSandColorOffset;
+        public int StableSandColourRange = 200;
 
         public Color FlowingSandColor { get; set; } = new Color(196, 88, 47);
 
@@ -64,6 +64,20 @@ namespace SandPerSand.SandSim
                 this.sandTextureData = new Color[this.sandTexture.Width * this.sandTexture.Height];
             }
 
+            if (this.StableSandColorOffset == null)
+            {
+                // Create the random offsets for the texture
+                this.StableSandColorOffset = new int[this.sandTexture.Width, this.sandTexture.Height];
+                Random r = new Random();
+                for (var y = 0; y < this.sandTexture.Height; y++)
+                {
+                    for (var x = 0; x < this.sandTexture.Width; x++)
+                    {
+                        this.StableSandColorOffset[x, y] = r.Next();
+                    }
+                }
+            }
+
             //var offset = new Vector2(0, this.SandGrid.CellSize.Y);
             
             for (var y = 0; y < this.SandGrid.ResolutionY; y++)
@@ -82,8 +96,7 @@ namespace SandPerSand.SandSim
                         else if (cell.IsSandStable)
                         {
                             // color = this.StableSandColor;
-                            double RandomValueFromPosition = (double)(x * (this.StableSandColourRange / 4) + y * (this.StableSandColourRange / 4));
-                            RandomValueFromPosition = ( (RandomValueFromPosition % this.StableSandColourRange) / this.StableSandColourRange);
+                            double RandomValueFromPosition = ( (double)(StableSandColorOffset[x, y] % this.StableSandColourRange) / this.StableSandColourRange);
                             int Red   = (int)(this.StableSandColor.R * RandomValueFromPosition) % 256;
                             int Green = (int)(this.StableSandColor.G * RandomValueFromPosition) % 256;
                             int Blue  = (int)(this.StableSandColor.B * RandomValueFromPosition) % 256;
