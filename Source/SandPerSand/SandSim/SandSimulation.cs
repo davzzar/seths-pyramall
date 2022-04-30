@@ -358,6 +358,10 @@ namespace SandPerSand.SandSim
 
         private void DoSimulationStep()
         {
+            if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
+            {
+                return;
+            }
             // Swap the update buffers and prepare them for the next update
             (this.updateFrontBuffer, this.updateBackBuffer) = (this.updateBackBuffer, this.updateFrontBuffer);
             this.updateBackBuffer.Clear();
@@ -423,7 +427,7 @@ namespace SandPerSand.SandSim
             this.sandGridReader.SandGrid = this.sandFrontBuffer;
 
             this.number_of_updates += 1;
-            if (this.number_of_updates % this.raising_sand_step == 0)
+            if (this.number_of_updates > 500 && this.number_of_updates % this.raising_sand_step == 0)
             {
                 if (this.raising_sand_current_depth + this.raising_sand_upper_margin < this.ResolutionY)
                 {
