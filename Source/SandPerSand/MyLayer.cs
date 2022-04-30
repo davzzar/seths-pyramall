@@ -6,6 +6,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using TiledCS;
 using Engine;
+using System.Diagnostics;
+
 
 namespace SandPerSand
 {
@@ -72,7 +74,33 @@ namespace SandPerSand
                     exitRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     exitRenderer.Depth = this.Depth;
                     break;
-
+                case "Coin":
+                    // Add Renderer
+                    var itemRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    var itemCollectable = newTileGo.AddComponent<Collectable>();
+                    itemCollectable.init(CollectableType.coin, "Coin", outline);
+                    itemRenderer.LoadFromContent(textureAssetName);
+                    itemRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    itemRenderer.Depth = this.Depth;
+                    break;
+                case "Item":
+                    // Add Renderer
+                    var coinRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    var coinCollectable = newTileGo.AddComponent<Collectable>();
+                    string itemId = "";
+                    foreach (TiledProperty property in tiledT.properties)
+                    {
+                        Debug.Print(property.ToString());
+                        if (property.name == "item_id")
+                        {
+                            itemId = property.value;
+                        }
+                    }
+                    coinCollectable.init(CollectableType.item, itemId, outline);
+                    coinRenderer.LoadFromContent(textureAssetName);
+                    coinRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    coinRenderer.Depth = this.Depth;
+                    break;
             }
         }
 

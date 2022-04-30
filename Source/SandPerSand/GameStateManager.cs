@@ -16,16 +16,12 @@ namespace SandPerSand
         public bool TriggerExit()
         {
             Debug.Print("exit trigger script is run");
-            Debug.Print(currentState.ToString());
-            Debug.Print(exitTrigger.ToString());
             if(currentState== GameState.InRound||
                 currentState== GameState.CountDown)
             {
-                Debug.Print("reached if statement");
                 if (exitTrigger == false)
                 {
                     exitTrigger = true;
-                    Debug.Print(this.exitTrigger.ToString());
                     return true;
                 }
             }

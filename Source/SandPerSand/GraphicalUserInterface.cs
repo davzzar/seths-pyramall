@@ -144,18 +144,15 @@ namespace SandPerSand
             var tiled_id_and_path = mapping[item];
             int tiled_id = tiled_id_and_path.Item1;
             string tiled_string = tiled_id_and_path.Item2;
-            Debug.Print(tiled_id.ToString());
             if (Major)
             {
-                renderPlayers[playerIndex].majorItem.LoadFromContent(tiled_string);
+                renderPlayers[playerIndex].majorItem.LoadFromContent(tiled_string.Substring(0, tiled_string.Length - 4));
                 renderPlayers[playerIndex].majorItem.SetSourceRectangle(tiled_id, 32, 32);
             }
             else
             {
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
-                renderPlayers[playerIndex].minorItem.LoadFromContent(tiled_string);
+                renderPlayers[playerIndex].minorItem.LoadFromContent(tiled_string.Substring(0, tiled_string.Length - 4));
                 renderPlayers[playerIndex].minorItem.SetSourceRectangle(tiled_id, 32, 32);
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
             }
         }
 

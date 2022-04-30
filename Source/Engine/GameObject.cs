@@ -12,7 +12,7 @@ namespace Engine
     /// To add logic and data, add components using <see cref="AddComponent{T}"/>.<br/>
     /// To get one or multiple reference(s) to other components on a game object instance, use <see cref="GetComponent{T}"/> or <see cref="GetComponents{T}()"/> respectively.
     /// </summary>
-    public sealed class GameObject
+    public class GameObject
     {
         /// <summary>
         /// Contains all components that belong to this game object (including behaviours)

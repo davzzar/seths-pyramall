@@ -6,12 +6,18 @@
    <property name="item_id" value="lightning"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="9.70044" y="5.15575" width="14.4743" height="21.1195"/>
+  </objectgroup>
  </tile>
  <tile id="1" type="Item">
   <properties>
    <property name="item_id" value="magnet"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="2.67335" y="2.74973" width="27.1918" height="27.1918"/>
+  </objectgroup>
  </tile>
  <tile id="2" type="Item"/>
  <tile id="3" type="Item"/>
