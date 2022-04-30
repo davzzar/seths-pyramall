@@ -29,10 +29,11 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2),typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             CreateGUI();
             CreateMultiGamePadTest();
+            CreateBackground();
 
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
@@ -105,6 +106,20 @@ namespace SandPerSand
         {
             var guiGo = new GameObject();
             var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+        }
+
+        private static void CreateBackground()
+        {
+            var backgroundParent = new GameObject();
+            var parentSway = backgroundParent.AddComponent<SwayComponent>();
+
+            var backgroundGo = new GameObject();
+            //backgroundGo.Transform.Parent = backgroundParent.Transform;
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LossyScale = new Vector2(60, 60);
+            var background = backgroundGo.AddComponent<SpriteRenderer>();
+            background.LoadFromContent("background");
+            background.Depth = 2f;
         }
 
         private static void CreateMultiGamePadTest()
@@ -278,6 +293,8 @@ namespace SandPerSand
             sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
             sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
+
+            
         }
 
         /// <summary>

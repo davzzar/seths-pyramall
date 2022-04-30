@@ -179,6 +179,7 @@ namespace Engine
             }
         }
         public bool IsLoop;
+        public bool IsAtEnd;
         public string Name;
 
         public Animation(Frame[] frameArray)
@@ -186,13 +187,24 @@ namespace Engine
             Frames = frameArray;
             FrameItr = 0;
             IsLoop = true;
+            IsAtEnd = false;
             Name = null;
         }
 
         public void NextFrame()
         {
-            FrameItr += 1;
-            FrameItr %= Frames.Length;
+            if(FrameItr < Frames.Length - 1)
+            {
+                FrameItr += 1;
+            }
+            else if(IsLoop)
+            {
+                FrameItr = 0;
+            }
+            else if(!IsAtEnd)
+            {
+                IsAtEnd = true;
+            }
         }
 
     }

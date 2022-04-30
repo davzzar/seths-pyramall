@@ -20,9 +20,9 @@ namespace SandPerSand.SandSim
 
         public Color SandSourceColor { get; set; } = Color.Orange;
 
-        public Color StableSandColor { get; set; } = Color.Yellow;
+        public Color StableSandColor { get; set; } = new Color(202, 103, 2);
 
-        public Color FlowingSandColor { get; set; } = Color.LightYellow;
+        public Color FlowingSandColor { get; set; } = new Color(196, 88, 47);
 
         public int MaxLayer { get; set; } = 1;
 

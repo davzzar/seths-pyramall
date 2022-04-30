@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace SandPerSand
 {
@@ -20,7 +21,25 @@ namespace SandPerSand
             };
 
             var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("ProtoPlayer");
+
+            string spritePath = "";
+            switch (playerIndex)
+            {
+                case (PlayerIndex.One):
+                    spritePath = "sprite_player_one";
+                    break;
+                case (PlayerIndex.Two):
+                    spritePath = "sprite_player_two";
+                    break;
+                case (PlayerIndex.Three):
+                    spritePath = "sprite_player_three";
+                    break;
+                case (PlayerIndex.Four):
+                    spritePath = "sprite_player_four";
+                    break;
+            }
+
+            playerRenderer.LoadFromContent(spritePath);
             playerRenderer.Depth = 0f;
 
             var playerCollider = playerGo.AddComponent<CircleCollider>();
@@ -35,6 +54,9 @@ namespace SandPerSand
             playerGo.AddComponent<GroundCheckComponent>();
 
             var inputHandler = new InputHandler(playerIndex);
+            Debug.Print("playerwith player index created");
+            Debug.Print(playerIndex.ToString());
+
             var controlComp = playerGo.AddComponent<PlayerControlComponent>();
             controlComp.InputHandler = inputHandler;
 
@@ -48,8 +70,37 @@ namespace SandPerSand
             tracer.TraceLength = 60;
 
             var cameraControlPoint = playerGo.AddComponent<CameraControlPoint>();
-            cameraControlPoint.Margin = new Border(5, 15, 5, 10);
+            cameraControlPoint.Margin = new Border(5, 10, 5, 5);
 
+            return playerGo;
+        }
+
+        public static GameObject AddAnim(GameObject playerGo)
+        {
+            // delete static sprite
+            playerGo.GetComponent<SpriteRenderer>().Destroy();
+
+            // animator need to be created after controlComp and input handler
+            var playerAnimator = playerGo.AddComponent<Animator>();
+            var playerIndex = playerGo.GetComponent<PlayerControlComponent>().InputHandler.PlayerIndex;
+            string animationPath = "";
+            switch (playerIndex)
+            {
+                case (PlayerIndex.One):
+                    animationPath = "PlayerAnimated";
+                    break;
+                case (PlayerIndex.Two):
+                    animationPath = "PlayerAnimated2";
+                    break;
+                case (PlayerIndex.Three):
+                    animationPath = "PlayerAnimated3";
+                    break;
+                case (PlayerIndex.Four):
+                    animationPath = "PlayerAnimated4";
+                    break;
+            }
+            playerAnimator.LoadFromContent(animationPath);
+            var playerAnimatorController = playerGo.AddComponent<MyAnimatorController>();
             return playerGo;
         }
     }
