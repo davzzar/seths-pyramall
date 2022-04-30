@@ -88,7 +88,6 @@ namespace SandPerSand
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             Boolean success = state.addItemToInventory(item, Major);
-            Debug.Print(item);
             if (success)
             {
                 GraphicalUserInterface.Instance.renderItem(player, item, Major);

@@ -18,7 +18,6 @@ namespace SandPerSand
             if (destroy)
             {
                 this.Owner.Destroy();
-                Debug.Print("destroyed");
             }
         }
 
@@ -43,10 +42,6 @@ namespace SandPerSand
 
         private void ItemCollision(object sender, Collider e)
         {
-            Debug.Print(sender.ToString());
-
-            //playerGo playerGo = e.Owner;
-
             foreach (var item in PlayersManager.Instance.Players)
             {
                 var playerIndex = item.Key;
@@ -55,18 +50,18 @@ namespace SandPerSand
 
                 if(collider == e)
                 {
-                    Debug.Print(playerIndex.ToString());
                     this.destroy = PlayersManager.Instance.addItemToInventory(playerIndex, CollectableID, false);
+                    if (this.destroy)
+                    {
+                        Debug.Print("Item " + CollectableID + " was collected by player " + playerIndex.ToString());
+                    }
+                    return;
                 }
             }
         }
 
         private void CoinCollision(object sender, Collider e)
         {
-            Debug.Print(sender.ToString());
-
-            //playerGo playerGo = e.Owner;
-
             foreach (var item in PlayersManager.Instance.Players)
             {
                 var playerIndex = item.Key;
@@ -77,6 +72,7 @@ namespace SandPerSand
                 {
                     PlayersManager.Instance.addCoins(playerIndex, 1);
                     this.destroy = true;
+                    Debug.Print("Coin was collected by player" + playerIndex.ToString());
                 }
             }
         }
