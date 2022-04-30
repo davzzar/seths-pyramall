@@ -288,10 +288,13 @@ namespace Engine
 
         private void DestroyCurrentFixture()
         {
-            Debug.Assert(this.fixture != null);
+            if (this.fixture == null)
+            {
+                return;
+            }
 
-            this.fixture.OnCollision += this.OnCollision;
-            this.fixture.OnSeparation += this.OnSeparation;
+            this.fixture.OnCollision -= this.OnCollision;
+            this.fixture.OnSeparation -= this.OnSeparation;
             this.fixture = null;
         }
 
