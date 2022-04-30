@@ -18,6 +18,10 @@ namespace SandPerSand
 
         public Aabb Bounds { get; set; } = new Aabb(0f, 0f, float.PositiveInfinity, float.PositiveInfinity);
 
+        public float ZoomSpeed { get; set; } = 6f;
+
+        public float MoveSpeed { get; set; } = 6f;
+
         public static void AddControlPoint([NotNull]CameraControlPoint controlPoint)
         {
             if (controlPoint == null)

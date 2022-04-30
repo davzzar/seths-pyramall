@@ -42,22 +42,22 @@ namespace Engine
         private Graphics()
         { }
 
-        public static void Draw(Texture2D texture, Color color, ref Matrix3x3 matrix, float depth)
+        public static void Draw(Texture2D texture, Color color, ref Matrix3x3 matrix, float depth, SpriteEffects effect = SpriteEffects.None)
         {
             var viewSpace = instance.currentWorldToView * matrix;
             viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
             scale.X /= texture.Width;
             scale.Y /= texture.Height;
-            instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
+            instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, effect, depth);
         }
         
-        public static void Draw(Texture2D texture, Color color, Rectangle sourceRectangle, ref Matrix3x3 matrix, float depth)
+        public static void Draw(Texture2D texture, Color color, Rectangle sourceRectangle, ref Matrix3x3 matrix, float depth, SpriteEffects effect = SpriteEffects.None)
         {
             var viewSpace = instance.currentWorldToView * matrix;
             viewSpace.DecomposeTRS(out var position, out var radians, out var scale);
             scale.X /= sourceRectangle.Width;
             scale.Y /= sourceRectangle.Height;
-            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, radians, Vector2.Zero, scale, SpriteEffects.None, depth);
+            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, radians, Vector2.Zero, scale, effect, depth);
         }
 
         public static void DrawText(SpriteFont font, string text, float fontSize, Color color, ref Matrix3x3 matrix, float depth)
@@ -70,20 +70,20 @@ namespace Engine
                 SpriteEffects.None, depth);
         }
 
-        public static void DrawGuiSprite(Texture2D texture, Color color, Vector2 size, Vector2 position, float rotation)
+        public static void DrawGuiSprite(Texture2D texture, Color color, Vector2 size, Vector2 position, float rotation, SpriteEffects effect = SpriteEffects.None)
         {
             var scale = Vector2.One;
             scale.X = size.X / texture.Width;
             scale.Y = size.Y / texture.Height;
-            instance.spriteBatch.Draw(texture, position, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+            instance.spriteBatch.Draw(texture, position, null, color, 0f, Vector2.Zero, scale, effect, 0f);
         }
 
-        public static void DrawGuiSprite(Texture2D texture, Color color, Rectangle sourceRectangle, Vector2 size, Vector2 position, float rotation)
+        public static void DrawGuiSprite(Texture2D texture, Color color, Rectangle sourceRectangle, Vector2 size, Vector2 position, float rotation, SpriteEffects effect = SpriteEffects.None)
         {
             var scale = Vector2.One;
             scale.X = size.X / sourceRectangle.Width;
             scale.Y = size.Y / sourceRectangle.Height;
-            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, 0f,  Vector2.Zero, scale, SpriteEffects.None, 0f);
+            instance.spriteBatch.Draw(texture, position, sourceRectangle, color, 0f,  Vector2.Zero, scale, effect, 0f);
         }
 
         public static void DrawGuiText(SpriteFont font, string text, float fontSize, Color color, Vector2 position, float rotation)
