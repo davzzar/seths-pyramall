@@ -47,6 +47,7 @@ namespace Engine
 
         public void NextAnime(string animName)
         {
+            this.CurrentAnime.Reset();
             if (this.animes.ContainsKey(animName))
             {
                 this.currentAnimeKey = animName;
@@ -205,6 +206,12 @@ namespace Engine
             {
                 IsAtEnd = true;
             }
+        }
+
+        public void Reset()
+        {
+            IsAtEnd = false;
+            FrameItr = 0;
         }
 
     }
