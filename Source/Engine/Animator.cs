@@ -12,6 +12,7 @@ namespace Engine
         private Dictionary<string, Animation> animes;
         private string currentAnimeKey = null;
         private string loadFromContentPath;
+        private string textureAssetName = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
 
@@ -75,6 +76,17 @@ namespace Engine
             this.loadFromContentPath = path;
             this.LoadFromContentPath();
         }
+        public void LoadFromContent(string path,string texture)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            this.loadFromContentPath = path;
+            this.textureAssetName = texture;
+            this.LoadFromContentPath();
+        }
 
         private void LoadFromContentPath()
         {
@@ -92,7 +104,10 @@ namespace Engine
 
             // TODO load texture in SpriteRenderer;
             // TODO better Tiled project structure and accurate paths
-            var textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            if (textureAssetName == null)
+            {
+                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            }
             var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
             this.renderer.LoadFromContent(textureAssetName);
