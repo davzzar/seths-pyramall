@@ -78,9 +78,6 @@ namespace SandPerSand
             {
                 players.Add(playerIndex, Template.MakePlayer(playerIndex, position));
             }
-
-            PlayerGo.AddAnim(players[playerIndex]);
-
         }
 
         public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
