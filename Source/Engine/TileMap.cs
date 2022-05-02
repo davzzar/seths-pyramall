@@ -246,7 +246,7 @@ namespace Engine
 
                 // Get (X,Y) OnLayer
                 int x = layerTileItr % TiledLayer.width;
-                int y = -layerTileItr / TiledLayer.height + TiledLayer.height - 1;
+                int y = -layerTileItr / TiledLayer.width + TiledLayer.height - 1;
 
                 // Create GameObject
                 var newTileGo = new GameObject();
