@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
+using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using Myra.Graphics2D;
+using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
+using AppContext = System.AppContext;
 
 namespace SandPerSand
 {
@@ -29,7 +34,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             CreateGUI();
             CreateMultiGamePadTest();
@@ -310,6 +315,11 @@ namespace SandPerSand
 
             private Scene loadedScene;
 
+            public void LoadAt(int index)
+            {
+                this.RunSceneLoader(index);
+            }
+
             /// <inheritdoc />
             protected override void Update()
             {
@@ -427,12 +437,77 @@ namespace SandPerSand
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
+
                 CreateMap("test_level_1");
                 CreateCamera();
                 CreateSandPhysics_level_1();
+            }
+        }
 
+        private class MainMenu : Component
+        {
+            protected override void OnAwake()
+            {
+                // The vertical stack panel widget places the children in a vertical line with some spacing
+                var panel = new VerticalStackPanel()
+                {
+                    Spacing = 20,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
 
+                // Create a start button with green text
+                var startButton = new TextButton
+                {
+                    Text = "Start",
+                    TextColor = Color.LimeGreen,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                // When the start button is clicked, remove the GUI by setting UI.Root to null
+                startButton.Click += (sender, e) =>
+                {
+                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
+                    loadManager.LoadAt(1);
+                    UI.Root = null;
+                };
+
+                // Add a non-functional settings button
+                var settingsButton = new TextButton
+                {
+                    Text = "Settings",
+                    TextColor = Color.CornflowerBlue,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                // Lastly an exit button that kills the app dead
+                var exitButton = new TextButton
+                {
+                    Text = "Exit",
+                    TextColor = Color.Red,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                exitButton.Click += (sender, e) =>
+                {
+                    GameEngine.Instance.Exit();
+                };
+
+                // Add the buttons in the correct order
+                panel.AddChild(startButton);
+                panel.AddChild(settingsButton);
+                panel.AddChild(exitButton);
+
+                UI.Root = panel;
+                UI.IsMouseVisible = true;
             }
         }
     }
 }
+
