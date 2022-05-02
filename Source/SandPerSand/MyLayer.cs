@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using TiledCS;
 using Engine;
 using System.Diagnostics;
-
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -35,6 +35,11 @@ namespace SandPerSand
                 {
                     this.Depth = float.Parse(p.value);
                     break;
+                }
+                else if(p.name == "SimulationSpeed")
+                {
+                    SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();
+                    sandSim.SimulationStepTime = float.Parse(p.value) * 2 * 1f / 80;
                 }
             }
 
@@ -100,6 +105,26 @@ namespace SandPerSand
                     coinRenderer.LoadFromContent(textureAssetName);
                     coinRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
                     coinRenderer.Depth = this.Depth;
+                    break;
+                case "SandSource":
+                    SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();
+                    int size = 0;
+                    foreach (TiledProperty property in tiledT.properties)
+                    {
+                        Debug.Print(property.ToString());
+                        if (property.name == "size")
+                        {
+                            size = int.Parse(property.value);
+                        }
+                    }
+                    Vector2 pos = newTileGo.Transform.Position;
+                    Debug.Print("test");
+                    Debug.Print((pos.X + 0.5f).ToString());
+                    Debug.Print((pos.Y + 0.5f).ToString());
+
+                    sandSim.AddSandSource(new Aabb(pos.X, pos.Y, size / 64f, size / 64f));
+                    //sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
+
                     break;
             }
         }
