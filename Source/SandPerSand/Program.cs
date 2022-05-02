@@ -86,10 +86,22 @@ namespace SandPerSand
 
         private static void CreateMap(string mapName)
         {
-            var tileMapGo = new GameObject();
 
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+
+            var tileMapGo = new GameObject();
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
+
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            Debug.Print(map.Size.ToString());
+            sandSim.ResolutionX = (int) (map.Size.X * 5);
+            sandSim.ResolutionY = (int) (map.Size.Y * 5);
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
@@ -283,7 +295,6 @@ namespace SandPerSand
             sandSim.Min = new Vector2(-.5f, -.5f);
             var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
-            Debug.Print(map.Size.ToString());
             sandSim.ResolutionX = 300;
             sandSim.ResolutionY = 300;
             sandSim.SimulationStepTime = 1f / 80;
@@ -429,7 +440,7 @@ namespace SandPerSand
                 }
                 CreateMap("test_level_1");
                 CreateCamera();
-                CreateSandPhysics_level_1();
+                //CreateSandPhysics_level_1();
 
 
             }
