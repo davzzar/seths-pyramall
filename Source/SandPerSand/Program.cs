@@ -21,15 +21,20 @@ namespace SandPerSand
             var engine = new GameEngine();
 
             // Initialize the scene by adding some game objects and components
-            
-            CreateFpsText();
 
+            #if DEBUG
+            CreateFpsText();
             Collider.ShowGizmos = true;
-            
+            #endif
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadScene0), typeof(LoadScene1), typeof(LoadScene2) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+
+            CreateGUI();
+            CreateMultiGamePadTest();
+            CreateBackground();
+
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -37,6 +42,7 @@ namespace SandPerSand
 
             // Start the engine, this call blocks until the game is closed
             engine.Run();
+
         }
 
         private static GameObject CreateCamera()
@@ -44,7 +50,8 @@ namespace SandPerSand
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
-            var cameraController = cameraGo.AddComponent<CameraController>();
+            var cameraController = cameraGo.AddComponent<CameraController2>();
+            cameraController.Bounds = Aabb.FromMinMax(new Vector2(-2, -2f), new Vector2(51, 100f));
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -79,47 +86,59 @@ namespace SandPerSand
 
         private static void CreateMap(string mapName)
         {
+
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+
             var tileMapGo = new GameObject();
-
-            var tileMapComp = tileMapGo.AddComponent<TileMap>();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
+
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            Debug.Print(map.Size.ToString());
+            sandSim.ResolutionX = (int) (map.Size.X * 5);
+            sandSim.ResolutionY = (int) (map.Size.Y * 5);
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
+            //var rightBorderGo = new GameObject("Right border");
+            //rightBorderGo.Transform.Position = new Vector2(-2, 0);
+            //var rightBorderComp = rightBorderGo.AddComponent<CameraControlPoint>();
+            //rightBorderComp.AffectsVertical = false;
+            //
+            //var leftBorderGo = new GameObject("Left border");
+            //leftBorderGo.Transform.Position = new Vector2(61, 0);
+            //var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
+            //leftBorderComp.AffectsVertical = false;
         }
-        
-        private static GameObject CreatePlayer(Vector2 position)
+
+        private static void CreateGUI()
         {
-            var playerGo = new GameObject
-            {
-                Transform =
-                {
-                    Position = position
-                }
-            };
+            var guiGo = new GameObject();
+            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+        }
 
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-            playerRenderer.LoadFromContent("ProtoPlayer");
-            playerRenderer.Depth = 0f;
+        private static void CreateBackground()
+        {
+            var backgroundParent = new GameObject();
+            var parentSway = backgroundParent.AddComponent<SwayComponent>();
 
-            var playerCollider = playerGo.AddComponent<CircleCollider>();
-            playerCollider.Radius = 1f;
-            playerCollider.Friction = 0.0f;
+            var backgroundGo = new GameObject();
+            //backgroundGo.Transform.Parent = backgroundParent.Transform;
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LossyScale = new Vector2(60, 60);
+            var background = backgroundGo.AddComponent<SpriteRenderer>();
+            background.LoadFromContent("background");
+            background.Depth = 2f;
+        }
 
-            var playerRB = playerGo.AddComponent<RigidBody>();
-            playerRB.IsKinematic = false;
-            playerRB.FreezeRotation = true;
-            playerRB.IgnoreGravity = true;
-
-            playerGo.AddComponent<GroundCheckComponent>();
-
-            var controlComp = playerGo.AddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = new InputHandler(PlayerIndex.One);
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = playerGo.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
-
-            return playerGo;
+        private static void CreateMultiGamePadTest()
+        {
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
         }
 
         private static void CreatePerformanceTest(int count)
@@ -257,7 +276,7 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            var map = GameObject.FindComponent<TileMap>();
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
@@ -267,6 +286,26 @@ namespace SandPerSand
             
             sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
+        }
+
+        private static void CreateSandPhysics_level_1()
+        {
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            sandSim.ResolutionX = 300;
+            sandSim.ResolutionY = 300;
+            sandSim.SimulationStepTime = 1f / 80;
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
+            sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
+            sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
+            sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
+
+            
         }
 
         /// <summary>
@@ -338,7 +377,7 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                CreatePlayer(new Vector2(5,5));
+                //PlayerGo.Create(PlayerIndex.One, new Vector2(5,5));
 
                 Debug.Print("Loaded Scene 0: Debug with Sand");
             }
@@ -353,7 +392,7 @@ namespace SandPerSand
             {
                 CreateMap("debug_map");
                 CreateCamera();
-                CreatePlayer(new Vector2(5, 5));
+                //PlayerGo.Create(PlayerIndex.One, new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
                 
                 Debug.Print("Loaded Scene 1: Debug with Physics");
@@ -366,10 +405,10 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                var playerGo = CreatePlayer(new Vector2(10, 1));
+                //var playerGo = PlayerGo.Create(PlayerIndex.One, new Vector2(10, 1));
 
                 var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
-                cameraSwitcherComp.Parent = playerGo;
+                //cameraSwitcherComp.Parent = playerGo;
                 /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
                 cameraSwitcherComp.GlobalHeight = 30f;*/
                 cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
@@ -377,10 +416,33 @@ namespace SandPerSand
                 cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
 
                 // add camera as a player child GO as a hacky way to make it follow them
-                cameraGo.Transform.Parent = playerGo.Transform;
+                //cameraGo.Transform.Parent = playerGo.Transform;
                 cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
 
                 Debug.Print("Loaded Scene 2: Controller Testing");
+            }
+        }
+
+        /// <summary>
+        /// Loads the scene with multiplayer test; multiple players would be
+        /// automatically created with regard to number of connected GamePad.
+        /// </summary>
+        private class LoadSceneMultiplayer : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+                CreateMap("test_level_1");
+                CreateCamera();
+                //CreateSandPhysics_level_1();
+
+
             }
         }
     }

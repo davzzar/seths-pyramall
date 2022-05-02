@@ -5,7 +5,7 @@ namespace Engine
 {
     public readonly struct RayCastHit
     {
-        public readonly Fixture Fixture;
+        public readonly Collider Collider;
 
         public readonly Vector2 Point;
 
@@ -13,9 +13,9 @@ namespace Engine
 
         public readonly float Fraction;
 
-        public RayCastHit(Fixture fixture, in Vector2 point, in Vector2 normal, float fraction)
+        public RayCastHit(Collider collider, in Vector2 point, in Vector2 normal, float fraction)
         {
-            this.Fixture = fixture;
+            this.Collider = collider;
             this.Point = point;
             this.Normal = normal;
             this.Fraction = fraction;

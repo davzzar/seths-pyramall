@@ -32,7 +32,7 @@ namespace SandPerSand
 
         // Vertical movement
         private float verticalSpeed;
-        private const float JumpHeight = 5f; // explicit jump height       
+        private const float JumpHeight = 8f; // explicit jump height       
         private const float MaxFallingSpeed = -20f;
         
         // Player Gravity and Variable Jump Height
@@ -74,11 +74,6 @@ namespace SandPerSand
         {
 
             // add needed components
-            if (InputHandler == null)
-            {
-                throw new MemberAccessException("No InputHandler attached to this player.");  
-            }
-            
             rigidBody = this.Owner.GetOrAddComponent<RigidBody>();
             rigidBody.IgnoreGravity = true;
             groundChecker = this.Owner.GetOrAddComponent<GroundCheckComponent>();
@@ -134,8 +129,10 @@ namespace SandPerSand
 
             // Update the input handler's state
             InputHandler.UpdateState();
-            
+
+            #if DEBUG
             ShowDebug();
+            #endif
         }
 
         /// <summary>

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using Engine;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
@@ -9,18 +7,39 @@ namespace SandPerSand.SandSim
 {
     public interface IReadOnlySandGrid
     {
+        /// <summary>
+        /// Gets the number of cells along the X axis.
+        /// </summary>
         public int ResolutionX { get; }
 
+        /// <summary>
+        /// Gets the number of cells along the Y axis.
+        /// </summary>
         public int ResolutionY { get; }
 
+        /// <summary>
+        /// Gets the world size of the bounding rectangle
+        /// </summary>
         public Vector2 Size { get; }
 
+        /// <summary>
+        /// Gets the lower left corner of the bounding rectangle
+        /// </summary>
         public Vector2 Position { get; }
 
+        /// <summary>
+        /// Gets the world size of a single cell
+        /// </summary>
         public Vector2 CellSize { get; }
         
+        /// <summary>
+        /// Gets the cell at the given index.
+        /// </summary>
         public SandCell this[in int x, in int y] { get; }
 
+        /// <summary>
+        /// Gets the cell at the given index.
+        /// </summary>
         public SandCell this[in Int2 index] { get; }
 
         /// <summary>

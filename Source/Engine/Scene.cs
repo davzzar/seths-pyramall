@@ -18,7 +18,7 @@ namespace Engine
 
         public string Name { get; set; }
 
-        public bool IsActive => SceneManager.ActiveScene == this;
+        public bool IsActiveScene => SceneManager.ActiveScene == this;
 
         public bool IsLoaded => this.isLoaded;
 

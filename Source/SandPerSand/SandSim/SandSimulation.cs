@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Engine;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 
 namespace SandPerSand.SandSim
@@ -31,6 +32,13 @@ namespace SandPerSand.SandSim
         private float currentSimulationTime;
 
         private readonly SandGridReader sandGridReader;
+
+        // Used to determine the level of the raising sand
+        private int number_of_updates;
+        private int raising_sand_current_depth;
+        private bool raising_sand_needs_update;
+        private int raising_sand_step;
+        private int raising_sand_upper_margin;
 
         public int ResolutionX
         {
@@ -104,6 +112,9 @@ namespace SandPerSand.SandSim
             set => this.simulationStepTime = MathF.Max(value, 1e-5f);
         }
 
+        [CanBeNull]
+        public SandRenderer Renderer => this.sandRenderer;
+
         public int MaxSimulationSteps { get; set; }
 
         public int MaxLayer { get; set; } = 2;
@@ -134,6 +145,12 @@ namespace SandPerSand.SandSim
             this.newSandLookup = new HashSet<Int2>();
 
             this.sandGridReader = new SandGridReader();
+
+            this.number_of_updates = 0;
+            this.raising_sand_current_depth = 1;
+            this.raising_sand_needs_update = false;
+            this.raising_sand_step = 7;
+            this.raising_sand_upper_margin = 10;
         }
 
         public void AddSandSource(in Aabb rect)
@@ -261,6 +278,11 @@ namespace SandPerSand.SandSim
                     continue;
                 }
 
+                if (collider.IsTrigger)
+                {
+                    continue;
+                }
+
                 if (collider is PolygonCollider pc)
                 {
                     this.sandFrontBuffer.AddPolygonObstacle(pc.Polygon);
@@ -341,6 +363,10 @@ namespace SandPerSand.SandSim
 
         private void DoSimulationStep()
         {
+            if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
+            {
+                return;
+            }
             // Swap the update buffers and prepare them for the next update
             (this.updateFrontBuffer, this.updateBackBuffer) = (this.updateBackBuffer, this.updateFrontBuffer);
             this.updateBackBuffer.Clear();
@@ -368,6 +394,29 @@ namespace SandPerSand.SandSim
                 }
             }
 
+            // Fill Sand from Below
+            if (this.raising_sand_needs_update == true)
+            {
+                for (int i = 1; i < this.ResolutionX - 1; i++)
+                {
+                    int j = this.raising_sand_current_depth;
+                    Int2 index = new Int2(i, j);
+
+                    var cell = this.sandFrontBuffer[in index];
+
+                    if (cell.IsEmpty)
+                    {
+                        cell.MarkSand();
+                        var newLayer = this.GetSandLayer(cell, index.X, index.Y);
+                        cell.Layer = (byte)newLayer;
+                        this.sandBackBuffer[in index] = cell;
+                        this.MarkNeighborsForUpdate(index.X, index.Y);
+                        this.MarkForStabilityCheck(index.X, index.Y);
+                    }
+                }
+                this.raising_sand_needs_update = false;
+            }
+            
             for (var i = 0; i < this.newSandBuffer.Count; i++)
             {
                 var index = this.newSandBuffer[i];
@@ -381,6 +430,16 @@ namespace SandPerSand.SandSim
             (this.sandFrontBuffer, this.sandBackBuffer) = (this.sandBackBuffer, this.sandFrontBuffer);
             this.sandRenderer.SandGrid = this.sandFrontBuffer;
             this.sandGridReader.SandGrid = this.sandFrontBuffer;
+
+            this.number_of_updates += 1;
+            if (this.number_of_updates > 500 && this.number_of_updates % this.raising_sand_step == 0)
+            {
+                if (this.raising_sand_current_depth + this.raising_sand_upper_margin < this.ResolutionY)
+                {
+                    this.raising_sand_current_depth += 1;
+                    this.raising_sand_needs_update = true;
+                }
+            }
         }
 
         private int GetSandLayer(SandCell cell, int x, int y)
