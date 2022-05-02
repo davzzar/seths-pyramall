@@ -22,7 +22,7 @@ namespace SandPerSand.SandSim
 
         public Color StableSandColor { get; set; } = new Color(202, 103, 2);
         public int[,] StableSandColorOffset;
-        public int StableSandColourRange = 200;
+        public int StableSandColourRange = 1000;
 
         public Color FlowingSandColor { get; set; } = new Color(196, 88, 47);
 
@@ -73,7 +73,7 @@ namespace SandPerSand.SandSim
                 {
                     for (var x = 0; x < this.sandTexture.Width; x++)
                     {
-                        this.StableSandColorOffset[x, y] = r.Next();
+                        this.StableSandColorOffset[x, y] = r.Next(0, 100);
                     }
                 }
             }
@@ -96,7 +96,8 @@ namespace SandPerSand.SandSim
                         else if (cell.IsSandStable)
                         {
                             // color = this.StableSandColor;
-                            double RandomValueFromPosition = ( (double)(StableSandColorOffset[x, y] % this.StableSandColourRange) / this.StableSandColourRange);
+                            double RandomValueFromPosition = (double)(StableSandColorOffset[x, y]);
+                            RandomValueFromPosition = 1.0 + ((RandomValueFromPosition - 50) / (1000000)) * this.StableSandColourRange;
                             int Red   = (int)(this.StableSandColor.R * RandomValueFromPosition) % 256;
                             int Green = (int)(this.StableSandColor.G * RandomValueFromPosition) % 256;
                             int Blue  = (int)(this.StableSandColor.B * RandomValueFromPosition) % 256;
