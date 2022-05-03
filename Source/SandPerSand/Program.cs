@@ -31,8 +31,11 @@ namespace SandPerSand
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
+
             CreateGUI();
-            CreateMultiGamePadTest();
             CreateBackground();
 
 
@@ -136,9 +139,7 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            var managerGo = new GameObject();
-            managerGo.AddComponent<GameStateManager>();
-            managerGo.AddComponent<PlayersManager>();
+            
         }
 
         private static void CreatePerformanceTest(int count)
@@ -377,7 +378,6 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5,5));
 
                 Debug.Print("Loaded Scene 0: Debug with Sand");
             }
@@ -392,7 +392,6 @@ namespace SandPerSand
             {
                 CreateMap("debug_map");
                 CreateCamera();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
                 
                 Debug.Print("Loaded Scene 1: Debug with Physics");
@@ -405,19 +404,6 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                //var playerGo = PlayerGo.Create(PlayerIndex.One, new Vector2(10, 1));
-
-                var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
-                //cameraSwitcherComp.Parent = playerGo;
-                /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 30f;*/
-                cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 15f;
-                cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
-
-                // add camera as a player child GO as a hacky way to make it follow them
-                //cameraGo.Transform.Parent = playerGo.Transform;
-                cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
 
                 Debug.Print("Loaded Scene 2: Controller Testing");
             }

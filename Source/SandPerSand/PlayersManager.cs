@@ -72,15 +72,12 @@ namespace SandPerSand
                 {
                     players[playerIndex].Destroy();
                 }
-                players[playerIndex] = PlayerGo.Create(playerIndex, position);
+                players[playerIndex] = Template.MakePlayer(playerIndex, position);
             }
             else
             {
-                players.Add(playerIndex, PlayerGo.Create(playerIndex, position));
+                players.Add(playerIndex, Template.MakePlayer(playerIndex, position));
             }
-
-            PlayerGo.AddAnim(players[playerIndex]);
-
         }
 
         public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
