@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿using System;
+using Engine;
 using Microsoft.Xna.Framework;
 using Ray = Engine.Ray;
 
@@ -16,10 +17,10 @@ namespace SandPerSand
 
         // TODO find a better way of setting this without assuming ground
         // layer intex to be zero.
-        private LayerMask groundLayer = LayerMask.FromLayers(0);
+        private readonly LayerMask groundLayer = LayerMask.FromLayers(0);
         private float colliderOffset = 0.01f;
-        private const int resolution = 8;
-        private const float minShallowness = 0.9f;
+        private const int Resolution = 8;
+        private float MaxIncline = MathF.Sin(MathF.PI/4.0f);
 
         /// <summary>
         /// A check which casts rays along the bottom of the parent according to a spatial resolution.
@@ -33,9 +34,9 @@ namespace SandPerSand
             var maxRayLength = size.Y / 2f + 0.1f;
 
             bool didCollide = false;
-            for (var i = 0; i < resolution; i++)
+            for (var i = 0; i < Resolution; i++)
             {
-                var origin = pos0 + Vector2.UnitX * (i / (float)(resolution - 1));
+                var origin = pos0 + Vector2.UnitX * (i / (float)(Resolution - 1));
                 var ray = new Ray(origin, -Vector2.UnitY);
                 Gizmos.DrawLine(origin, origin - Vector2.UnitY * maxRayLength, Color.Yellow);
                 // if there was a collision
@@ -43,7 +44,7 @@ namespace SandPerSand
                 {
                     Gizmos.DrawLine(origin, hit.Point, Color.Red);
                     // check the angle of hit to see if we're colliding with a floor.   
-                    didCollide |= hit.Normal.Y >= minShallowness;
+                    didCollide |= hit.Normal.Y >= MaxIncline;
                 }
             }
             return didCollide;
