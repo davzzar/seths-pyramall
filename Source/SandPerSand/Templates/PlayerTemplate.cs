@@ -6,24 +6,20 @@ namespace SandPerSand
 {
     public static partial class Template
     {
+        /// <summary>
+        /// Create and instantiate a player game object from template.
+        /// </summary>
+        /// <param name="playerIndex">Index of the layer to be created</param>
+        /// <param name="position">Vector position for the player to be created</param>
+        /// <returns></returns>
         public static GameObject MakePlayer(PlayerIndex playerIndex, Vector2 position)
         {
+            var inputHandler = new InputHandler(playerIndex);
+            Debug.Print("player with player index created");
+            Debug.Print(playerIndex.ToString());
+
             var playerGo = new GameObject($"Player {playerIndex}");
             playerGo.Transform.LocalPosition = position;
-
-            var playerRenderer = playerGo.AddComponent<SpriteRenderer>();
-
-            string spritePath = playerIndex switch
-            {
-                (PlayerIndex.One) => "sprite_player_one",
-                (PlayerIndex.Two) => "sprite_player_two",
-                (PlayerIndex.Three) => "sprite_player_three",
-                (PlayerIndex.Four) => "sprite_player_four",
-                _ => ""
-            };
-
-            playerRenderer.LoadFromContent(spritePath);
-            playerRenderer.Depth = 0f;
 
             var playerCollider = playerGo.AddComponent<CircleCollider>();
             playerCollider.Radius = 1f;
@@ -36,15 +32,26 @@ namespace SandPerSand
 
             playerGo.AddComponent<GroundCheckComponent>();
 
-            var inputHandler = new InputHandler(playerIndex);
-            Debug.Print("player with player index created");
-            Debug.Print(playerIndex.ToString());
-
             var controlComp = playerGo.AddComponent<PlayerControlComponent>();
             controlComp.InputHandler = inputHandler;
 
             var playerStates = playerGo.AddComponent<PlayerStates>();
             playerStates.InputHandler = inputHandler;
+
+            // animator need to be created after controlComp and input handler
+            var playerAnimator = playerGo.AddComponent<Animator>();
+             
+            string animationTexture = playerIndex switch
+            {
+                (PlayerIndex.One) => "PlayerAnimated",
+                (PlayerIndex.Two) => "PlayerAnimated2",
+                (PlayerIndex.Three) => "PlayerAnimated3",
+                (PlayerIndex.Four) => "PlayerAnimated4",
+                _=> ""
+            };
+            
+            playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
+            playerGo.AddComponent<MyAnimatorController>();
 
             //FOR DEBUG (updated in the PlayerControlComponent)
             var textRenderer = playerGo.AddComponent<GuiTextRenderer>();
