@@ -139,7 +139,8 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            
+            var managerGo = Template.MakeGameStateManager();
+            managerGo.AddComponent<PlayersManager>();
         }
 
         private static void CreatePerformanceTest(int count)

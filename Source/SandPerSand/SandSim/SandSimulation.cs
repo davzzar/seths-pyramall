@@ -363,7 +363,7 @@ namespace SandPerSand.SandSim
 
         private void DoSimulationStep()
         {
-            if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
+            if (typeof(GameStateManager.Instance.CurrentState) != InRoundState) && GameStateManager.Instance.CurrentState != GameState.CountDown)
             {
                 return;
             }
