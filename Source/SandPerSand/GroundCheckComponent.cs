@@ -10,17 +10,11 @@ namespace SandPerSand
     /// </summary>
     class GroundCheckComponent : Component
     {
-        public GroundCheckComponent() 
-        {
-        }
-
-
-        // TODO find a better way of setting this without assuming ground
-        // layer intex to be zero.
         private readonly LayerMask groundLayer = LayerMask.FromLayers(0);
-        private float colliderOffset = 0.01f;
-        private const int Resolution = 8;
-        private float MaxIncline = MathF.Sin(MathF.PI/4.0f);
+        public int Resolution = 3;
+        public float SkinWidth = 0.35f; //Offset of the ray casts 
+        public float MaxIncline = MathF.Sin(MathF.PI/4.0f);
+        public float RayExtrusion = 0.1f;
 
         /// <summary>
         /// A check which casts rays along the bottom of the parent according to a spatial resolution.
@@ -28,24 +22,23 @@ namespace SandPerSand
         /// <returns>True if any of the cast rays intersect with the ground layer (layer 0).</returns>
         public bool IsGrounded()
         {
-            var size = this.Transform.Scale;
-            var pos0 = this.Transform.Position;
-            pos0.X -= size.X / 2f;
-            var maxRayLength = size.Y / 2f + 0.1f;
+            var size = Transform.Scale;
+            var pos0 = Transform.Position;
+            pos0.X = (pos0.X - size.X / 2f) + SkinWidth;
+            var maxRayLength = size.Y / 2f + RayExtrusion;
 
-            bool didCollide = false;
+            var didCollide = false;
             for (var i = 0; i < Resolution; i++)
             {
-                var origin = pos0 + Vector2.UnitX * (i / (float)(Resolution - 1));
+                var origin = pos0 + i *  Vector2.UnitX * (size.X - 2 * SkinWidth) / (Resolution - 1);
                 var ray = new Ray(origin, -Vector2.UnitY);
-                Gizmos.DrawLine(origin, origin - Vector2.UnitY * maxRayLength, Color.Yellow);
-                // if there was a collision
-                    if (Physics.RayCast(ray, out var hit, maxRayLength, groundLayer))
-                {
-                    Gizmos.DrawLine(origin, hit.Point, Color.Red);
-                    // check the angle of hit to see if we're colliding with a floor.   
-                    didCollide |= hit.Normal.Y >= MaxIncline;
-                }
+                Gizmos.DrawLine(origin, origin - Vector2.UnitY * maxRayLength, Color.Yellow); 
+                
+                // if there was no collision, skip
+                if (!Physics.RayCast(ray, out var hit, maxRayLength, groundLayer)) continue;
+                Gizmos.DrawLine(origin, hit.Point, Color.Red);
+                // check the angle of hit to see if we're colliding with a floor.   
+                didCollide |= hit.Normal.Y >= MaxIncline;
             }
             return didCollide;
         }
