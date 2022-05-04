@@ -98,6 +98,12 @@ namespace Engine
             this.Owner.RemoveComponent(this);
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"{this.GetType().Name} \"{this.Name}\"";
+        }
+
         /// <summary>
         /// Called exactly once when the <see cref="Component"/> is awakened for the first time.<br/>
         /// It is guaranteed that <see cref="OnAwake"/> will be called before all other engine callbacks for this component.<br/>
