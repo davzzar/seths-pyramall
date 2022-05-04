@@ -32,10 +32,14 @@ namespace SandPerSand
 
             InputHandler = new InputHandler(PlayerIndex);
             Debug.Print($"Player with player index {PlayerIndex.ToString()} created");
-
-            var playerCollider = Owner.AddComponent<CircleCollider>();
-            playerCollider.Radius = 1f;
+            
+            var colliderGo = new GameObject();
+            colliderGo.Transform.Parent = Owner.Transform;
+            colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);
+            var playerCollider = colliderGo.AddComponent<CircleCollider>();
+            playerCollider.Radius = 0.65f;
             playerCollider.Friction = 0.0f;
+
 
             var playerRB = Owner.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
