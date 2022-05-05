@@ -14,8 +14,9 @@ namespace SandPerSand
 
         private bool wasOnCollision;
         private GameObject infoGo;
-        private int stock;
-        private string itemId;
+        private int stock = 10;
+        private int price = 100;
+        private string itemId = "Swap";
 
         private bool BuyButtonPressed
         {
@@ -26,7 +27,7 @@ namespace SandPerSand
             }
         }
 
-        private SpriteRenderer infoRenderer;
+        
 
         protected override void OnAwake()
         {
@@ -53,10 +54,7 @@ namespace SandPerSand
                 // check input handler
                 if (BuyButtonPressed)
                 {
-                    //play animation
-
-                    //add item to player
-                    Debug.Print("Shop item: player"+ playerIndex + " bought me");
+                    Buy();
                 }
             }
             else
@@ -99,6 +97,27 @@ namespace SandPerSand
             ToggleInfo();
         }
 
+        private void Buy()
+        {
+            if (stock > 0)
+            {
+                // TODO deduct players' coins check enough amount
+                stock--;
+                // TODO add item to player
+                Debug.Print("Shop item: player" + playerIndex + " bought me");
+                UpdateInfo();
+            }
+            else
+            {
+                Debug.Print("Shop item: out of stock");
+                return;
+            }
+            //play animation
+
+            
+            
+        }
+
         private void ToggleInfo()
         {
             if (infoGo == null)
@@ -106,14 +125,8 @@ namespace SandPerSand
                 //create item info go
                 infoGo = new GameObject();
                 infoGo.Transform.Parent = this.Transform;
-                // TODO hard code
-                infoGo.Transform.LocalPosition = new Vector2(3, 4);
-                infoGo.Transform.LossyScale = new Vector2(5, 8);
-                infoRenderer = infoGo.AddComponent<SpriteRenderer>();
-                // TODO hard code
-                infoRenderer.LoadFromContent("shop/iteminfo");
-
-
+                var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
+                infoComp.UpdateInfo(price, stock);
                 // TODO add item info animator
                 // TODO add item sprite
                 // TODO update stock
@@ -121,10 +134,18 @@ namespace SandPerSand
             }
             else
             {
+                infoGo.GetComponent<ShopItemInfoComponent>().DestoryChildren();
                 infoGo.Destroy();
                 infoGo = null;
             }
+        }
 
+        private void UpdateInfo()
+        {
+            if (infoGo != null)
+            {
+                infoGo.GetComponent<ShopItemInfoComponent>().UpdateInfo(price, stock);
+            }
         }
     }
 }
