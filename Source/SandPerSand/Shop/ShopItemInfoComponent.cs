@@ -109,14 +109,5 @@ namespace SandPerSand
             soldRen.LoadFromContent("shop/sold");
             soldRen.Depth = .04f;
         }
-
-        public void DestoryChildren()
-        {
-            if (itemImgGo != null) itemImgGo.Destroy();
-            if (priceGo != null) priceGo.Destroy();
-            if (stockGo != null) stockGo.Destroy();
-            if (buttonGo != null) buttonGo.Destroy();
-            if(soldGo!=null) soldGo.Destroy();
-        }
     }
 }

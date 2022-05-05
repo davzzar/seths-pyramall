@@ -146,7 +146,7 @@ namespace SandPerSand
             }
             else
             {
-                infoGo.GetComponent<ShopItemInfoComponent>().DestoryChildren();
+                //infoGo.GetComponent<ShopItemInfoComponent>().DestoryChildren();
                 infoGo.Destroy();
                 infoGo = null;
             }
