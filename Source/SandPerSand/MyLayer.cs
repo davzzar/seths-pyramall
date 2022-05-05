@@ -12,7 +12,7 @@ using SandPerSand.SandSim;
 namespace SandPerSand
 {
     
-    public class MyLayer : Layer
+    public class MyLayer : TileLayer
     {
         public float Depth { get; set; }
 
@@ -51,7 +51,10 @@ namespace SandPerSand
             var tiledT = tile.TiledTile;
             var tileId = tile.ID;
             var newTileGo = new GameObject();
-            newTileGo.Transform.Position = new Vector2(tile.X, tile.Y);
+            TileGos[tile.X, tile.Y] = newTileGo;
+            newTileGo.Transform.Parent = LayerGo.Transform;
+            newTileGo.Transform.LocalPosition = new Vector2(tile.X, tile.Y);
+
             var outline = tile.ColliderOutline;
             // Add different behavior compounents according to tile.type
             switch (tiledT.type)

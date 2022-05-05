@@ -9,7 +9,7 @@ using System.Diagnostics;
 
 namespace Engine
 {
-    public sealed class TileMap<T> : Component where T : Layer,new()
+    public sealed class TileMap<T> : Component where T : TileLayer,new()
     {
         private string loadFromContentMapPath;
 
@@ -66,7 +66,7 @@ namespace Engine
             this.Layers = InitLayers(tiledMap.Layers);
 
             // Load each Tile on each Layer
-            foreach(Layer layer in this.Layers)
+            foreach(TileLayer layer in this.Layers)
             {
                 layer.ParseLayerProperties();
                 layer.ParseTiles(tiledMap,tiledsetsByFirstGridId,outlinesByGridId);
@@ -202,145 +202,7 @@ namespace Engine
         }
     }
 
-    public class Layer
-    {
-        public TiledLayer TiledLayer { get; set; }
-        public Tile[] Tiles { get; set; }
-        public GameObject[] TileGos { get; set; }
-        public int TileWidth { get; set; }
-        public int TileHeight { get; set; }
 
-        private List<GameObject> tileGoList;
-
-        public Layer()
-        {
-            TiledLayer = null;
-            TileGos = null;
-            TileWidth = 32;
-            TileHeight = 32;
-            this.tileGoList = new List<GameObject>();
-        }
-
-        public virtual void ParseLayerProperties()
-        {
-            if (TiledLayer == null)
-            {
-                throw new InvalidOperationException("Can't parse properties" +
-                    "before TiledLayer is ready");
-            }
-
-        }
-
-        // Property 'public Tile[] Tiles' must be filled by this method
-        public virtual void ParseTiles(TiledMap sourceTiledMap,
-            Dictionary<int, TiledTileset> tiledsetsByFirstGridId,
-            Dictionary<int, Vector2[]> outlinesByGridId)
-        {
-            this.TileWidth = sourceTiledMap.TileWidth;
-            this.TileHeight = sourceTiledMap.TileHeight;
-
-            if (TiledLayer == null)
-            {
-                throw new InvalidOperationException("Can't parse Tiles" +
-                    "before TiledLayer is ready");
-            }
-            var tileList = new List<Tile>();
-            for (int layerTileItr = 0; layerTileItr < TiledLayer.data.Length; ++layerTileItr)
-            {
-                // Start with gridId and firstGridId
-                int gridId = TiledLayer.data[layerTileItr];
-                if (gridId <= 0)
-                    continue;
-                int firstGridId = sourceTiledMap.GetTiledMapTileset(gridId).firstgid;
-                // Get tileId
-                int tileId = gridId - firstGridId;
-
-                // Get outline (if applicable)
-                Vector2[] outline = null;
-                if (outlinesByGridId.ContainsKey(gridId))
-                {
-                    outline = outlinesByGridId[gridId];
-                }
-
-                var tile = ParseTileInfo(
-                    layerTileItr,
-                    gridId,
-                    tileId,
-                    tiledsetsByFirstGridId[firstGridId],
-                    outline);
-                tileList.Add(tile);
-
-            }
-            this.Tiles = tileList.ToArray();
-
-            // Register Tile GameObjects
-            this.tileGoList = new List<GameObject>();
-            foreach(Tile tile in Tiles){
-                BuildTile(tile);
-            }
-            this.TileGos = tileGoList.ToArray();
-        }
-
-        private Tile ParseTileInfo(int layerTileItr, int gridId, int tileId,
-            TiledTileset tiledS, Vector2[] outline)
-        {
-            //Tile
-            var tile = new Tile();
-            // Get (X,Y) OnLayer
-            tile.X = layerTileItr % TiledLayer.width;
-            tile.Y = -layerTileItr / TiledLayer.width + TiledLayer.height - 1;
-            // Get Tileset
-            tile.PixelWidth = tiledS.TileWidth;
-            tile.PixelHeight = tiledS.TileHeight;
-            tile.GridWidth = tiledS.TileWidth / this.TileWidth;
-            tile.GridHeight = tiledS.TileHeight / this.TileHeight;
-            tile.TextureName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
-            tile.TiledTile = tiledS.Tiles[tileId];
-            //Debug.Print(tiledS.TileWidth + " / " + TiledLayer.width + "==" + tile.GridWidth);
-            // Get outline (if applicable)
-            tile.ColliderOutline = outline;
-            return tile;
-        }
-
-        // Rewrite this method to parse customized tiles
-        public virtual void BuildTile(Tile tile)
-        {
-            var newTileGo = new GameObject();
-            string textureAssetName = tile.TextureName;
-            var tiledT = tile.TiledTile;
-            var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
-            tileRenderer.LoadFromContent(textureAssetName);
-            tileRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth,tile.PixelHeight);
-
-            // Add collider and other compounents for the Tile GameObject
-            if (tile.ColliderOutline != null)
-            {
-                var tileCollider = newTileGo.AddComponent<PolygonCollider>();
-                tileCollider.Outline = tile.ColliderOutline;
-            }
-            tileGoList.Add(newTileGo);
-        }
-
-    }
-
-    public struct Tile
-    {
-        public int X;
-        public int Y;
-        public int ID { get => TiledTile.id; }
-        public string Type { get => TiledTile.type; }
-
-        public int PixelWidth;
-        public int PixelHeight;
-        public float GridWidth;
-        public float GridHeight;
-
-        public string TextureName;
-
-        public TiledTile TiledTile;
-        public Vector2[] ColliderOutline;
-
-    }
 
 
 }
