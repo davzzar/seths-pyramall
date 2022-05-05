@@ -6,21 +6,67 @@
    <property name="item_id" value="lightning"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="9.70044" y="5.15575" width="14.4743" height="21.1195"/>
+  </objectgroup>
  </tile>
  <tile id="1" type="Item">
   <properties>
    <property name="item_id" value="magnet"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="2.67335" y="2.74973" width="27.1918" height="27.1918"/>
+  </objectgroup>
  </tile>
- <tile id="2" type="Item"/>
- <tile id="3" type="Item"/>
- <tile id="4" type="Item"/>
- <tile id="5" type="Item"/>
- <tile id="6" type="Item"/>
- <tile id="7" type="Item"/>
- <tile id="8" type="Item"/>
- <tile id="9" type="Item"/>
+ <tile id="2" type="Item">
+  <properties>
+   <property name="item_id" value="ice_block"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="3" type="Item">
+  <properties>
+   <property name="item_id" value="portable_sand_source"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="4" type="Item">
+  <properties>
+   <property name="item_id" value="sunglasses"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="5" type="Item">
+  <properties>
+   <property name="item_id" value="position_swap"/>
+   <property name="item_type" value="major"/>
+  </properties>
+ </tile>
+ <tile id="6" type="Item">
+  <properties>
+   <property name="item_id" value="wings"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="7" type="Item">
+  <properties>
+   <property name="item_id" value="speedup"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="8" type="Item">
+  <properties>
+   <property name="item_id" value="dizzy_eyes"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
+ <tile id="9" type="Item">
+  <properties>
+   <property name="item_id" value="shield"/>
+   <property name="item_type" value="minor"/>
+  </properties>
+ </tile>
  <tile id="10" type="Item"/>
  <tile id="11" type="Item"/>
  <tile id="12" type="Item"/>

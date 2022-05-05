@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
+using System.IO;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using TiledCS;
 
 namespace SandPerSand
 {
-    public class GraphicalUserInterface : Component
+    public class GraphicalUserInterface : Behaviour
     {
         public static GraphicalUserInterface Instance
         {
@@ -24,6 +26,10 @@ namespace SandPerSand
         private Dictionary<PlayerIndex, RenderPlayer> renderPlayers;
         private Dictionary<PlayerIndex, Vector2> positions, positionsUnits;
         private Dictionary<string, Vector2> object_size, delta_object;
+        private Dictionary<string, int> itemIDtoTiledID;
+        private TiledTileset tiledS;
+        private GameState oldGameState = GameState.RoundCheck;
+
         protected override void OnAwake()
         {
             positions = new Dictionary<PlayerIndex, Vector2>{
@@ -53,6 +59,25 @@ namespace SandPerSand
             };
 
             renderPlayers = new Dictionary<PlayerIndex, RenderPlayer>();
+
+            itemIDtoTiledID = new Dictionary<string, int>();
+            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+
+            if (tiledS == null)
+            {
+                throw new NullReferenceException("Load tiledS Failed");
+            }
+
+            foreach (TiledTile tile in tiledS.Tiles)
+            {
+                foreach (TiledProperty property in tile.properties)
+                {
+                    if (property.name == "item_id")
+                    {
+                        itemIDtoTiledID[property.value] = tile.id;
+                    }
+                }
+            }
         }
 
 
@@ -63,6 +88,49 @@ namespace SandPerSand
             guiGo.Transform.LocalPosition = new Vector2(0.0f, 0f);
         }
 
+        protected override void Update()
+        {
+            base.Update();
+            if (oldGameState != GameStateManager.Instance.CurrentState)
+            {
+                GameState newGameState = GameStateManager.Instance.CurrentState;
+
+                if (newGameState == GameState.Prepare)
+                {
+                    if (midScreenTextComp == null)
+                    {
+                        renderMidScreenText("Press A to start the Game");
+                    }
+                    else
+                    {
+                        updateMidScreenText("Press A to start the Game");
+                    }
+                }
+                if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                {
+                    destroyMidScreenText();
+                }
+                if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                {
+                    GraphicalUserInterface.Instance.renderMidScreenText("10.0 Seconds to Finish the Round");
+                }
+                if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                {
+                    string ranks = "";
+                    //display ranks on screen
+                    foreach (var item in PlayersManager.Instance.Players)
+                    {
+                        ranks += item.Value.GetComponent<PlayerStates>().RoundRank + " - Player " + item.Key + "\n";
+                    }
+                    GraphicalUserInterface.Instance.updateMidScreenText(ranks);
+                }
+
+                oldGameState = newGameState;
+            } else if (oldGameState == GameState.CountDown)
+            {
+                GraphicalUserInterface.Instance.updateMidScreenText(String.Format("{0:0.0}", 10f - GameStateManager.Instance.countDowncounter) + " Seconds to Finish the Round");
+            }
+        }
 
         public void renderMidScreenText(string midScreenText)
         {
@@ -120,7 +188,7 @@ namespace SandPerSand
             renderPlayers[playerIndex].coins.screenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
             renderPlayers[playerIndex].coins.sizeUnits = object_size["small"];
             renderPlayers[playerIndex].coins.size = new Vector2(0f, 0f);
-            renderPlayers[playerIndex].coins.sourceWindow = new Rectangle(0, 0, 32, 32);
+            renderPlayers[playerIndex].coins.sourceRectangle = new Rectangle(0, 0, 32, 32);
 
             renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
             renderPlayers[playerIndex].numOfCoins.Text = "00x";
@@ -139,29 +207,32 @@ namespace SandPerSand
 
         public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
         {
-            TileMap<MyLayer> map = GameObject.FindComponent<TileMap<MyLayer>>();
-            var mapping = map.getItemTilesIdsAndPaths();
-            var tiled_id_and_path = mapping[item];
-            int tiled_id = tiled_id_and_path.Item1;
-            string tiled_string = tiled_id_and_path.Item2;
-            Debug.Print(tiled_id.ToString());
+            int id = itemIDtoTiledID[item];
+
             if (Major)
             {
-                renderPlayers[playerIndex].majorItem.LoadFromContent(tiled_string);
-                renderPlayers[playerIndex].majorItem.SetSourceRectangle(tiled_id, 32, 32);
+                renderPlayers[playerIndex].majorItem.LoadFromContent(Path.GetFileNameWithoutExtension(tiledS.Image.source));
+                renderPlayers[playerIndex].majorItem.SetSourceRectangle(id, 32, 32);
             }
             else
             {
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
-                renderPlayers[playerIndex].minorItem.LoadFromContent(tiled_string);
-                renderPlayers[playerIndex].minorItem.SetSourceRectangle(tiled_id, 32, 32);
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
+                renderPlayers[playerIndex].minorItem.LoadFromContent(Path.GetFileNameWithoutExtension(tiledS.Image.source));
+                renderPlayers[playerIndex].minorItem.SetSourceRectangle(id, 32, 32);
             }
         }
 
         public void removeItem(PlayerIndex playerIndex, Boolean Major)
         {
-
+            if (Major)
+            {
+                renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
+                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+            }
+            else
+            {
+                renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
+                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+            }
         }
 
         public void renderCoins(PlayerIndex playerIndex, int coins)

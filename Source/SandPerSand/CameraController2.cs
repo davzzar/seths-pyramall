@@ -112,8 +112,8 @@ namespace SandPerSand
             }
 
             // Update the camera 
-            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center, this.MoveSpeed * Time.DeltaTime);
-            this.camera.Height = MathHelper.Lerp(this.camera.Height, size.Y, this.ZoomSpeed * Time.DeltaTime);
+            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center, 4 * Time.DeltaTime);
+            this.camera.Height = MathHelper.Lerp(this.camera.Height, size.Y, 4 * Time.DeltaTime);
         }
     }
 }

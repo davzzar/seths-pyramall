@@ -36,8 +36,11 @@ namespace SandPerSand
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
+
             CreateGUI();
-            CreateMultiGamePadTest();
             CreateBackground();
 
 
@@ -91,10 +94,22 @@ namespace SandPerSand
 
         private static void CreateMap(string mapName)
         {
-            var tileMapGo = new GameObject();
 
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+
+            var tileMapGo = new GameObject();
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
+
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            Debug.Print(map.Size.ToString());
+            sandSim.ResolutionX = (int) (map.Size.X * 5);
+            sandSim.ResolutionY = (int) (map.Size.Y * 5);
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
@@ -129,9 +144,7 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            var managerGo = new GameObject();
-            managerGo.AddComponent<GameStateManager>();
-            managerGo.AddComponent<PlayersManager>();
+            
         }
 
         private static void CreatePerformanceTest(int count)
@@ -288,7 +301,6 @@ namespace SandPerSand
             sandSim.Min = new Vector2(-.5f, -.5f);
             var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
-            Debug.Print(map.Size.ToString());
             sandSim.ResolutionX = 300;
             sandSim.ResolutionY = 300;
             sandSim.SimulationStepTime = 1f / 80;
@@ -376,7 +388,6 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5,5));
 
                 Debug.Print("Loaded Scene 0: Debug with Sand");
             }
@@ -391,7 +402,6 @@ namespace SandPerSand
             {
                 CreateMap("debug_map");
                 CreateCamera();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
                 
                 Debug.Print("Loaded Scene 1: Debug with Physics");
@@ -404,19 +414,6 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                //var playerGo = PlayerGo.Create(PlayerIndex.One, new Vector2(10, 1));
-
-                var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
-                //cameraSwitcherComp.Parent = playerGo;
-                /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 30f;*/
-                cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 15f;
-                cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
-
-                // add camera as a player child GO as a hacky way to make it follow them
-                //cameraGo.Transform.Parent = playerGo.Transform;
-                cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
 
                 Debug.Print("Loaded Scene 2: Controller Testing");
             }
@@ -440,7 +437,7 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
-                CreateSandPhysics_level_1();
+                //CreateSandPhysics_level_1();
             }
         }
 
