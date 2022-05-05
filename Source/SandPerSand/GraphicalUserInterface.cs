@@ -10,7 +10,7 @@ using TiledCS;
 
 namespace SandPerSand
 {
-    public class GraphicalUserInterface : Component
+    public class GraphicalUserInterface : Behaviour
     {
         public static GraphicalUserInterface Instance
         {
@@ -28,6 +28,7 @@ namespace SandPerSand
         private Dictionary<string, Vector2> object_size, delta_object;
         private Dictionary<string, int> itemIDtoTiledID;
         private TiledTileset tiledS;
+        private GameState oldGameState = GameState.RoundCheck;
 
         protected override void OnAwake()
         {
@@ -87,6 +88,49 @@ namespace SandPerSand
             guiGo.Transform.LocalPosition = new Vector2(0.0f, 0f);
         }
 
+        protected override void Update()
+        {
+            base.Update();
+            if (oldGameState != GameStateManager.Instance.CurrentState)
+            {
+                GameState newGameState = GameStateManager.Instance.CurrentState;
+
+                if (newGameState == GameState.Prepare)
+                {
+                    if (midScreenTextComp == null)
+                    {
+                        renderMidScreenText("Press A to start the Game");
+                    }
+                    else
+                    {
+                        updateMidScreenText("Press A to start the Game");
+                    }
+                }
+                if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                {
+                    destroyMidScreenText();
+                }
+                if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                {
+                    GraphicalUserInterface.Instance.renderMidScreenText("10.0 Seconds to Finish the Round");
+                }
+                if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                {
+                    string ranks = "";
+                    //display ranks on screen
+                    foreach (var item in PlayersManager.Instance.Players)
+                    {
+                        ranks += item.Value.GetComponent<PlayerStates>().RoundRank + " - Player " + item.Key + "\n";
+                    }
+                    GraphicalUserInterface.Instance.updateMidScreenText(ranks);
+                }
+
+                oldGameState = newGameState;
+            } else if (oldGameState == GameState.CountDown)
+            {
+                GraphicalUserInterface.Instance.updateMidScreenText(String.Format("{0:0.0}", 10f - GameStateManager.Instance.countDowncounter) + " Seconds to Finish the Round");
+            }
+        }
 
         public void renderMidScreenText(string midScreenText)
         {
