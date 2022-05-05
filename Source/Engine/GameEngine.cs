@@ -14,7 +14,7 @@ namespace Engine
     {
         private static GameEngine instance;
         
-        internal static GameEngine Instance
+        public static GameEngine Instance
         {
             get
             {
@@ -92,6 +92,7 @@ namespace Engine
             Time.Init();
             PhysicsManager.Init();
             SceneManager.Init();
+            UI.Initialize();
             this.RenderPipeline.Init();
         }
         
