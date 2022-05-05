@@ -1,6 +1,7 @@
 ﻿using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Diagnostics;
 
 namespace SandPerSand
@@ -16,7 +17,22 @@ namespace SandPerSand
         private GameObject infoGo;
         private int stock = 10;
         private int price = 100;
-        private string itemId = "Swap";
+        private string description;
+        private string itemImg;
+        private string itemId = null;
+        public string ItemId
+        {
+            get => itemId;
+            set
+            {
+                itemId = value;
+                // TODO set stock, price, description accordingly, probably aquire from a ItemWiki class
+                stock = 10;
+                price = 100;
+                description = "this is a dummy description";
+                itemImg = "shop/item_unknown";
+            }
+        }
 
         private bool BuyButtonPressed
         {
@@ -27,19 +43,18 @@ namespace SandPerSand
             }
         }
 
-        
-
-        protected override void OnAwake()
-        {
-            base.OnAwake();
-            wasOnCollision = false;
-            infoGo = null;
-            playerInput = null;
-        }
-
         protected override void OnEnable()
         {
             base.OnEnable();
+            wasOnCollision = false;
+            infoGo = null;
+            playerInput = null;
+            if (itemId == null)
+            {
+                // FIXME
+                ItemId = "unknown";
+                //throw new InvalidOperationException();
+            }
         }
 
         protected override void Update()
@@ -126,11 +141,8 @@ namespace SandPerSand
                 infoGo = new GameObject();
                 infoGo.Transform.Parent = this.Transform;
                 var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
-                infoComp.UpdateInfo(price, stock);
-                // TODO add item info animator
-                // TODO add item sprite
-                // TODO update stock
-                // TODO add sold sprite
+                infoComp.FillInForm(itemId, price, stock, itemImg, description);
+                // TODO add item info animator?
             }
             else
             {
@@ -144,7 +156,7 @@ namespace SandPerSand
         {
             if (infoGo != null)
             {
-                infoGo.GetComponent<ShopItemInfoComponent>().UpdateInfo(price, stock);
+                infoGo.GetComponent<ShopItemInfoComponent>().UpdateStock(stock);
             }
         }
     }

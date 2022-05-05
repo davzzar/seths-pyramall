@@ -9,30 +9,31 @@ namespace SandPerSand
     public class ShopItemInfoComponent : Behaviour
     {
         private SpriteRenderer infoRenderer;
-        private GameObject soldGo;
+        
 
         private GameObject itemImgGo;
-        private int price;
         private GameObject priceGo;
-        private int stock;
         private GameObject stockGo;
+        private GameObject soldGo;
         private GameObject buttonGo; 
 
         protected override void OnAwake()
         {
             base.OnAwake();
 
-            AddInfo();
+            InitForm();
+            infoRenderer.LoadFromContent("shop/iteminfo");
+            buttonGo.GetComponent<TextRenderer>().Text = "Press 'X' to Buy";
+
         }
 
-        public void AddInfo()
+        private void InitForm()
         {
             // TODO hard code
             Transform.LocalPosition = new Vector2(3, 4);
             // TODO notice the length and width of the original image
             Transform.LossyScale = new Vector2(4.5f, 6f);
             infoRenderer = Owner.AddComponent<SpriteRenderer>();
-            infoRenderer.LoadFromContent("shop/iteminfo");
             infoRenderer.Depth = .1f;
 
             //add image TODO hard code
@@ -41,7 +42,6 @@ namespace SandPerSand
             itemImgGo.Transform.LocalPosition = new Vector2(0, .25f);
             itemImgGo.Transform.LossyScale = new Vector2(.75f, .6f);
             var itemImgRenderer = itemImgGo.AddComponent<SpriteRenderer>();
-            itemImgRenderer.LoadFromContent("shop/item_unknown");
             itemImgRenderer.Depth = .05f;
 
             // add price
@@ -53,6 +53,7 @@ namespace SandPerSand
             priceTextR.Color = Color.Yellow;
             priceTextR.FontSize = .1f;
             priceTextR.Depth = .05f;
+
             // add stock
             stockGo = new GameObject();
             stockGo.Transform.Parent = Transform;
@@ -67,23 +68,33 @@ namespace SandPerSand
             buttonGo.Transform.Parent = Transform;
             buttonGo.Transform.LocalPosition = new Vector2(-.3f, -.35f);
             var btnTextR = buttonGo.AddComponent<TextRenderer>();
-            btnTextR.Text = "Press 'X' to Buy";
             btnTextR.Color = Color.Yellow;
             btnTextR.FontSize = .1f;
             btnTextR.Depth = .05f;
         }
 
-        public void UpdateInfo(int price,int stock)
+        
+        public void FillInForm(string itemId, int itemPrice,int itemStock,
+            string itemImg,string itemDescription)
+        {
+            // variable
+            priceGo.GetComponent<TextRenderer>().Text = itemPrice + " coins";
+            stockGo.GetComponent<TextRenderer>().Text = "Remaining: " + itemStock;
+            itemImgGo.GetComponent<SpriteRenderer>().LoadFromContent(itemImg);
+            if (itemStock <= 0)
+            {
+                MarkSold();
+            }
+        }
+
+        public void UpdateStock(int stock)
         {
             // update stock
-            this.price = price;
-            this.stock = stock;
             // if sold
             if (stock <= 0)
             {
                 MarkSold();
             }
-            priceGo.GetComponent<TextRenderer>().Text = price + " coins";
             stockGo.GetComponent<TextRenderer>().Text = "Remaining: " + stock;
         }
 
