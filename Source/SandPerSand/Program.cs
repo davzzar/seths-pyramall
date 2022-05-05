@@ -34,7 +34,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(ShopScene), typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -120,6 +120,13 @@ namespace SandPerSand
             //leftBorderGo.Transform.Position = new Vector2(61, 0);
             //var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
             //leftBorderComp.AffectsVertical = false;
+        }
+
+        private static void CreateShopMap(string mapName)
+        {
+            var tileMapGo = new GameObject();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<ShopTileLayer>>();
+            tileMapComp.LoadFromContent(mapName);
         }
 
         private static void CreateGUI()
@@ -438,6 +445,16 @@ namespace SandPerSand
                 CreateMap("test_level_1");
                 CreateCamera();
                 //CreateSandPhysics_level_1();
+            }
+        }
+
+        private class ShopScene : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded ShopScene");
+                CreateShopMap("test_level_1");
+                CreateCamera();
             }
         }
 
