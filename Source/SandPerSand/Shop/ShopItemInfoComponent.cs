@@ -79,12 +79,8 @@ namespace SandPerSand
         {
             // variable
             priceGo.GetComponent<TextRenderer>().Text = itemPrice + " coins";
-            stockGo.GetComponent<TextRenderer>().Text = "Remaining: " + itemStock;
             itemImgGo.GetComponent<SpriteRenderer>().LoadFromContent(itemImg);
-            if (itemStock <= 0)
-            {
-                MarkSold();
-            }
+            UpdateStock(itemStock);
         }
 
         public void UpdateStock(int stock)

@@ -47,7 +47,6 @@ namespace SandPerSand
         {
             base.OnEnable();
             wasOnCollision = false;
-            infoGo = null;
             playerInput = null;
             if (itemId == null)
             {
@@ -55,6 +54,14 @@ namespace SandPerSand
                 ItemId = "unknown";
                 //throw new InvalidOperationException();
             }
+
+            //create item info go
+            infoGo = new GameObject();
+            infoGo.Transform.Parent = this.Transform;
+            var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
+            infoComp.FillInForm(itemId, price, stock, itemImg, description);
+            infoGo.IsEnabled = false;
+            // TODO add item info animator?
         }
 
         protected override void Update()
@@ -98,18 +105,18 @@ namespace SandPerSand
 
         private void OnCollisionEnter()
         {
-            wasOnCollision = true;
+            Debug.Print("oncollision enter");
             var playerGo = PlayersManager.Instance.GetPlayer(playerIndex);
             playerInput = playerGo.GetComponent<PlayerStates>().InputHandler;
-            Debug.Print("oncollision enter");
-            ToggleInfo();
+            wasOnCollision = true;
+            infoGo.IsEnabled = true;
         }
 
         private void OnCollisionExit()
         {
-            wasOnCollision = false;
             Debug.Print("oncollision exit");
-            ToggleInfo();
+            wasOnCollision = false;
+            infoGo.IsEnabled = false;
         }
 
         private void Buy()
@@ -128,28 +135,6 @@ namespace SandPerSand
                 return;
             }
             //play animation
-
-            
-            
-        }
-
-        private void ToggleInfo()
-        {
-            if (infoGo == null)
-            {
-                //create item info go
-                infoGo = new GameObject();
-                infoGo.Transform.Parent = this.Transform;
-                var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
-                infoComp.FillInForm(itemId, price, stock, itemImg, description);
-                // TODO add item info animator?
-            }
-            else
-            {
-                //infoGo.GetComponent<ShopItemInfoComponent>().DestoryChildren();
-                infoGo.Destroy();
-                infoGo = null;
-            }
         }
 
         private void UpdateInfo()
