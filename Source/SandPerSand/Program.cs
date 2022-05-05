@@ -9,6 +9,7 @@ using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
+using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
@@ -443,20 +444,48 @@ namespace SandPerSand
 
         private class MainMenu : Component
         {
+
             protected override void OnAwake()
             {
+
+                // MAIN MENU
+
                 // The vertical stack panel widget places the children in a vertical line with some spacing
+
+                var grid = new Grid()
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 1,
+                    RowSpacing = 1,
+                };
+
+                var gridSelectorPanel = new Grid()
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 1,
+                    RowSpacing = 1,
+                };
+
+                var gridSettingsPanel = new Grid()
+                {
+                    ShowGridLines = false,
+                    ColumnSpacing = 1,
+                    RowSpacing = 1,
+                };
+
                 var panel = new VerticalStackPanel()
                 {
                     Spacing = 20,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
+                    GridColumn = 0,
+                    GridRow = 0,
                 };
 
                 // Create a start button with green text
                 var startButton = new TextButton
                 {
-                    Text = "Start",
+                    Text = "Play",
                     TextColor = Color.LimeGreen,
                     Padding = new Thickness(8),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
@@ -466,9 +495,7 @@ namespace SandPerSand
                 // When the start button is clicked, remove the GUI by setting UI.Root to null
                 startButton.Click += (sender, e) =>
                 {
-                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
-                    loadManager.LoadAt(1);
-                    UI.Root = null;
+                    UI.Root = gridSelectorPanel;
                 };
 
                 // Add a non-functional settings button
@@ -479,6 +506,11 @@ namespace SandPerSand
                     Padding = new Thickness(8),
                     HorizontalAlignment = HorizontalAlignment.Stretch,
                     ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                settingsButton.Click += (sender, e) =>
+                {
+                    UI.Root = gridSettingsPanel;
                 };
 
                 // Lastly an exit button that kills the app dead
@@ -501,7 +533,133 @@ namespace SandPerSand
                 panel.AddChild(settingsButton);
                 panel.AddChild(exitButton);
 
-                UI.Root = panel;
+                grid.AddChild(panel);
+
+                // LEVEL / MODE SELECTION
+
+                var levelSelectorPanel = new VerticalStackPanel()
+                {
+                    Spacing = 20,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    GridColumn = 0,
+                    GridRow = 0,
+                };
+
+                // Create Mode 1 Button
+                var Mode1Button = new TextButton
+                {
+                    Text = "Mode 1",
+                    TextColor = Color.LimeGreen,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                // When the start button is clicked, remove the GUI by setting UI.Root to null
+                Mode1Button.Click += (sender, e) =>
+                {
+                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
+                    loadManager.LoadAt(2);
+                    UI.Root = null;
+                };
+
+                // Create Mode 2 Button
+                var Mode2Button = new TextButton
+                {
+                    Text = "Mode 2",
+                    TextColor = Color.LimeGreen,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center
+                };
+
+                // When the start button is clicked, remove the GUI by setting UI.Root to null
+                Mode2Button.Click += (sender, e) =>
+                {
+                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
+                    loadManager.LoadAt(1);
+                    UI.Root = null;
+                };
+
+                levelSelectorPanel.AddChild(Mode1Button);
+                levelSelectorPanel.AddChild(Mode2Button);
+                gridSelectorPanel.AddChild(levelSelectorPanel);
+
+
+                // SETTINGS
+
+                var SettingsPanel = new VerticalStackPanel()
+                {
+                    Spacing = 20,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    GridColumn = 0,
+                    GridRow = 0,
+                };
+
+                var VolumeSliderText = new Label()
+                {
+                    Text = "Volume"
+                };
+
+                var VolumeSlider = new HorizontalSlider() { 
+                    Value = 50, 
+                    Minimum = 0, 
+                    Maximum = 100,
+                    Width = 200
+                };
+
+                VolumeSlider.ValueChanged += (sender, e) =>
+                {
+                    // not implemented yet
+                };
+
+                var SoundSliderText = new Label()
+                {
+                    Text = "Sounds"
+                };
+
+                var SoundsSlider = new HorizontalSlider()
+                {
+                    Value = 50,
+                    Minimum = 0,
+                    Maximum = 100,
+                    Width = 200
+                };
+
+                SoundsSlider.ValueChanged += (sender, e) =>
+                {
+                    // not implemented yet
+                };
+
+                SoundsSlider.ValueChanged += (sender, e) =>
+                {
+                    Debug.Print("bla");
+                };
+
+                var ToggleFullscreen = new CheckBox()
+                {
+                    Text = "Fullscreen",
+                    IsChecked = false,
+                    TextPosition = ImageTextButton.TextPositionEnum.Left
+                };
+
+                ToggleFullscreen.PressedChanged += (sender, e) =>
+                {
+                    //GameEngine.Instance.setFullscreen(true);
+                };
+
+                SettingsPanel.AddChild(VolumeSliderText);
+                SettingsPanel.AddChild(VolumeSlider);
+                SettingsPanel.AddChild(SoundSliderText);
+                SettingsPanel.AddChild(SoundsSlider);
+                SettingsPanel.AddChild(ToggleFullscreen);
+                gridSettingsPanel.AddChild(SettingsPanel);
+
+
+
+                UI.Root = grid;
                 UI.IsMouseVisible = true;
             }
         }
