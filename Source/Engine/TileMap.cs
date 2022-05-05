@@ -164,42 +164,6 @@ namespace Engine
             }
             return layers;
         }
-
-        public Dictionary<string, (int,string)> getItemTilesIdsAndPaths()
-        {
-            Dictionary<int, TiledTileset> tiledsetsByFirstGridId = LoadTilesets(sourceMap.Tilesets);
-
-            var GridIdByItemId = new Dictionary<string, (int, string)>();
-
-            foreach (var item in tiledsetsByFirstGridId)
-            {
-                int firstGridId = item.Key;
-                TiledTileset tiledS = item.Value;
-                string path = tiledS.Image.source;
-
-                foreach (TiledTile tiledT in tiledS.Tiles)
-                {
-                    int gridId = tiledT.id + firstGridId;
-                    if(tiledT.type == "Item" && tiledT.properties != null)
-                    {
-                        string item_id = null;
-                        foreach(TiledProperty property in tiledT.properties)
-                        {
-                            if(property.name == "item_id")
-                            {
-                                item_id = property.value;
-                            }
-                        }
-                        if(item_id != null)
-                        {
-                            GridIdByItemId.Add(item_id, (gridId, path));
-                        }
-
-                    }
-                }
-            }
-            return GridIdByItemId;
-        }
     }
 
 

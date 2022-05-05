@@ -125,8 +125,8 @@ namespace Engine
             }
 
             this.sourceWindow = new Rectangle(
-                    (tileId - 1) * tileWidth % texture.Width,
-                    (tileId - 1) * (tileWidth / texture.Width * tileHeight) % texture.Height,
+                    tileId * tileWidth % texture.Width,
+                    tileId * tileWidth / texture.Width * tileHeight,
                     tileWidth,
                     tileHeight);
         }
