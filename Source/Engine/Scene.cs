@@ -92,7 +92,11 @@ namespace Engine
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                go.DoUpdate();
+
+                if (go.State == GameObject.GameObjectState.Enabled)
+                {
+                    go.DoUpdate();
+                }
             }
         }
 

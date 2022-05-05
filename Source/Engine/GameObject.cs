@@ -352,6 +352,11 @@ namespace Engine
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
 
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                this.Transform.Children[i].Owner.Destroy();
+            }
+
             if (this.IsEnabledInHierarchy)
             {
                 this.OnDisableInternal();
@@ -477,7 +482,11 @@ namespace Engine
             for (var i = 0; i < this.behaviours.Count; i++)
             {
                 var b = this.behaviours[i];
-                b.OnEnableInternal();
+
+                if (b.IsActive)
+                {
+                    b.OnEnableInternal();
+                }
             }
 
             this.state = GameObjectState.Enabled;
@@ -501,7 +510,11 @@ namespace Engine
             for (var i = 0; i < this.behaviours.Count; i++)
             {
                 var b = this.behaviours[i];
-                b.OnDisableInternal();
+
+                if (b.IsActive)
+                {
+                    b.OnDisableInternal();
+                }
             }
 
             this.state = GameObjectState.Disabled;
@@ -557,13 +570,6 @@ namespace Engine
 
         private void EnableHierarchyRecursive()
         {
-            if (!this.IsEnabled)
-            {
-                return;
-            }
-
-            Debug.Assert(this.IsEnabledInHierarchy);
-
             this.OnEnableInternal();
 
             for (var i = 0; i < this.Transform.ChildCount; i++)
@@ -574,13 +580,6 @@ namespace Engine
 
         private void DisableHierarchyRecursive()
         {
-            if (!this.IsEnabled)
-            {
-                return;
-            }
-
-            Debug.Assert(this.IsEnabledInHierarchy);
-
             this.OnDisableInternal();
 
             for (var i = 0; i < this.Transform.ChildCount; i++)
