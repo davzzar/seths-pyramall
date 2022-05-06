@@ -188,7 +188,7 @@ namespace SandPerSand
             renderPlayers[playerIndex].coins.screenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
             renderPlayers[playerIndex].coins.sizeUnits = object_size["small"];
             renderPlayers[playerIndex].coins.size = new Vector2(0f, 0f);
-            renderPlayers[playerIndex].coins.sourceWindow = new Rectangle(0, 0, 32, 32);
+            renderPlayers[playerIndex].coins.sourceRectangle = new Rectangle(0, 0, 32, 32);
 
             renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
             renderPlayers[playerIndex].numOfCoins.Text = "00x";
@@ -223,7 +223,16 @@ namespace SandPerSand
 
         public void removeItem(PlayerIndex playerIndex, Boolean Major)
         {
-
+            if (Major)
+            {
+                renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
+                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+            }
+            else
+            {
+                renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
+                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+            }
         }
 
         public void renderCoins(PlayerIndex playerIndex, int coins)
