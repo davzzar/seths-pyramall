@@ -444,33 +444,62 @@ namespace SandPerSand
 
         private class MainMenu : Component
         {
+            private FontSystem _fontSystem;
+
+            private TextButton createTextButton(string Text)
+            {
+                var button = new TextButton()
+                {
+                    Text = Text,
+                    Padding = new Thickness(8),
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    ContentHorizontalAlignment = HorizontalAlignment.Center,
+                    Font = _fontSystem.GetFont(32),
+                };
+                return button;
+            }
+
+            private Label createTitleLabel(string Text)
+            {
+                return new Label()
+                {
+                    Text = Text,
+                    Font = _fontSystem.GetFont(64),
+                };
+            }
+
+            private Label createTextLabel(string Text)
+            {
+                return new Label()
+                {
+                    Text = Text,
+                    Font = _fontSystem.GetFont(32),
+                };
+            }
 
             protected override void OnAwake()
             {
+
+                // STYLESHEET
+
+                _fontSystem = new FontSystem();
+
+                _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Retro_Gaming.ttf"));
 
                 // MAIN MENU
 
                 // The vertical stack panel widget places the children in a vertical line with some spacing
 
-                var grid = new Grid()
+                var rootPanel = new Panel()
                 {
-                    ShowGridLines = false,
-                    ColumnSpacing = 1,
-                    RowSpacing = 1,
                 };
 
-                var gridSelectorPanel = new Grid()
+                var gridSelectorPanel = new Panel()
                 {
-                    ShowGridLines = false,
-                    ColumnSpacing = 1,
-                    RowSpacing = 1,
                 };
 
-                var gridSettingsPanel = new Grid()
+                var gridSettingsPanel = new Panel()
                 {
-                    ShowGridLines = false,
-                    ColumnSpacing = 1,
-                    RowSpacing = 1,
                 };
 
                 var panel = new VerticalStackPanel()
@@ -478,62 +507,41 @@ namespace SandPerSand
                     Spacing = 20,
                     HorizontalAlignment = HorizontalAlignment.Center,
                     VerticalAlignment = VerticalAlignment.Center,
-                    GridColumn = 0,
-                    GridRow = 0,
+                    GridColumn = 1,
+                    GridRow = 1,
                 };
+
+                var GameTitle = createTitleLabel("Seth's Pyramall");
 
                 // Create a start button with green text
-                var startButton = new TextButton
-                {
-                    Text = "Play",
-                    TextColor = Color.LimeGreen,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
+                var startButton = createTextButton("Play");
                 // When the start button is clicked, remove the GUI by setting UI.Root to null
                 startButton.Click += (sender, e) =>
                 {
                     UI.Root = gridSelectorPanel;
                 };
 
-                // Add a non-functional settings button
-                var settingsButton = new TextButton
-                {
-                    Text = "Settings",
-                    TextColor = Color.CornflowerBlue,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
+                // Add a settings button
+                var settingsButton = createTextButton("Settings");
                 settingsButton.Click += (sender, e) =>
                 {
                     UI.Root = gridSettingsPanel;
                 };
 
                 // Lastly an exit button that kills the app dead
-                var exitButton = new TextButton
-                {
-                    Text = "Exit",
-                    TextColor = Color.Red,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
+                var exitButton = createTextButton("Exit");
                 exitButton.Click += (sender, e) =>
                 {
                     GameEngine.Instance.Exit();
                 };
 
                 // Add the buttons in the correct order
+                panel.AddChild(GameTitle);
                 panel.AddChild(startButton);
                 panel.AddChild(settingsButton);
                 panel.AddChild(exitButton);
 
-                grid.AddChild(panel);
+                rootPanel.AddChild(panel);
 
                 // LEVEL / MODE SELECTION
 
@@ -546,15 +554,10 @@ namespace SandPerSand
                     GridRow = 0,
                 };
 
+                var titleLevelSelection = createTitleLabel("Play");
+
                 // Create Mode 1 Button
-                var Mode1Button = new TextButton
-                {
-                    Text = "Mode 1",
-                    TextColor = Color.LimeGreen,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
+                var Mode1Button = createTextButton("Mode 1");
 
                 // When the start button is clicked, remove the GUI by setting UI.Root to null
                 Mode1Button.Click += (sender, e) =>
@@ -565,14 +568,7 @@ namespace SandPerSand
                 };
 
                 // Create Mode 2 Button
-                var Mode2Button = new TextButton
-                {
-                    Text = "Mode 2",
-                    TextColor = Color.LimeGreen,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
+                var Mode2Button = createTextButton("Mode 2");
 
                 // When the start button is clicked, remove the GUI by setting UI.Root to null
                 Mode2Button.Click += (sender, e) =>
@@ -582,12 +578,24 @@ namespace SandPerSand
                     UI.Root = null;
                 };
 
+                // Create Exit to Menu
+                var ExitToMenu = createTextButton("Main Menu");
+
+                ExitToMenu.Click += (sender, e) =>
+                {
+                    UI.Root = rootPanel;
+                };
+
+                levelSelectorPanel.AddChild(titleLevelSelection);
                 levelSelectorPanel.AddChild(Mode1Button);
                 levelSelectorPanel.AddChild(Mode2Button);
+                levelSelectorPanel.AddChild(ExitToMenu);
                 gridSelectorPanel.AddChild(levelSelectorPanel);
 
 
                 // SETTINGS
+
+                var titleSettings = createTitleLabel("Settings");
 
                 var SettingsPanel = new VerticalStackPanel()
                 {
@@ -598,16 +606,12 @@ namespace SandPerSand
                     GridRow = 0,
                 };
 
-                var VolumeSliderText = new Label()
-                {
-                    Text = "Volume"
-                };
+                var VolumeSliderText = createTextLabel("Music");
 
                 var VolumeSlider = new HorizontalSlider() { 
                     Value = 50, 
                     Minimum = 0, 
                     Maximum = 100,
-                    Width = 200
                 };
 
                 VolumeSlider.ValueChanged += (sender, e) =>
@@ -615,17 +619,13 @@ namespace SandPerSand
                     // not implemented yet
                 };
 
-                var SoundSliderText = new Label()
-                {
-                    Text = "Sounds"
-                };
+                var SoundSliderText = createTextLabel("Sounds");
 
                 var SoundsSlider = new HorizontalSlider()
                 {
                     Value = 50,
                     Minimum = 0,
                     Maximum = 100,
-                    Width = 200
                 };
 
                 SoundsSlider.ValueChanged += (sender, e) =>
@@ -640,9 +640,10 @@ namespace SandPerSand
 
                 var ToggleFullscreen = new CheckBox()
                 {
-                    Text = "Fullscreen",
+                    Text = "Fullscreen  ",
                     IsChecked = false,
-                    TextPosition = ImageTextButton.TextPositionEnum.Left
+                    TextPosition = ImageTextButton.TextPositionEnum.Left,
+                    Font = _fontSystem.GetFont(32),
                 };
 
                 ToggleFullscreen.PressedChanged += (sender, e) =>
@@ -650,16 +651,26 @@ namespace SandPerSand
                     //GameEngine.Instance.setFullscreen(true);
                 };
 
+                // Create Exit to Menu
+                var ExitToMenuSettings = createTextButton("Main Menu");
+
+                ExitToMenuSettings.Click += (sender, e) =>
+                {
+                    UI.Root = rootPanel;
+                };
+
+                SettingsPanel.AddChild(titleSettings);
                 SettingsPanel.AddChild(VolumeSliderText);
                 SettingsPanel.AddChild(VolumeSlider);
                 SettingsPanel.AddChild(SoundSliderText);
                 SettingsPanel.AddChild(SoundsSlider);
                 SettingsPanel.AddChild(ToggleFullscreen);
+                SettingsPanel.AddChild(ExitToMenuSettings);
                 gridSettingsPanel.AddChild(SettingsPanel);
 
 
 
-                UI.Root = grid;
+                UI.Root = rootPanel;
                 UI.IsMouseVisible = true;
             }
         }
