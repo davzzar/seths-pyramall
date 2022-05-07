@@ -3,7 +3,10 @@
  <image source="TilesetItems.png" width="256" height="256"/>
  <tile id="0" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="lightning"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
   <objectgroup draworder="index" id="2">
@@ -12,7 +15,10 @@
  </tile>
  <tile id="1" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="magnet"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
   <objectgroup draworder="index" id="2">
@@ -21,49 +27,73 @@
  </tile>
  <tile id="2" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="ice_block"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="3" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="portable_sand_source"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="4" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="sunglasses"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="5" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="position_swap"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="major"/>
   </properties>
  </tile>
  <tile id="6" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="wings"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="7" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="speedup"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="8" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="dizzy_eyes"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
  <tile id="9" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="shield"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
  </tile>
