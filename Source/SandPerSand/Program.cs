@@ -443,8 +443,5 @@ namespace SandPerSand
                 CreateSandPhysics_level_1();
             }
         }
-                UI.IsMouseVisible = true;
-            }
-        }
     }
 }
