@@ -60,14 +60,14 @@ namespace SandPerSand
                 
                 // check slope angle on first contact with ground
                 if (didSlopeCheck) continue;
-                CheckSlope(hit);
+                CheckSlopeDownward(hit);
                 didSlopeCheck = true;
             }
         }
 
         // Check the slope angle directly below the game object. Not sure how to do that with multiple casts.
         // TODO Check for slope in the direction of movement!
-        private void CheckSlope(RayCastHit hit)
+        private void CheckSlopeDownward(RayCastHit hit)
         {
             // get slope normal
             SlopeDirection = new Vector2(hit.Normal.Y, -hit.Normal.X);
