@@ -7,12 +7,12 @@ using Microsoft.Xna.Framework;
 using TiledCS;
 using Engine;
 using System.Diagnostics;
-
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
     
-    public class MyLayer : Layer
+    public class MyLayer : TileLayer
     {
         public float Depth { get; set; }
 
@@ -36,16 +36,26 @@ namespace SandPerSand
                     this.Depth = float.Parse(p.value);
                     break;
                 }
+                else if(p.name == "SimulationSpeed")
+                {
+                    SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();
+                    sandSim.SimulationStepTime = float.Parse(p.value) * 2 * 1f / 80;
+                }
             }
 
         }
 
-        public override void ParseTile(GameObject newTileGo, int tileId,
-            TiledTileset tiledS, Vector2[] outline)
+        public override void BuildTile(Tile tile)
         {
-            string textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
-            var tiledT = tiledS.Tiles[tileId];
+            string textureAssetName = tile.TextureName;
+            var tiledT = tile.TiledTile;
+            var tileId = tile.ID;
+            var newTileGo = new GameObject();
+            TileGos[tile.X, tile.Y] = newTileGo;
+            newTileGo.Transform.Parent = LayerGo.Transform;
+            newTileGo.Transform.LocalPosition = new Vector2(tile.X, tile.Y);
 
+            var outline = tile.ColliderOutline;
             // Add different behavior compounents according to tile.type
             switch (tiledT.type)
             {
@@ -53,13 +63,12 @@ namespace SandPerSand
                     // Add Renderer
                     var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
                     tileRenderer.LoadFromContent(textureAssetName);
-                    tileRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    tileRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
                     tileRenderer.Depth = this.Depth;
 
                     // Add collider and other compounents for the Tile GameObject
-                    if (outline!=null && outline.Length >= 3)
+                    if (outline != null)
                     {
-
                         var tileCollider = newTileGo.AddComponent<PolygonCollider>();
                         tileCollider.Outline = outline;
                     }
@@ -71,7 +80,7 @@ namespace SandPerSand
                     var exitScript = newTileGo.AddComponent<ExitScript>();
                     var exitRenderer = newTileGo.AddComponent<SpriteRenderer>();
                     exitRenderer.LoadFromContent(textureAssetName);
-                    exitRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    exitRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
                     exitRenderer.Depth = this.Depth;
                     break;
                 case "Coin":
@@ -80,7 +89,7 @@ namespace SandPerSand
                     var itemCollectable = newTileGo.AddComponent<Collectable>();
                     itemCollectable.init(CollectableType.coin, "Coin", outline);
                     itemRenderer.LoadFromContent(textureAssetName);
-                    itemRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    itemRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
                     itemRenderer.Depth = this.Depth;
                     break;
                 case "Item":
@@ -98,13 +107,30 @@ namespace SandPerSand
                     }
                     coinCollectable.init(CollectableType.item, itemId, outline);
                     coinRenderer.LoadFromContent(textureAssetName);
-                    coinRenderer.SetSourceRectangle(tileId, tiledS.TileWidth, tiledS.TileHeight);
+                    coinRenderer.SetSourceRectangle(tileId, tile.PixelWidth, tile.PixelHeight);
                     coinRenderer.Depth = this.Depth;
+                    break;
+                case "SandSource":
+                    SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();
+                    int size = 0;
+                    foreach (TiledProperty property in tiledT.properties)
+                    {
+                        Debug.Print(property.ToString());
+                        if (property.name == "size")
+                        {
+                            size = int.Parse(property.value);
+                        }
+                    }
+                    Vector2 pos = newTileGo.Transform.Position;
+                    Debug.Print("test");
+                    Debug.Print((pos.X + 0.5f).ToString());
+                    Debug.Print((pos.Y + 0.5f).ToString());
+
+                    sandSim.AddSandSource(new Aabb(pos.X, pos.Y, size / 64f, size / 64f));
+                    //sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
+
                     break;
             }
         }
-
     }
-
-
 }
