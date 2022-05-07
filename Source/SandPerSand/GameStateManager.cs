@@ -48,8 +48,8 @@ namespace SandPerSand
                 if (instance == null)
                 {
                     instance = new GameStateManager();
-                    currentState = GameState.InRound;
-                    GraphicalUserInterface.Instance.renderMidScreenText("SandSim started automatically. Also fuck ");
+                    currentState = GameState.Prepare;
+                    GraphicalUserInterface.Instance.renderMidScreenText("To Start The Game Press A");
                 }
                 return instance;
             }
