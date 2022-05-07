@@ -81,7 +81,7 @@ namespace Engine
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                go.OnDestroyInternal();
+                go.Destroy();
             }
 
             this.isLoaded = false;

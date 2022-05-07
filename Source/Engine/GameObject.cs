@@ -494,6 +494,16 @@ namespace Engine
                 }
             }
 
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                var go = this.Transform.GetChild(i).Owner;
+
+                if (go.isEnabled)
+                {
+                    go.OnEnableInternal();
+                }
+            }
+
             this.state = GameObjectState.Enabled;
             this.isChangingEnableState = false;
 
@@ -519,6 +529,16 @@ namespace Engine
                 if (b.IsActive)
                 {
                     b.OnDisableInternal();
+                }
+            }
+
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                var go = this.Transform.GetChild(i).Owner;
+
+                if (go.isEnabled)
+                {
+                    go.OnDisableInternal();
                 }
             }
 
