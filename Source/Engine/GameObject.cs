@@ -363,6 +363,8 @@ namespace Engine
             }
 
             this.OnDestroyInternal();
+
+            this.Transform.Parent = null;
             this.Transform.containingScene.RemoveGameObject(this);
         }
 
