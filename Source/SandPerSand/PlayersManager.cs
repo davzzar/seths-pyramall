@@ -44,6 +44,56 @@ namespace SandPerSand
             Debug.Print("player manager created");
         }
 
+        public GameState LastGameState { get; set; }
+        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
+        private float passedTime = 0;
+        private int curRank = 0;
+        private PlayerIndex[] rankList;
+        protected override void Update()
+        {
+            if (CurrentGameState == GameState.Shop)
+            {
+                if(LastGameState != GameState.Shop)
+                {
+                    // calculate rank list
+                    rankList = new PlayerIndex[Players.Count];
+                    foreach (var item in PlayersManager.Instance.Players)
+                    {
+                        int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
+                        if (rank > 0) rankList[rank - 1] = item.Key;
+                    }
+                    // respawn players -> queue by rank list
+                    // disable all players controller
+                    // FIXME get correct shop entrys
+                    int entryX = 10;
+                    int entryY = 3;
+                    foreach (var playerIndex in rankList)
+                    {
+                        RespawnPlayer(playerIndex, new Vector2(entryX--, entryY));
+                        GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
+                    }
+                }
+                passedTime += Time.DeltaTime;
+                // TODO hard coded
+                if (passedTime >= 2f)
+                {
+                    passedTime = 0;
+                    if (curRank >= rankList.Length)
+                    {
+                        curRank = 0;
+                        GameStateManager.Instance.TriggerFinishShop();
+                        return;
+                    }
+                    Players[rankList[curRank++]].GetComponent<PlayerControlComponent>().IsActive = true;
+                }
+
+            }
+
+            LastGameState = CurrentGameState;
+        }
+
+
+
         public GameObject GetPlayer(PlayerIndex index) {
             return players[index];
         }
@@ -257,6 +307,8 @@ namespace SandPerSand
         public int RoundRank { get; set; }
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
+        public GameState LastGameState{ get; set; }
+        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
 
         protected override void OnAwake()
         {
@@ -274,10 +326,18 @@ namespace SandPerSand
         /// </summary>
         protected override void Update()
         {
-            if (PrepareButtonPressed && GameStateManager.Instance.CurrentState == GameState.Prepare)
+            if (PrepareButtonPressed && CurrentGameState == GameState.Prepare)
             {
                 TogglePrepared();
             }
+            if (LastGameState != CurrentGameState
+                && CurrentGameState == GameState.InRound)
+            {
+                // reset round states
+                Exited = false;
+                RoundRank = -1;
+            }
+
         }
 
         public void TogglePrepared()
