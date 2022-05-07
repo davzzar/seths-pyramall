@@ -76,13 +76,6 @@ namespace SandPerSand
             var playerAnimator = Owner.AddComponent<Animator>();
             SetPlayerAnimationSprite();
 
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = Owner.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
-
             var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
         }
