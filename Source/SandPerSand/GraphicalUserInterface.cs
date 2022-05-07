@@ -208,7 +208,6 @@ namespace SandPerSand
         public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
         {
             int id = itemIDtoTiledID[item];
-
             if (Major)
             {
                 renderPlayers[playerIndex].majorItem.LoadFromContent(Path.GetFileNameWithoutExtension(tiledS.Image.source));

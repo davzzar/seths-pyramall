@@ -65,6 +65,9 @@
     <None Update="Content\tiles\TilesetCoins.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+	<None Update="Content\Fonts\Retro_Gaming.ttf">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
 </Project>

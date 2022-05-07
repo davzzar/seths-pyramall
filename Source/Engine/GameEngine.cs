@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
 namespace Engine
@@ -35,6 +36,19 @@ namespace Engine
         internal RenderPipeline RenderPipeline { get; }
 
         internal GraphicsDeviceManager GraphicsDeviceManager { get; }
+
+        public bool Fullscreen { set
+            {
+                this.GraphicsDeviceManager.IsFullScreen = value;
+                this.GraphicsDeviceManager.ApplyChanges();
+            } }
+        public Int2 Resolution { set
+            {
+                this.GraphicsDeviceManager.PreferredBackBufferWidth = value.X;
+                this.GraphicsDeviceManager.PreferredBackBufferHeight = value.Y;
+                this.GraphicsDeviceManager.ApplyChanges();
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether the render loop should be synced with the screen refresh rate.
