@@ -9,10 +9,12 @@ namespace Engine
 {
     public class Animator : Behaviour
     {
-        private Dictionary<string, Animation> animes;
-        private string currentAnimeKey = null;
+        // paths
         private string loadFromContentPath;
         private string textureAssetName = null;
+        // contents
+        private Dictionary<string, Animation> animes;
+        private string currentAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
 
@@ -72,20 +74,27 @@ namespace Engine
             {
                 throw new ArgumentNullException(nameof(path));
             }
-
             this.loadFromContentPath = path;
             this.LoadFromContentPath();
         }
-        public void LoadFromContent(string path,string texture)
-        {
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                throw new ArgumentNullException(nameof(path));
-            }
 
-            this.loadFromContentPath = path;
+        public void LoadFromContent(string path, string texture)
+        {
             this.textureAssetName = texture;
-            this.LoadFromContentPath();
+            LoadFromContent(path);
+        }
+
+        private void ClearContent()
+        {
+            // clear existing content
+            animes = new Dictionary<string, Animation>();
+            currentAnimeKey = null;
+            passedTime = 0f;
+            if (renderer != null)
+            {
+                renderer.Destroy();
+                renderer = null;
+            }
         }
 
         private void LoadFromContentPath()
@@ -94,6 +103,9 @@ namespace Engine
             {
                 return;
             }
+
+            ClearContent();
+
             // load .tsx file
             //FIXME hard code path
             var tiledS = new TiledTileset($"Content/tiles/{loadFromContentPath}.tsx");
