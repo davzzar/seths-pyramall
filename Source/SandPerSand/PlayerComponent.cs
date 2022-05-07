@@ -15,12 +15,18 @@ namespace SandPerSand
             get => playerIndex;
             set
             {
+                if (value == playerIndex)
+                {
+                    return;
+                }
+
                 if (!Enum.IsDefined(typeof(PlayerIndex), value))
                     throw new InvalidEnumArgumentException(nameof(value), (int) value, typeof(PlayerIndex));
-                // Update the InputHandler when the player index is updated
                 
-                if (value != playerIndex) InputHandler = new InputHandler(value);
+                // Update child components when the player index is updated
                 playerIndex = value;
+                InputHandler.PlayerIndex = value;
+                SetPlayerAnimationSprite();
             }
         }
 
@@ -28,6 +34,7 @@ namespace SandPerSand
 
         protected override void OnAwake()
         {
+            // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnAwake();
 
             InputHandler = new InputHandler(PlayerIndex);
@@ -52,6 +59,22 @@ namespace SandPerSand
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.AddComponent<Animator>();
+            SetPlayerAnimationSprite();
+
+
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
+            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
+            var tracer = Owner.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
+
+            var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
+            cameraControlPoint.Margin = new Border(5, 10, 5, 5);
+        }
+
+        private void SetPlayerAnimationSprite()
+        {
+            var playerAnimator = Owner.GetOrAddComponent<Animator>();
 
             string animationTexture = PlayerIndex switch
             {
@@ -64,15 +87,8 @@ namespace SandPerSand
 
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
             Owner.AddComponent<MyAnimatorController>();
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = Owner.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
-
-            var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
-            cameraControlPoint.Margin = new Border(5, 10, 5, 5);
         }
     }
+
+
 }
