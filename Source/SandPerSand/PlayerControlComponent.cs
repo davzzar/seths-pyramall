@@ -91,9 +91,8 @@ namespace SandPerSand
 
         // We can only jump when we are on the ground and we either just pressed jump or have it buffered,
         // OR if we pressed jump during coyote time.
-        private bool WillJump =>
+        public bool WillJump =>
             IsGrounded && JumpButtonPressed || HasLanded && BufferedJump || !IsGrounded && JumpButtonPressed && CanUseCoyote;
-
 
         protected override void OnAwake()
         {

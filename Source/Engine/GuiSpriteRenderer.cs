@@ -33,7 +33,7 @@ namespace Engine
 
         //one unit is 10 percent of the height of the screen
         public Vector2 screenPositionUnits { get; set; }
-        public Rectangle? sourceWindow { get; set; }
+        public Rectangle? sourceRectangle { get; set; }
         public Vector2 rotation { get; set; }
 
         public int horizontalAlignment { get; set; }
@@ -67,13 +67,13 @@ namespace Engine
                     tmp_size = this.size + sizeUnits * Unit;
                 }
 
-                if (this.sourceWindow == null)
+                if (this.sourceRectangle == null)
                 {
                     Graphics.DrawGuiSprite(this.texture, this.Color, tmp_size, screenPos, 0f);
                 }
                 else
                 {
-                    Graphics.DrawGuiSprite(this.texture, this.Color, this.sourceWindow.Value, tmp_size, screenPos, 0f);
+                    Graphics.DrawGuiSprite(this.texture, this.Color, this.sourceRectangle.Value, tmp_size, screenPos, 0f);
                 }
 
             }
@@ -124,9 +124,9 @@ namespace Engine
                 throw new InvalidOperationException("Can't set source rectangle before texture is ready!");
             }
 
-            this.sourceWindow = new Rectangle(
-                    (tileId - 1) * tileWidth % texture.Width,
-                    (tileId - 1) * (tileWidth / texture.Width * tileHeight) % texture.Height,
+            this.sourceRectangle = new Rectangle(
+                    tileId * tileWidth % texture.Width,
+                    tileId * tileWidth / texture.Width * tileHeight,
                     tileWidth,
                     tileHeight);
         }
