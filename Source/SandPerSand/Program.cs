@@ -7,9 +7,11 @@ using System.Threading;
 using Engine;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
@@ -28,14 +30,14 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
 
-            #if DEBUG
+#if DEBUG
             CreateFpsText();
             Collider.ShowGizmos = true;
-            #endif
+#endif
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -72,7 +74,7 @@ namespace SandPerSand
         {
             var textGo = new GameObject();
             textGo.Transform.LocalPosition = new Vector2(0.1f, -0.1f);
-            
+
             var textComp = textGo.AddComponent<TextRenderer>();
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
@@ -107,8 +109,8 @@ namespace SandPerSand
             var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
             Debug.Print(map.Size.ToString());
-            sandSim.ResolutionX = (int) (map.Size.X * 5);
-            sandSim.ResolutionY = (int) (map.Size.Y * 5);
+            sandSim.ResolutionX = (int)(map.Size.X * 5);
+            sandSim.ResolutionY = (int)(map.Size.Y * 5);
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
@@ -136,7 +138,7 @@ namespace SandPerSand
 
             var backgroundGo = new GameObject();
             //backgroundGo.Transform.Parent = backgroundParent.Transform;
-            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f, 29.5f);
             backgroundGo.Transform.LossyScale = new Vector2(60, 60);
             var background = backgroundGo.AddComponent<SpriteRenderer>();
             background.LoadFromContent("background");
@@ -145,7 +147,7 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            
+
         }
 
         private static void CreatePerformanceTest(int count)
@@ -184,7 +186,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -227,7 +229,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -244,7 +246,7 @@ namespace SandPerSand
                     {
                         new Vector2(-0.5f, -0.5f), 
                         //new Vector2(0.5f, -0.5f),
-                        new Vector2(0.5f, 0.5f), 
+                        new Vector2(0.5f, 0.5f),
                         new Vector2(-0.5f, 0.5f)
                     };
                 }
@@ -290,7 +292,7 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-            
+
             sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
@@ -312,7 +314,7 @@ namespace SandPerSand
             sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
 
-            
+
         }
 
         /// <summary>
@@ -320,7 +322,7 @@ namespace SandPerSand
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
         /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
-        private class SceneManagerComponent : Behaviour
+        public class SceneManagerComponent : Behaviour
         {
             public readonly List<Type> SceneLoaderTypes = new List<Type>();
 
@@ -404,7 +406,7 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreatePhysicsTest3(10, 20, 10, 10);
-                
+
                 Debug.Print("Loaded Scene 1: Debug with Physics");
             }
         }
@@ -441,239 +443,5 @@ namespace SandPerSand
                 CreateSandPhysics_level_1();
             }
         }
-
-        private class MainMenu : Component
-        {
-            private FontSystem _fontSystem;
-
-            private TextButton createTextButton(string Text)
-            {
-                var button = new TextButton()
-                {
-                    Text = Text,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center,
-                    Font = _fontSystem.GetFont(32),
-                };
-                return button;
-            }
-
-            private Label createTitleLabel(string Text)
-            {
-                return new Label()
-                {
-                    Text = Text,
-                    Font = _fontSystem.GetFont(64),
-                };
-            }
-
-            private Label createTextLabel(string Text)
-            {
-                return new Label()
-                {
-                    Text = Text,
-                    Font = _fontSystem.GetFont(32),
-                };
-            }
-
-            protected override void OnAwake()
-            {
-
-                // STYLESHEET
-
-                _fontSystem = new FontSystem();
-
-                _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Retro_Gaming.ttf"));
-
-                // MAIN MENU
-
-                // The vertical stack panel widget places the children in a vertical line with some spacing
-
-                var rootPanel = new Panel()
-                {
-                };
-
-                var gridSelectorPanel = new Panel()
-                {
-                };
-
-                var gridSettingsPanel = new Panel()
-                {
-                };
-
-                var panel = new VerticalStackPanel()
-                {
-                    Spacing = 20,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    GridColumn = 1,
-                    GridRow = 1,
-                };
-
-                var GameTitle = createTitleLabel("Seth's Pyramall");
-
-                // Create a start button with green text
-                var startButton = createTextButton("Play");
-                // When the start button is clicked, remove the GUI by setting UI.Root to null
-                startButton.Click += (sender, e) =>
-                {
-                    UI.Root = gridSelectorPanel;
-                };
-
-                // Add a settings button
-                var settingsButton = createTextButton("Settings");
-                settingsButton.Click += (sender, e) =>
-                {
-                    UI.Root = gridSettingsPanel;
-                };
-
-                // Lastly an exit button that kills the app dead
-                var exitButton = createTextButton("Exit");
-                exitButton.Click += (sender, e) =>
-                {
-                    GameEngine.Instance.Exit();
-                };
-
-                // Add the buttons in the correct order
-                panel.AddChild(GameTitle);
-                panel.AddChild(startButton);
-                panel.AddChild(settingsButton);
-                panel.AddChild(exitButton);
-
-                rootPanel.AddChild(panel);
-
-                // LEVEL / MODE SELECTION
-
-                var levelSelectorPanel = new VerticalStackPanel()
-                {
-                    Spacing = 20,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    GridColumn = 0,
-                    GridRow = 0,
-                };
-
-                var titleLevelSelection = createTitleLabel("Play");
-
-                // Create Mode 1 Button
-                var Mode1Button = createTextButton("Mode 1");
-
-                // When the start button is clicked, remove the GUI by setting UI.Root to null
-                Mode1Button.Click += (sender, e) =>
-                {
-                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
-                    loadManager.LoadAt(2);
-                    UI.Root = null;
-                };
-
-                // Create Mode 2 Button
-                var Mode2Button = createTextButton("Mode 2");
-
-                // When the start button is clicked, remove the GUI by setting UI.Root to null
-                Mode2Button.Click += (sender, e) =>
-                {
-                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
-                    loadManager.LoadAt(1);
-                    UI.Root = null;
-                };
-
-                // Create Exit to Menu
-                var ExitToMenu = createTextButton("Main Menu");
-
-                ExitToMenu.Click += (sender, e) =>
-                {
-                    UI.Root = rootPanel;
-                };
-
-                levelSelectorPanel.AddChild(titleLevelSelection);
-                levelSelectorPanel.AddChild(Mode1Button);
-                levelSelectorPanel.AddChild(Mode2Button);
-                levelSelectorPanel.AddChild(ExitToMenu);
-                gridSelectorPanel.AddChild(levelSelectorPanel);
-
-
-                // SETTINGS
-
-                var titleSettings = createTitleLabel("Settings");
-
-                var SettingsPanel = new VerticalStackPanel()
-                {
-                    Spacing = 20,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    GridColumn = 0,
-                    GridRow = 0,
-                };
-
-                var VolumeSliderText = createTextLabel("Music");
-
-                var VolumeSlider = new HorizontalSlider() { 
-                    Value = 50, 
-                    Minimum = 0, 
-                    Maximum = 100,
-                };
-
-                VolumeSlider.ValueChanged += (sender, e) =>
-                {
-                    // not implemented yet
-                };
-
-                var SoundSliderText = createTextLabel("Sounds");
-
-                var SoundsSlider = new HorizontalSlider()
-                {
-                    Value = 50,
-                    Minimum = 0,
-                    Maximum = 100,
-                };
-
-                SoundsSlider.ValueChanged += (sender, e) =>
-                {
-                    // not implemented yet
-                };
-
-                SoundsSlider.ValueChanged += (sender, e) =>
-                {
-                    Debug.Print("bla");
-                };
-
-                var ToggleFullscreen = new CheckBox()
-                {
-                    Text = "Fullscreen  ",
-                    IsChecked = false,
-                    TextPosition = ImageTextButton.TextPositionEnum.Left,
-                    Font = _fontSystem.GetFont(32),
-                };
-
-                ToggleFullscreen.PressedChanged += (sender, e) =>
-                {
-                    //GameEngine.Instance.setFullscreen(true);
-                };
-
-                // Create Exit to Menu
-                var ExitToMenuSettings = createTextButton("Main Menu");
-
-                ExitToMenuSettings.Click += (sender, e) =>
-                {
-                    UI.Root = rootPanel;
-                };
-
-                SettingsPanel.AddChild(titleSettings);
-                SettingsPanel.AddChild(VolumeSliderText);
-                SettingsPanel.AddChild(VolumeSlider);
-                SettingsPanel.AddChild(SoundSliderText);
-                SettingsPanel.AddChild(SoundsSlider);
-                SettingsPanel.AddChild(ToggleFullscreen);
-                SettingsPanel.AddChild(ExitToMenuSettings);
-                gridSettingsPanel.AddChild(SettingsPanel);
-
-
-
-                UI.Root = rootPanel;
-                UI.IsMouseVisible = true;
-            }
-        }
     }
 }
-
