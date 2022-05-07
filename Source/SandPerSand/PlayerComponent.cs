@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Engine;
@@ -31,7 +31,7 @@ namespace SandPerSand
             base.OnAwake();
 
             InputHandler = new InputHandler(PlayerIndex);
-            Debug.Print($"Player with player index {PlayerIndex.ToString()} created");
+            Debug.Print($"Player with player index {PlayerIndex} created");
             
             var colliderGo = new GameObject("Player collider");
             colliderGo.Transform.Parent = Owner.Transform;

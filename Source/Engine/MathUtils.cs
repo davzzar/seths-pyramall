@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.Xna.Framework;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace Engine
@@ -159,6 +160,26 @@ namespace Engine
                 return current;
             }
             return target;
+        }
+
+        /// <summary>
+        /// Get the angle between two vectors in radians.
+        /// </summary>
+        public static float AngleBetween(in Vector2 vector1, in Vector2 vector2)
+        {
+            var sin = vector1.X * vector2.Y - vector2.X * vector1.Y;
+            var cos = vector1.X * vector2.X + vector1.Y * vector2.Y;
+
+            return MathF.Atan2(sin, cos);
+        }
+
+
+        /// <summary>
+        /// Get the angle between two vectors in degrees.
+        /// </summary>
+        public static float AngleBetweenDegrees(in Vector2 vector1, in Vector2 vector2)
+        {
+            return MathHelper.ToDegrees(AngleBetween(vector1, vector2));
         }
     }
 }
