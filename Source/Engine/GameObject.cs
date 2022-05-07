@@ -419,6 +419,12 @@ namespace Engine
             }
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"GameObject \"{this.Name}\"";
+        }
+
         internal void DoUpdate()
         {
             Debug.Assert(this.state == GameObjectState.Enabled);

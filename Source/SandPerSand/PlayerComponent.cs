@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Engine;
@@ -37,12 +37,27 @@ namespace SandPerSand
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnAwake();
 
-            InputHandler = new InputHandler(PlayerIndex);
-            Debug.Print($"Player with player index {PlayerIndex.ToString()} created");
+#if DEBUG
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
+            textRenderer.PositionMode = GuiTextRenderer.ScreenPositionMode.Absolute;
+            textRenderer.ScreenPosition = Vector2.UnitY * 400f;
+            textRenderer.Color = Color.Yellow;
+            textRenderer.FontSize = 34;
+            var tracer = Owner.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
+#endif
 
-            var playerCollider = Owner.AddComponent<CircleCollider>();
-            playerCollider.Radius = 1f;
+            InputHandler = new InputHandler(PlayerIndex);
+            Debug.Print($"Player with player index {PlayerIndex} created");
+            
+            var colliderGo = new GameObject("Player collider");
+            colliderGo.Transform.Parent = Owner.Transform;
+            colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);
+            var playerCollider = colliderGo.AddComponent<CircleCollider>();
+            playerCollider.Radius = 0.325f;
             playerCollider.Friction = 0.0f;
+
 
             var playerRB = Owner.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
@@ -60,13 +75,6 @@ namespace SandPerSand
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.AddComponent<Animator>();
             SetPlayerAnimationSprite();
-
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = Owner.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
 
             var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
