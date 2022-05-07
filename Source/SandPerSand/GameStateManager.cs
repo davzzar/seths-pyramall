@@ -49,7 +49,7 @@ namespace SandPerSand
                 {
                     instance = new GameStateManager();
                     currentState = GameState.InRound;
-                    GraphicalUserInterface.Instance.renderMidScreenText("SandSim started automatically.");
+                    GraphicalUserInterface.Instance.renderMidScreenText("SandSim started automatically. Also fuck ");
                 }
                 return instance;
             }
