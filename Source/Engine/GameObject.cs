@@ -431,7 +431,10 @@ namespace Engine
             for (var i = 0; i < this.behaviours.Count; i++)
             {
                 var behavior = this.behaviours[i];
-                behavior.UpdateInternal();
+                if (behavior.IsActive)
+                {
+                    behavior.UpdateInternal();
+                }
             }
         }
 

@@ -45,13 +45,15 @@ namespace Engine
         {
             const int numPoints = 16;
 
-            var p0 = this.Transform.TransformPoint(new Vector2(0f, 0.5f));
+            var sX = this.radius * this.Transform.LossyScale.X * 0.5f;
+            var sY = this.radius * this.Transform.LossyScale.Y * 0.5f;
+            var p0 = this.Transform.TransformPoint(new Vector2(0f, sY));
             var pCur = p0;
 
             for (var i = 0; i < numPoints; i++)
             {
                 var a = MathF.PI * 2f * i / numPoints;
-                var pNext = this.Transform.TransformPoint(new Vector2(MathF.Sin(a) * 0.5f, MathF.Cos(a) * 0.5f));
+                var pNext = this.Transform.TransformPoint(new Vector2(MathF.Sin(a) * sX, MathF.Cos(a) * sY));
 
                 Gizmos.DrawLine(pCur, pNext, Color.White);
                 pCur = pNext;
