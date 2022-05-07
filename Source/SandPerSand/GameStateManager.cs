@@ -130,7 +130,7 @@ namespace SandPerSand
                         {
                             var player = PlayersManager.Instance.GetPlayer(playerIndex);
                             PlayersManager.Instance.RespawnPlayer(playerIndex, new Vector2(entryX--, entryY));
-                            player.GetComponent<PlayerControlComponent>().IsActive = false;
+                            //player.GetComponent<PlayerControlComponent>().IsActive = false;
                         }
                         // FIXME correct shop scene number
                         sceneManager.LoadAt(1);

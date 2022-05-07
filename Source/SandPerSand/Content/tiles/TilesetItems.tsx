@@ -6,7 +6,7 @@
    <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="lightning"/>
    <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
-   <property name="item_price" type="int" value="0"/>
+   <property name="item_price" type="int" value="6"/>
    <property name="item_type" value="minor"/>
   </properties>
   <objectgroup draworder="index" id="2">

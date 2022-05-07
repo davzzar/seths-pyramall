@@ -129,9 +129,18 @@ namespace SandPerSand
             if (stock > 0)
             {
                 // TODO deduct players' coins check enough amount
-                stock--;
-                // TODO add item to player
-                Debug.Print("Shop item: player" + playerIndex + " bought me");
+                if(PlayersManager.Instance.spendCoins(this.playerIndex, this.price))
+                {
+                    stock--;
+                    // TODO add item to player
+                    // FIXME major boolean is hard coded
+                    PlayersManager.Instance.addItemToInventory(this.playerIndex, this.ItemId, true);
+                    Debug.Print("Shop item "+ItemId+"("+price+" coins): player" + playerIndex + " bought me");
+                }
+                else
+                {
+                    Debug.Print("Shop item " + ItemId + "(" + price + " coins): player" + playerIndex + " bought me but failed");
+                }
                 UpdateInfo();
             }
             else

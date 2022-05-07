@@ -356,9 +356,9 @@ namespace SandPerSand
         public (Boolean, int) spendCoins(int amount)
             //returns true when action was successfull
         {
-            if(Coins > amount)
+            if(Coins >= amount)
             {
-                Coins = amount = Coins;
+                Coins -= amount;
                 return (true, Coins);
             }
             else
