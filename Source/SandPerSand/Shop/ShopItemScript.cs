@@ -15,10 +15,8 @@ namespace SandPerSand
 
         private bool wasOnCollision;
         private GameObject infoGo;
-        private int stock = 10;
-        private int price = 100;
-        private string description;
-        private string itemImg;
+        private int stock;
+        private int price;
         private string itemId = null;
         public string ItemId
         {
@@ -26,11 +24,9 @@ namespace SandPerSand
             set
             {
                 itemId = value;
-                // TODO set stock, price, description accordingly, probably aquire from a ItemWiki class
-                stock = 10;
-                price = 100;
-                description = "this is a dummy description";
-                itemImg = "shop/item_unknown";
+                // set stock, price, description accordingly, probably aquire from a ItemWiki class
+
+                InitShopItem();
             }
         }
 
@@ -48,20 +44,29 @@ namespace SandPerSand
             base.OnEnable();
             wasOnCollision = false;
             playerInput = null;
-            if (itemId == null)
+            if (ItemId != null)
             {
-                // FIXME
-                ItemId = "unknown";
-                //throw new InvalidOperationException();
+                InitShopItem();
             }
+        }
 
+        private void InitShopItem()
+        {
+            if (ItemId == null)
+            {
+                //ItemId = "lightning";
+                throw new InvalidOperationException("ShopItemScript's itemId must be set before InitShopItem");
+            }
+            var item = ItemWiki.ItemNametoItem[itemId];
+            // TODO better random num
+            stock = new Random().Next(1, 4);
             //create item info go
             infoGo = new GameObject();
             infoGo.Transform.Parent = this.Transform;
             var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
-            infoComp.FillInForm(itemId, price, stock, itemImg, description);
+            price = item.Price;
+            infoComp.FillInForm(ItemId, item.Price, stock, item.ImageName, item.Description);
             infoGo.IsEnabled = false;
-            // TODO add item info animator?
         }
 
         protected override void Update()

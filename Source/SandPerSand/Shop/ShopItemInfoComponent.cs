@@ -102,6 +102,7 @@ namespace SandPerSand
             soldGo.Transform.LocalPosition = new Vector2(0, .25f);
             soldGo.Transform.LossyScale = new Vector2(.75f, .6f);
             var soldRen = soldGo.AddComponent<SpriteRenderer>();
+            // FIXME hard code filepath
             soldRen.LoadFromContent("shop/sold");
             soldRen.Depth = .04f;
         }

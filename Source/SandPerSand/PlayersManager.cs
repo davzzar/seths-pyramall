@@ -80,6 +80,23 @@ namespace SandPerSand
             }
         }
 
+        public void RespawnPlayer(PlayerIndex playerIndex, Vector2 position)
+        {
+            if (players.ContainsKey(playerIndex))
+            {
+                players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
+                players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
+                players[playerIndex].Transform.Position = position;
+                players[playerIndex].GetComponent<Animator>().Entry();
+                players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
+            }
+            else
+            {
+                throw new InvalidOperationException("");
+            }
+
+            }
+
         public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
             //returns true if item was added. False if it is already full
         {
@@ -211,19 +228,19 @@ namespace SandPerSand
 
         public void finalizeRanks()
         {
-            int notExited = 1;
+            int notExitedFrom = 1;
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                if (player.GetComponent<PlayerStates>().RoundRank != -1)
                 {
-                    notExited ++;
+                    notExitedFrom++;
                 }
             }
             foreach (var player in players.Values)
             {
                 if (player.GetComponent<PlayerStates>().RoundRank == -1)
                 {
-                    player.GetComponent<PlayerStates>().RoundRank = notExited;
+                    player.GetComponent<PlayerStates>().RoundRank = notExitedFrom++;
                 }
             }
         }

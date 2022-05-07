@@ -70,7 +70,8 @@ namespace SandPerSand
                     break;
                 case "Item":
                     // Add Renderer
-                    _ = newTileGo.AddComponent<ShopItemScript>();
+                    var shopItemScript = newTileGo.AddComponent<ShopItemScript>();
+                    shopItemScript.ItemId = tile.GetTileProperty("item_id");
                     _ = AddTileRenderer(newTileGo, tile);
                     break;
             }

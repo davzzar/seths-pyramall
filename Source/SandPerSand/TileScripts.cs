@@ -9,6 +9,7 @@ namespace SandPerSand
         protected override void OnEnable()
         {
             base.OnEnable();
+            var playersManager = PlayersManager.Instance;
             PlayersManager.Instance.InitialPositions.Add(this.Owner.Transform.Position);
             this.Owner.Destroy();
         }

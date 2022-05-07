@@ -12,7 +12,7 @@ namespace SandPerSand
 {
     public class ItemWiki : Component
     {
-        public Dictionary<string, Item> ItemNametoItem; //= new Dictionary<string, int>();
+        public static Dictionary<string, Item> ItemNametoItem; //= new Dictionary<string, int>();
         public TiledTileset ItemTiledS; // new TiledTileset($"Content/tiles/TilesetItems.tsx");
         private string loadFromContentPath;
 
@@ -35,7 +35,7 @@ namespace SandPerSand
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentPath == null || !this.Owner.Scene.IsLoaded)
+            if (this.loadFromContentPath == null)//|| !this.Owner.Scene.IsLoaded
             {
                 return;
             }
@@ -48,7 +48,8 @@ namespace SandPerSand
             foreach (TiledTile tile in ItemTiledS.Tiles)
             {
                 Item item = ParseTiledItem(tile, ItemTiledS);
-                ItemNametoItem.Add(item.Name, item);
+                if (item.Name != null)
+                    ItemNametoItem.Add(item.Name, item);
             }
         }
 
@@ -70,7 +71,8 @@ namespace SandPerSand
                         item.Description = p.value;
                         break;
                     case "item_image_path":
-                        item.ImageName = Path.GetFileNameWithoutExtension(p.value);
+                        // FIXME hard code
+                        item.ImageName = $"shop/{Path.GetFileNameWithoutExtension(p.value)}";
                         break;
                     case "item_price":
                         item.Price = int.Parse(p.value);

@@ -114,16 +114,25 @@ namespace SandPerSand
                         // create players in queue
                         var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
 
-
-                        // disable all players controller except for the first player's controller
+                        // get rank list
+                        var rankList = new PlayerIndex[PlayersManager.Instance.Players.Count]; 
                         foreach (var item in PlayersManager.Instance.Players)
                         {
-                            var player = item.Value;
-                            if (player.GetComponent<PlayerStates>().RoundRank != 1)
-                            {
-                                player.GetComponent<PlayerControlComponent>().IsActive = false;
-                            }
+                            int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
+                            if(rank>0)rankList[rank-1] = item.Key;
                         }
+                        // respawn players -> queue by rank list
+                        // disable all players controller
+                        // FIXME get correct shop entrys
+                        var entryX = 10;
+                        var entryY = 3;
+                        foreach (var playerIndex in rankList)
+                        {
+                            var player = PlayersManager.Instance.GetPlayer(playerIndex);
+                            PlayersManager.Instance.RespawnPlayer(playerIndex, new Vector2(entryX--, entryY));
+                            player.GetComponent<PlayerControlComponent>().IsActive = false;
+                        }
+                        // FIXME correct shop scene number
                         sceneManager.LoadAt(1);
 
                     }
@@ -138,7 +147,6 @@ namespace SandPerSand
                     if (countDowncounter >= 10f)
                     {
                         countDowncounter = 0;
-
                     }
                     break;
             }
