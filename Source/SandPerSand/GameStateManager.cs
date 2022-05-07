@@ -12,7 +12,7 @@ namespace SandPerSand
     {
         private static GameStateManager instance;
 
-        public bool exitTrigger;
+        public bool exitTrigger = false;
         public bool TriggerExit()
         {
             Debug.Print("exit trigger script is run");
@@ -63,11 +63,14 @@ namespace SandPerSand
 
 
         public float countDowncounter { private set; get; }
+        private PlayerIndex[] rankList;
+        private int curRank = 0;
         protected override void Update()
         {
             switch (CurrentState)
             {
                 case GameState.Prepare:
+                    exitTrigger = false;
                     // at prepare state, PlayersManager keep checking for new gamepad
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
@@ -90,7 +93,9 @@ namespace SandPerSand
                     countDowncounter += Time.DeltaTime;
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
-                        countDowncounter = 0;
+
+
+                        countDowncounter = 0f;
                         PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
@@ -106,16 +111,16 @@ namespace SandPerSand
                     countDowncounter += Time.DeltaTime;
                     if (countDowncounter >= 2f)
                     {
-                        countDowncounter = 0;
+                        countDowncounter = 0f;
                         currentState = GameState.Shop;
                         Debug.Print("GameState: RoundCheck-> Shop");
                         // accept rank as initial parameters
                         // load new scene
                         // create players in queue
-                        var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                        
 
                         // get rank list
-                        var rankList = new PlayerIndex[PlayersManager.Instance.Players.Count]; 
+                        rankList = new PlayerIndex[PlayersManager.Instance.Players.Count]; 
                         foreach (var item in PlayersManager.Instance.Players)
                         {
                             int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
@@ -130,9 +135,11 @@ namespace SandPerSand
                         {
                             var player = PlayersManager.Instance.GetPlayer(playerIndex);
                             PlayersManager.Instance.RespawnPlayer(playerIndex, new Vector2(entryX--, entryY));
-                            //player.GetComponent<PlayerControlComponent>().IsActive = false;
+                            player.GetComponent<PlayerControlComponent>().IsActive = false;
+                            //player.GetComponent<RigidBody>().IsActive = false;
                         }
                         // FIXME correct shop scene number
+                        var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                         sceneManager.LoadAt(1);
 
                     }
@@ -143,10 +150,35 @@ namespace SandPerSand
                     // enable the next first player's controller
                     // ...
                     // after all player is moved to exit, proceed to the next round
+                    
                     countDowncounter += Time.DeltaTime;
                     if (countDowncounter >= 10f)
                     {
                         countDowncounter = 0;
+                        if (curRank >= rankList.Length)
+                        {
+                            curRank = 0;
+
+                            currentState = GameState.InRound;
+                            Debug.Print("GameState: Shop-> InRound");
+                            // reset exit states
+                            foreach (var item in PlayersManager.Instance.Players)
+                            {
+                                item.Value.GetComponent<PlayerStates>().Exited = false;
+                            }
+
+                            // TODO load correct scene
+                            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                            sceneManager.LoadAt(0);
+                            break;
+                        }
+
+
+                        PlayerIndex playerIndex = rankList[curRank++];
+                        var player = PlayersManager.Instance.GetPlayer(playerIndex);
+                        //player.GetComponent<RigidBody>().IsActive = true;
+                        player.GetComponent<PlayerControlComponent>().IsActive = true;
+
                     }
                     break;
             }
