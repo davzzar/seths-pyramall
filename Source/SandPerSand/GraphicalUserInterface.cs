@@ -7,6 +7,10 @@ using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using TiledCS;
+using Myra.Graphics2D;
+using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
+using Myra.Graphics2D.UI;
 
 namespace SandPerSand
 {
@@ -91,6 +95,12 @@ namespace SandPerSand
         protected override void Update()
         {
             base.Update();
+
+            if (GameStateManager.Instance.InMenu)
+            {
+                return;
+            }
+
             if (oldGameState != GameStateManager.Instance.CurrentState)
             {
                 GameState newGameState = GameStateManager.Instance.CurrentState;
@@ -99,12 +109,20 @@ namespace SandPerSand
                 {
                     if (midScreenTextComp == null)
                     {
+                        UI.Root = new Label()
+                        {
+                            Text = "testasd;jfd;klfjas;lfjas;lfjk;lfdjdsafasfdfkf'slfkjas;fjask;asdjdfjk",
+                            HorizontalAlignment = HorizontalAlignment.Center,
+                            TextAlign = TextAlign.Center,
+                        };
                         renderMidScreenText("Press A to start the Game");
+                        Debug.Print("asdhasdfkljhdfjklashlh");
                     }
                     else
                     {
                         updateMidScreenText("Press A to start the Game");
                     }
+                    
                 }
                 if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
                 {

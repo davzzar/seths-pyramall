@@ -5,14 +5,9 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
-using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
-using Myra.Graphics2D.Brushes;
-using Myra.Graphics2D.TextureAtlases;
-using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
 
@@ -34,7 +29,6 @@ namespace SandPerSand
             CreateFpsText();
             Collider.ShowGizmos = true;
 #endif
-
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });

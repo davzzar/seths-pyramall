@@ -45,6 +45,7 @@ namespace SandPerSand
                 {
                     instance = new GameStateManager();
                     currentState = GameState.Prepare;
+                    inMenu = true;
                 }
                 return instance;
             }
@@ -58,6 +59,15 @@ namespace SandPerSand
             {
                 return currentState;
             }
+        }
+
+        public static bool inMenu;
+        
+        public bool InMenu { get
+            {
+                return inMenu;
+            }
+            set { inMenu = value; }
         }
 
 
