@@ -609,7 +609,12 @@ namespace Engine
 
             for (var i = 0; i < this.Transform.ChildCount; i++)
             {
-                this.Transform.GetChild(i).Owner.DisableHierarchyRecursive();
+                var go = this.Transform.GetChild(i).Owner;
+                
+                if (go.IsEnabled)
+                {
+                    go.DisableHierarchyRecursive();
+                }
             }
         }
 
