@@ -63,7 +63,10 @@ namespace SandPerSand
         // OR if we pressed jump during coyote time.
         private bool WillJump =>
             isGrounded && JumpButtonPressed || HasLanded && BufferedJump || !isGrounded && JumpButtonPressed && CanUseCoyote;
-
+        public bool WillJumpPublic
+        {
+            get => WillJump;
+        }
 
         public PlayerControlComponent()
         {

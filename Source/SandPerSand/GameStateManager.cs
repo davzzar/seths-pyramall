@@ -90,6 +90,7 @@ namespace SandPerSand
                     countDowncounter += Time.DeltaTime;
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
+                        countDowncounter = 0;
                         PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
@@ -102,6 +103,43 @@ namespace SandPerSand
                     }
                     break;
                 case GameState.RoundCheck:
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 2f)
+                    {
+                        countDowncounter = 0;
+                        currentState = GameState.Shop;
+                        Debug.Print("GameState: RoundCheck-> Shop");
+                        // accept rank as initial parameters
+                        // load new scene
+                        // create players in queue
+                        var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+
+
+                        // disable all players controller except for the first player's controller
+                        foreach (var item in PlayersManager.Instance.Players)
+                        {
+                            var player = item.Value;
+                            if (player.GetComponent<PlayerStates>().RoundRank != 1)
+                            {
+                                player.GetComponent<PlayerControlComponent>().IsActive = false;
+                            }
+                        }
+                        sceneManager.LoadAt(1);
+
+                    }
+                    break;
+                case GameState.Shop:
+                    // disable the current player's controller after they finished shopping or after the time limit
+                    // move the finished player to the exit if they is not there
+                    // enable the next first player's controller
+                    // ...
+                    // after all player is moved to exit, proceed to the next round
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 10f)
+                    {
+                        countDowncounter = 0;
+
+                    }
                     break;
             }
         }
@@ -113,5 +151,6 @@ namespace SandPerSand
         InRound,
         CountDown,
         RoundCheck,
+        Shop,
     }
 }

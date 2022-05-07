@@ -34,7 +34,7 @@ namespace SandPerSand
 
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(ShopScene), typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(LoadSceneMultiplayer), typeof(ShopScene), typeof(MainMenu), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -326,7 +326,7 @@ namespace SandPerSand
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
         /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
-        private class SceneManagerComponent : Behaviour
+        public class SceneManagerComponent : Behaviour
         {
             public readonly List<Type> SceneLoaderTypes = new List<Type>();
 
