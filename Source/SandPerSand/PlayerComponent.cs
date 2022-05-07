@@ -72,6 +72,9 @@ namespace SandPerSand
             var playerStates = Owner.AddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
 
+            var buttonMasher = Owner.AddComponent<ButtonMashBar>();
+            buttonMasher.InputHandler = InputHandler;
+
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.AddComponent<Animator>();
             SetPlayerAnimationSprite();
