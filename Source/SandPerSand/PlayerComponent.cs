@@ -30,6 +30,17 @@ namespace SandPerSand
         {
             base.OnAwake();
 
+#if DEBUG
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
+            textRenderer.PositionMode = GuiTextRenderer.ScreenPositionMode.Absolute;
+            textRenderer.ScreenPosition = Vector2.UnitY * 400f;
+            textRenderer.Color = Color.Yellow;
+            textRenderer.FontSize = 34;
+            var tracer = Owner.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
+#endif
+
             InputHandler = new InputHandler(PlayerIndex);
             Debug.Print($"Player with player index {PlayerIndex} created");
             
@@ -68,12 +79,6 @@ namespace SandPerSand
 
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
             Owner.AddComponent<MyAnimatorController>();
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = Owner.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
 
             var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);

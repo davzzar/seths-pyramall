@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Reflection.Metadata.Ecma335;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -42,6 +43,11 @@ namespace SandPerSand
         public const float MaxDeceleration = 60f;
 
         public const float MaxHorizontalSpeed = 13f;
+
+        // Movement on Slopes
+        public float SlopeClimbVerticalSpeed { get; private set; }
+        public float SlopeAngle => groundChecker.SlopeAngleDown;
+        public bool IsAscendingSlope => IsOnSlope && HorizontalSpeed != 0 && !(MathF.Sign(HorizontalSpeed) == 1 ^ MathF.Sign(SlopeAngle) == 1);
 
         // Vertical movement
         public float VerticalSpeed { get; private set; }
@@ -97,7 +103,7 @@ namespace SandPerSand
             rigidBody.IgnoreGravity = true;
             groundChecker = Owner.GetOrAddComponent<GroundCheckComponent>();
 
-            textRenderer = Owner.GetOrAddComponent<GuiTextRenderer>();
+            textRenderer = Owner.GetComponent<GuiTextRenderer>();
 
             Owner.Layer = 1;
         }
@@ -161,19 +167,34 @@ namespace SandPerSand
             switch (IsGrounded)
             {
                 case true when !IsOnSlope:
+                    SlopeClimbVerticalSpeed = 0;
                     velocity = new Vector2(HorizontalSpeed, VerticalSpeed);
                     break;
                 case true when IsOnSlope:
                 {
-                    // TODO LET US JUMP ON SLOPES
                     // FIXME, we slow down on slopes due to decomposing a pure 13-horizontal speed into 
                     // its components and then doing so again idempotently
-                    var slopeAngle = groundChecker.SlopeAngleDown;
-                    velocity = new Vector2(MathF.Cos(slopeAngle), MathF.Sin(slopeAngle)) * HorizontalSpeed;
+                    SlopeClimbVerticalSpeed = MathF.Sin(SlopeAngle) * HorizontalSpeed;
+
+                    if (WillJump)
+                    {
+                        // If we jump we should set normal velocity
+                        // If we are moving up a slope, we should reset horizontal movement to zero
+                        // so we don't have a jump-spam-to-speed-up exploit.
+                        Debug.WriteLine("Jumping on Slope!");
+                        velocity = new Vector2(IsAscendingSlope ? 0.0f : HorizontalSpeed, VerticalSpeed);
+                    }
+                    else
+                    {
+                        velocity.Y = SlopeClimbVerticalSpeed;
+                        velocity.X = MathF.Cos(SlopeAngle) * HorizontalSpeed;
+                    }
+
                     Debug.WriteLine(velocity.Length());
                     break;
                 }
                 case false:
+                    SlopeClimbVerticalSpeed = 0;
                     velocity = new Vector2(HorizontalSpeed, VerticalSpeed);
                     break;
             }
@@ -273,7 +294,9 @@ namespace SandPerSand
         /// <param name="tr"></param>
         private void RenderDebugText(in GuiTextRenderer tr)
         {
-            tr.Text = $"H. Vel.: {HorizontalSpeed:F3}, V. Vel.: {VerticalSpeed:F3}\n" +
+            tr.Text = $"H. Vel.: {HorizontalSpeed:F3}, \n" +
+                      $"V. Vel.: {VerticalSpeed:F3}\n" +
+                      $"S. Vel.: {SlopeClimbVerticalSpeed:F3}\n\n" +
                       $"H. Accel: {CurrentAcceleration}, Gravity Scale: {GravityScale}\n" +
                       $"isGrounded: {IsGrounded}\n" +
                       $"jumpEnded: {jumpEnded}\n" +
@@ -282,6 +305,7 @@ namespace SandPerSand
                       $"Pos: {this.Transform.Position}\n\n" +
                       $"Slope Angle: {groundChecker.SlopeAngleDown}\n" +
                       $"IsOnSlope: {IsOnSlope}\n" +
+                      $"IsAscendingSlope: {IsAscendingSlope}\n" +
                       $"Vel Mag: {new Vector2(HorizontalSpeed, VerticalSpeed).Length()}";
         }
 
