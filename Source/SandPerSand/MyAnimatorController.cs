@@ -46,8 +46,8 @@ namespace SandPerSand
             //WillJump => isGrounded && JumpButtonPressed ||
             //              HasLanded && BufferedJump ||
             //              !isGrounded && JumpButtonPressed && CanUseCoyote
-            jumpFlag = playerControler.WillJumpPublic;
-            isGrounded = groundChecker.IsGrounded();
+            jumpFlag = playerControler.WillJump;
+            isGrounded = groundChecker.IsGrounded;
 
             // TODO set these flags correctly
             collectFlag = false;

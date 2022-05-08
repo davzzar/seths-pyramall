@@ -8,6 +8,7 @@
 	<ItemGroup>
 		<PackageReference Include="MonoGame.Content.Builder.Task" Version="3.8.0.1641" />
 		<PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.8.0.1641" />
+		<PackageReference Include="Myra" Version="1.4.0" />
 	</ItemGroup>
 
   <ItemGroup>
@@ -68,6 +69,9 @@
     <None Update="Content\tiles\TilesetCoins.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+	<None Update="Content\Fonts\Retro_Gaming.ttf">
+		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	</None>
   </ItemGroup>
 
 </Project>

@@ -56,6 +56,7 @@ namespace SandPerSand
                 {
                     instance = new GameStateManager();
                     currentState = GameState.Prepare;
+                    inMenu = true;
                 }
                 return instance;
             }
@@ -71,10 +72,23 @@ namespace SandPerSand
             }
         }
 
-
-
-        public float countDowncounter { private set; get; }
+        public static bool inMenu;
         
+        public bool InMenu { get
+            {
+                return inMenu;
+            }
+            set { inMenu = value; }
+        }
+
+
+        public static float countDowncounter;
+        public float CountDowncounter { 
+            get
+            {
+                return countDowncounter; 
+            } 
+        }
         protected override void Update()
         {
             switch (CurrentState)
@@ -99,6 +113,7 @@ namespace SandPerSand
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
+                    Debug.Print(countDowncounter.ToString());
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
                         countDowncounter = 0f;
@@ -144,7 +159,8 @@ namespace SandPerSand
             // load new scene
             // FIXME correct shop scene number
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            sceneManager.LoadAt(1);
+            // Load ShopScene current index = 3
+            sceneManager.LoadAt(3);
 
         }
 
@@ -154,7 +170,8 @@ namespace SandPerSand
             Debug.Print("GameState: Shop-> InRound");
             // TODO load correct scene
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            sceneManager.LoadAt(0);
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
 
         }
     }

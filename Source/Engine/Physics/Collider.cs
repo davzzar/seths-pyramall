@@ -8,9 +8,12 @@ using tainicom.Aether.Physics2D.Dynamics.Contacts;
 
 namespace Engine
 {
+    /// <summary>
+    /// Base class for all physics collider.
+    /// </summary>
     public abstract class Collider : Behaviour
     {
-        public static bool ShowGizmos = true;
+        private static bool showGizmos = true;
 
         [CanBeNull]
         private RigidBody owningRigidBody;
@@ -29,7 +32,17 @@ namespace Engine
         private float density = 1f;
 
         private float friction = 0.1f;
+
         private bool isTrigger;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Gizmos for all collider should be shown, has no effect in a release build.
+        /// </summary>
+        public static bool ShowGizmos
+        {
+            get => showGizmos;
+            set => showGizmos = value;
+        }
 
         /// <summary>
         /// Gets or sets the density of the collider.<br/>
@@ -77,6 +90,10 @@ namespace Engine
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this collider acts as a trigger or not.<br/>
+        /// Triggers don't affect the physics simulation and won't cause collisions with other collider but can be used to query potential collision using the <see cref="CollisionEnter"/> and <see cref="CollisionExit"/> events.
+        /// </summary>
         public bool IsTrigger
         {
             get => this.isTrigger;
@@ -150,12 +167,18 @@ namespace Engine
                 return this.shape;
             }
         }
-
+        
         internal Collider()
         { }
-
+        
+        /// <summary>
+        /// Occurs when a new collision is detected between this and another collider.
+        /// </summary>
         public event EventHandler<Collider> CollisionEnter;
 
+        /// <summary>
+        /// Occurs when a previously detected collision between this and another collider is resolved.
+        /// </summary>
         public event EventHandler<Collider> CollisionExit;
 
         /// <inheritdoc />
