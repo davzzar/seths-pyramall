@@ -55,10 +55,11 @@ namespace Engine
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                if (go.IsEnabledInHierarchy && go.State == GameObject.GameObjectState.Disabled)
+                go.UpdateEnabledState();
+                /*if (go.IsEnabledInHierarchy && go.State == GameObject.GameObjectState.Disabled)
                 {
                     go.OnEnableInternal();
-                }
+                }*/
             }
         }
 
@@ -74,14 +75,14 @@ namespace Engine
                 var go = this.allObjects[i];
                 if (go.IsEnabledInHierarchy)
                 {
-                    go.OnDisableInternal();
+                    go.OnDisableInternal(true);
                 }
             }
 
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                go.Destroy();
+                go.OnDestroyInternal();
             }
 
             this.isLoaded = false;
