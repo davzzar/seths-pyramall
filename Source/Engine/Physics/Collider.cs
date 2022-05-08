@@ -159,6 +159,12 @@ namespace Engine
         public event EventHandler<Collider> CollisionExit;
 
         /// <inheritdoc />
+        protected override void OnAwake()
+        {
+            this.Transform.ParentChanged += this.OnParentChanged;
+        }
+
+        /// <inheritdoc />
         protected override void OnEnable()
         {
             var rigidBody = this.owningRigidBody;
@@ -217,6 +223,12 @@ namespace Engine
             this.DestroyCurrentFixture();
         }
 
+        /// <inheritdoc />
+        protected override void OnDestroy()
+        {
+            this.Transform.ParentChanged -= this.OnParentChanged;
+        }
+
         /// <summary>
         /// Creates a shape representation of this collider, will be used in the internal physics calculations.
         /// </summary>
@@ -268,6 +280,15 @@ namespace Engine
             if (this.fixture != null)
             {
                 this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
+            }
+        }
+
+        private void OnParentChanged(object? sender, (Transform oldParent, Transform newParent) e)
+        {
+            if (this.IsActiveInHierarchy && this.Owner.Scene.IsLoaded)
+            {
+                this.IsActive = false;
+                this.IsActive = true;
             }
         }
 

@@ -203,17 +203,13 @@ namespace Engine
             this.Scene = scene;
             this.Scene.AddGameObject(this);
             this.Transform.SetContainingScene(this.Scene);
+            this.Transform.ParentChanged += this.OnParentChanged;
             this.state = GameObjectState.Created;
 
             if (this.Scene.IsLoaded)
             {
                 this.OnAwakeInternal();
                 this.UpdateEnabledState();
-
-                /*if (this.IsEnabledInHierarchy)
-                {
-                    this.OnEnableInternal();
-                }*/
             }
         }
 
@@ -373,6 +369,8 @@ namespace Engine
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
 
+            this.Transform.ParentChanged -= this.OnParentChanged;
+
             for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
             {
                 this.Transform.Children[i].Owner.Destroy();
@@ -502,44 +500,6 @@ namespace Engine
             this.state = GameObjectState.Disabled;
         }
 
-        internal void OnEnableInternal()
-        {
-            Debug.Assert(this.state == GameObjectState.Disabled);
-
-            this.isChangingEnableState = true;
-            this.isEnabled = true;
-            this.state = GameObjectState.Enabling;
-
-            for (var i = 0; i < this.behaviours.Count; i++)
-            {
-                var b = this.behaviours[i];
-
-                if (b.IsActive)
-                {
-                    b.OnEnableInternal();
-                }
-            }
-
-            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
-            {
-                var go = this.Transform.GetChild(i).Owner;
-
-                if (go.isEnabled)
-                {
-                    go.OnEnableInternal();
-                }
-            }
-
-            this.state = GameObjectState.Enabled;
-            this.isChangingEnableState = false;
-
-            if (!this.IsEnabledInHierarchy && this.IsAlive)
-            {
-                // A component might have disabled the game object
-                this.OnDisableInternal(false);
-            }
-        }
-
         internal void OnDisableInternal(bool isDestroying)
         {
             Debug.Assert(this.state == GameObjectState.Enabled);
@@ -604,76 +564,24 @@ namespace Engine
 
             this.state = GameObjectState.Destroyed;
         }
-
+        
         internal void UpdateEnabledState()
         {
             if (this.state == GameObjectState.Disabled)
             {
                 if (this.IsEnabledInHierarchy)
                 {
-                    this.isChangingEnableState = true;
-                    this.state = GameObjectState.Enabling;
-
-                    for (var i = 0; i < this.behaviours.Count; i++)
-                    {
-                        var b = this.behaviours[i];
-
-                        if (b.IsActive)
-                        {
-                            b.OnEnableInternal();
-                        }
-                    }
-
-                    for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
-                    {
-                        var go = this.Transform.GetChild(i).Owner;
-
-                        go.UpdateEnabledState();
-                    }
-
-                    this.state = GameObjectState.Enabled;
-                    this.isChangingEnableState = false;
-
-                    // A behavior might have disabled the game object during the enabling procedure
-                    this.UpdateEnabledState();
+                    this.OnEnableInternal();
                 }
             }
             else if (this.state == GameObjectState.Enabled)
             {
                 if (!this.IsEnabledInHierarchy)
                 {
-                    this.isChangingEnableState = true;
-                    //this.isEnabled = false;
-                    this.state = GameObjectState.Disabling;
-
-                    for (var i = 0; i < this.behaviours.Count; i++)
-                    {
-                        var b = this.behaviours[i];
-
-                        if (b.IsActive)
-                        {
-                            b.OnDisableInternal();
-                        }
-                    }
-
-                    for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
-                    {
-                        var go = this.Transform.GetChild(i).Owner;
-
-                        if (go.isEnabled)
-                        {
-                            go.UpdateEnabledState();
-                        }
-                    }
-
-                    this.state = GameObjectState.Disabled;
-                    this.isChangingEnableState = false;
-
-                    // A behavior might have enabled the game object during the disabling procedure
-                    this.UpdateEnabledState();
+                    this.OnDisableInternal(false);
                 }
             }
-            else
+            else if (this.state != GameObjectState.Enabling && this.state != GameObjectState.Disabling)
             {
                 throw new InvalidOperationException("The game object state is invalid for updating the enabled state.");
             }
@@ -711,6 +619,48 @@ namespace Engine
         private void OnLayerChanged((int oldLayer, int newLayer) e)
         {
             this.LayerChanged?.Invoke(this, e);
+        }
+
+        private void OnEnableInternal()
+        {
+            Debug.Assert(this.state == GameObjectState.Disabled);
+
+            this.isChangingEnableState = true;
+            this.state = GameObjectState.Enabling;
+
+            for (var i = 0; i < this.behaviours.Count; i++)
+            {
+                var b = this.behaviours[i];
+
+                if (b.IsActive)
+                {
+                    b.OnEnableInternal();
+                }
+            }
+
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                var go = this.Transform.GetChild(i).Owner;
+
+                go.UpdateEnabledState();
+            }
+
+            this.state = GameObjectState.Enabled;
+            this.isChangingEnableState = false;
+
+            if (!this.IsEnabledInHierarchy && this.IsAlive)
+            {
+                // A behavior might have disabled the game object during the enabling procedure
+                this.OnDisableInternal(false);
+            }
+        }
+        
+        private void OnParentChanged(object? sender, (Transform oldParent, Transform newParent) e)
+        {
+            if (this.IsAlive)
+            {
+                this.UpdateEnabledState();
+            }
         }
 
         #endregion

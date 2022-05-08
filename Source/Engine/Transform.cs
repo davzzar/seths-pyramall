@@ -28,6 +28,8 @@ namespace Engine
 
         private DirtyFlags dirty;
 
+        internal event EventHandler<(Transform oldParent, Transform newParent)> ParentChanged;
+
         public Transform()
         {
             this.localPosition = Vector2.Zero;
@@ -56,12 +58,15 @@ namespace Engine
 
                     current = current.parent;
                 }
-                
+
+                var oldParent = this.parent;
                 this.parent?.children.Remove(this);
                 this.parent = value;
                 this.parent?.children.Add(this);
 
                 this.MarkLocalToWorldDirty();
+
+                this.OnParentChanged((oldParent, this.parent));
             }
         }
 
@@ -234,6 +239,11 @@ namespace Engine
             {
                 child.MarkLocalToWorldDirty();
             }
+        }
+
+        private void OnParentChanged((Transform oldParent, Transform newParent) e)
+        {
+            this.ParentChanged?.Invoke(this, e);
         }
 
         [Flags]
