@@ -78,6 +78,10 @@ namespace SandPerSand
 
             var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
+
+            var itemsManager = Owner.AddComponent<ItemManager>();
+            itemsManager.playerIndex = PlayerIndex;
+            itemsManager.inputHandler = InputHandler;
         }
 
         private void SetPlayerAnimationSprite()
