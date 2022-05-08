@@ -266,10 +266,21 @@ namespace SandPerSand
             }
 
             float timeDelta = Time.DeltaTime;
-            
-            for(int i = 0; i < activeItems.Count; i++)
+
+            List<int> remove = new List<int>();
+
+            for (int i = 0; i < activeItems.Count; i++)
             {
                 activeItems[i] = (activeItems[i].id, activeItems[i].timeleft - timeDelta);
+                if (activeItems[i].timeleft < 0)
+                {
+                    remove.Add(i);
+                }
+            }
+
+            for (int i = remove.Count - 1; i >= 0; i--)
+            {
+                activeItems.RemoveAt(remove[i]);
             }
         }
 
@@ -377,7 +388,7 @@ namespace SandPerSand
             return jumpfactor;
         }
 
-        public float getAccelleration()
+        public float getAccellerationFactor()
         {
             float accelleration = 1;
 
@@ -393,6 +404,20 @@ namespace SandPerSand
                 }
             }
             return accelleration;
+        }
+
+        public float getInvertedMovement()
+        {
+            float invertedMovement = 1;
+
+            foreach (var item in activeItems)
+            {
+                if (item.id == "dizzy_eyes")
+                {
+                    invertedMovement *= -1f;
+                }
+            }
+            return invertedMovement;
         }
     }
 }

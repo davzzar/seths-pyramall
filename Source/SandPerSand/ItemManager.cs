@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
 
 namespace SandPerSand
@@ -18,12 +19,12 @@ namespace SandPerSand
 
             string itemId = "";
 
-            if(inputHandler.getButtonState(Microsoft.Xna.Framework.Input.Buttons.X) == ButtonState.Pressed)
+            if(inputHandler.getButtonState(Buttons.X) == ButtonState.Pressed)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, false);
             }
 
-            if (inputHandler.getButtonState(Microsoft.Xna.Framework.Input.Buttons.Y) == ButtonState.Pressed)
+            if (inputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, true);
             }
@@ -79,12 +80,20 @@ namespace SandPerSand
                     PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
                     break;
                 case "speedup":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
+                    //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
                     break;
                 case "dizzy_eyes":
+                    PlayerComponent[] players3 = GameObject.FindComponents<PlayerComponent>();
+                    foreach (PlayerComponent p in players3)
+                    {
+                        if(p.PlayerIndex != playerIndex)
+                        {
+                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 5));
+                        }
+                    }
                     break;
                 case "shield":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
+                    //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
                     break;
             }
         }
