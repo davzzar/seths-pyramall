@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.2" name="try" tilewidth="32" tileheight="32" tilecount="64" columns="8">
+<tileset version="1.4" tiledversion="1.4.3" name="try" tilewidth="32" tileheight="32" tilecount="64" columns="8">
  <image source="TilesetTexture_brown.png" trans="ff00ff" width="256" height="256"/>
-<tile id="0" type="Platform"/>
+ <tile id="0" type="Platform"/>
  <tile id="1" type="Platform"/>
  <tile id="2" type="Platform"/>
  <tile id="3" type="Platform"/>
@@ -161,7 +161,7 @@
  <tile id="37" type="Platform">
   <objectgroup draworder="index" id="2">
    <object id="1" x="4" y="0">
-    <polygon points="0,0 28,28 29,0"/>
+    <polygon points="0,0 28,28 28,0"/>
    </object>
   </objectgroup>
  </tile>

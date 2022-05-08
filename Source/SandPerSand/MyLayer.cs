@@ -16,7 +16,7 @@ namespace SandPerSand
     {
         public float Depth { get; set; }
 
-        public MyLayer() : base()
+        public MyLayer() 
         {
             Depth = 0f;
         }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using Engine;
@@ -15,12 +15,18 @@ namespace SandPerSand
             get => playerIndex;
             set
             {
+                if (value == playerIndex)
+                {
+                    return;
+                }
+
                 if (!Enum.IsDefined(typeof(PlayerIndex), value))
                     throw new InvalidEnumArgumentException(nameof(value), (int) value, typeof(PlayerIndex));
-                // Update the InputHandler when the player index is updated
                 
-                if (value != playerIndex) InputHandler = new InputHandler(value);
+                // Update child components when the player index is updated
                 playerIndex = value;
+                InputHandler.PlayerIndex = value;
+                SetPlayerAnimationSprite();
             }
         }
 
@@ -28,14 +34,30 @@ namespace SandPerSand
 
         protected override void OnAwake()
         {
+            // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnAwake();
 
-            InputHandler = new InputHandler(PlayerIndex);
-            Debug.Print($"Player with player index {PlayerIndex.ToString()} created");
+#if DEBUG
+            //FOR DEBUG (updated in the PlayerControlComponent)
+            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
+            textRenderer.PositionMode = GuiTextRenderer.ScreenPositionMode.Absolute;
+            textRenderer.ScreenPosition = Vector2.UnitY * 400f;
+            textRenderer.Color = Color.Yellow;
+            textRenderer.FontSize = 34;
+            var tracer = Owner.AddComponent<TracerRendererComponent>();
+            tracer.TraceLength = 60;
+#endif
 
-            var playerCollider = Owner.AddComponent<CircleCollider>();
-            playerCollider.Radius = 1f;
+            InputHandler = new InputHandler(PlayerIndex);
+            Debug.Print($"Player with player index {PlayerIndex} created");
+            
+            var colliderGo = new GameObject("Player collider");
+            colliderGo.Transform.Parent = Owner.Transform;
+            colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);
+            var playerCollider = colliderGo.AddComponent<CircleCollider>();
+            playerCollider.Radius = 0.325f;
             playerCollider.Friction = 0.0f;
+
 
             var playerRB = Owner.AddComponent<RigidBody>();
             playerRB.IsKinematic = false;
@@ -52,6 +74,15 @@ namespace SandPerSand
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.AddComponent<Animator>();
+            SetPlayerAnimationSprite();
+
+            var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
+            cameraControlPoint.Margin = new Border(5, 10, 5, 5);
+        }
+
+        private void SetPlayerAnimationSprite()
+        {
+            var playerAnimator = Owner.GetOrAddComponent<Animator>();
 
             string animationTexture = PlayerIndex switch
             {
@@ -64,15 +95,8 @@ namespace SandPerSand
 
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
             Owner.AddComponent<MyAnimatorController>();
-
-            //FOR DEBUG (updated in the PlayerControlComponent)
-            var textRenderer = Owner.AddComponent<GuiTextRenderer>();
-            textRenderer.ScreenPosition = Vector2.UnitY * 100f;
-            var tracer = Owner.AddComponent<TracerRendererComponent>();
-            tracer.TraceLength = 60;
-
-            var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
-            cameraControlPoint.Margin = new Border(5, 10, 5, 5);
         }
     }
+
+
 }

@@ -5,11 +5,9 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
-using FontStashSharp;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
-using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
 
@@ -27,22 +25,19 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
 
-            #if DEBUG
+#if DEBUG
             CreateFpsText();
             Collider.ShowGizmos = true;
-            #endif
-
+#endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
 
-            CreateGUI();
             CreateBackground();
-
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -71,7 +66,7 @@ namespace SandPerSand
         {
             var textGo = new GameObject();
             textGo.Transform.LocalPosition = new Vector2(0.1f, -0.1f);
-            
+
             var textComp = textGo.AddComponent<TextRenderer>();
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
@@ -106,8 +101,8 @@ namespace SandPerSand
             var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
             Debug.Print(map.Size.ToString());
-            sandSim.ResolutionX = (int) (map.Size.X * 5);
-            sandSim.ResolutionY = (int) (map.Size.Y * 5);
+            sandSim.ResolutionX = (int)(map.Size.X * 5);
+            sandSim.ResolutionY = (int)(map.Size.Y * 5);
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
@@ -122,12 +117,6 @@ namespace SandPerSand
             //leftBorderComp.AffectsVertical = false;
         }
 
-        private static void CreateGUI()
-        {
-            var guiGo = new GameObject();
-            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
-        }
-
         private static void CreateBackground()
         {
             var backgroundParent = new GameObject();
@@ -135,7 +124,7 @@ namespace SandPerSand
 
             var backgroundGo = new GameObject();
             //backgroundGo.Transform.Parent = backgroundParent.Transform;
-            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f, 29.5f);
             backgroundGo.Transform.LossyScale = new Vector2(60, 60);
             var background = backgroundGo.AddComponent<SpriteRenderer>();
             background.LoadFromContent("background");
@@ -144,7 +133,7 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            
+
         }
 
         private static void CreatePerformanceTest(int count)
@@ -183,7 +172,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -226,7 +215,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -243,7 +232,7 @@ namespace SandPerSand
                     {
                         new Vector2(-0.5f, -0.5f), 
                         //new Vector2(0.5f, -0.5f),
-                        new Vector2(0.5f, 0.5f), 
+                        new Vector2(0.5f, 0.5f),
                         new Vector2(-0.5f, 0.5f)
                     };
                 }
@@ -289,7 +278,7 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-            
+
             sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
@@ -311,7 +300,7 @@ namespace SandPerSand
             sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
 
-            
+
         }
 
         /// <summary>
@@ -319,7 +308,7 @@ namespace SandPerSand
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
         /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
-        private class SceneManagerComponent : Behaviour
+        public class SceneManagerComponent : Behaviour
         {
             public readonly List<Type> SceneLoaderTypes = new List<Type>();
 
@@ -330,6 +319,12 @@ namespace SandPerSand
             public void LoadAt(int index)
             {
                 this.RunSceneLoader(index);
+
+                if(GameObject.FindComponent<GraphicalUserInterface>() == null)
+                {
+                    var guiGo = new GameObject();
+                    var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+                }
             }
 
             /// <inheritdoc />
@@ -403,7 +398,7 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreatePhysicsTest3(10, 20, 10, 10);
-                
+
                 Debug.Print("Loaded Scene 1: Debug with Physics");
             }
         }
@@ -437,74 +432,8 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
-                //CreateSandPhysics_level_1();
-            }
-        }
-
-        private class MainMenu : Component
-        {
-            protected override void OnAwake()
-            {
-                // The vertical stack panel widget places the children in a vertical line with some spacing
-                var panel = new VerticalStackPanel()
-                {
-                    Spacing = 20,
-                    HorizontalAlignment = HorizontalAlignment.Center,
-                    VerticalAlignment = VerticalAlignment.Center,
-                };
-
-                // Create a start button with green text
-                var startButton = new TextButton
-                {
-                    Text = "Start",
-                    TextColor = Color.LimeGreen,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
-                // When the start button is clicked, remove the GUI by setting UI.Root to null
-                startButton.Click += (sender, e) =>
-                {
-                    var loadManager = GameObject.FindComponent<SceneManagerComponent>();
-                    loadManager.LoadAt(1);
-                    UI.Root = null;
-                };
-
-                // Add a non-functional settings button
-                var settingsButton = new TextButton
-                {
-                    Text = "Settings",
-                    TextColor = Color.CornflowerBlue,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
-                // Lastly an exit button that kills the app dead
-                var exitButton = new TextButton
-                {
-                    Text = "Exit",
-                    TextColor = Color.Red,
-                    Padding = new Thickness(8),
-                    HorizontalAlignment = HorizontalAlignment.Stretch,
-                    ContentHorizontalAlignment = HorizontalAlignment.Center
-                };
-
-                exitButton.Click += (sender, e) =>
-                {
-                    GameEngine.Instance.Exit();
-                };
-
-                // Add the buttons in the correct order
-                panel.AddChild(startButton);
-                panel.AddChild(settingsButton);
-                panel.AddChild(exitButton);
-
-                UI.Root = panel;
-                UI.IsMouseVisible = true;
+                CreateSandPhysics_level_1();
             }
         }
     }
 }
-

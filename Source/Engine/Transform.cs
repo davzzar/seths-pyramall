@@ -173,12 +173,12 @@ namespace Engine
 
         public Vector2 TransformPoint(in Vector2 point)
         {
-            return this.localToWorld.TransformPoint(in point);
+            return this.LocalToWorld.TransformPoint(in point);
         }
 
         public Vector2 TransformDirection(in Vector2 point)
         {
-            return this.localToWorld.TransformDirection(in point);
+            return this.LocalToWorld.TransformDirection(in point);
         }
 
         internal void SetContainingScene(Scene scene)
