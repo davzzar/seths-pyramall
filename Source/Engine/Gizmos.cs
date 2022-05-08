@@ -9,6 +9,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Engine
 {
+    /// <summary>
+    /// A debugging tool to draw geometric shapes for one frame, useful to visualize information in the scene.
+    /// </summary>
     public static class Gizmos
     {
         private const float GizmosAlpha = 0.5f;
@@ -27,6 +30,9 @@ namespace Engine
             data = new CommandEntry[32];
         }
 
+        /// <summary>
+        /// Draws a line between two points with a color and thickness in the next frame.
+        /// </summary>
         [Conditional("DEBUG")]
         public static void DrawLine(in Vector2 point1, in Vector2 point2, Color color, float thickness = 1f)
         {
@@ -39,6 +45,9 @@ namespace Engine
             DrawLine(in point1, distance, angle, color, thickness);
         }
 
+        /// <summary>
+        /// Draws a line with a start point, a length, a rotation in radians, a color and a thickness in the next frame.
+        /// </summary>
         [Conditional("DEBUG")]
         public static void DrawLine(in Vector2 from, in float distance, float rotation, Color color, float thickness = 1f)
         {
@@ -49,16 +58,19 @@ namespace Engine
             numEntries++;
         }
 
+        /// <summary>
+        /// Draws a rectangle outline with a center, size and given color in the next frame.
+        /// </summary>
         [Conditional("DEBUG")]
-        public static void DrawRect(in Vector2 center, in Vector2 size, Color color)
+        public static void DrawRect(in Vector2 center, in Vector2 size, Color color, float thickness = 1f)
         {
             var min = center - size / 2f;
             var max = center + size / 2f;
 
-            DrawLine(in min, new Vector2(min.X, max.Y), color);
-            DrawLine(in max, new Vector2(min.X, max.Y), color);
-            DrawLine(in min, new Vector2(max.X, min.Y), color);
-            DrawLine(in max, new Vector2(max.X, min.Y), color);
+            DrawLine(in min, new Vector2(min.X, max.Y), color, thickness);
+            DrawLine(in max, new Vector2(min.X, max.Y), color, thickness);
+            DrawLine(in min, new Vector2(max.X, min.Y), color, thickness);
+            DrawLine(in max, new Vector2(max.X, min.Y), color, thickness);
         }
 
         [Conditional("DEBUG")]

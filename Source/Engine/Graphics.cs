@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,6 +10,7 @@ namespace Engine
     {
         private static Graphics instance;
         
+        [CanBeNull]
         private Camera currentCamera;
 
         private Matrix3x3 currentWorldToView;
@@ -17,14 +19,27 @@ namespace Engine
 
         private SpriteBatch spriteBatch;
 
-        public static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
-
         internal static SpriteBatch SpriteBatch => instance.spriteBatch;
 
+        /// <summary>
+        /// Gets the graphics device that is currently being used to render the scene.
+        /// </summary>
+        public static GraphicsDevice GraphicsDevice => GameEngine.Instance.GraphicsDevice;
+
+        /// <summary>
+        /// Gets the camera that is currently being used for rendering.
+        /// </summary>
+        [CanBeNull]
         public static Camera CurrentCamera => instance.currentCamera;
 
+        /// <summary>
+        /// Gets or sets the background color for the scene.
+        /// </summary>
         public static Color BackgroundColor { get; set; } = new Color(37, 9, 25);
 
+        /// <summary>
+        /// Gets the size of the screen in pixels.
+        /// </summary>
         public static Vector2 ScreenSize
         {
             get
@@ -42,6 +57,9 @@ namespace Engine
         private Graphics()
         { }
 
+        /// <summary>
+        /// Draws a texture with respect to the current camera view.
+        /// </summary>
         public static void Draw(Texture2D texture, Color color, ref Matrix3x3 matrix, float depth, SpriteEffects effect = SpriteEffects.None)
         {
             var viewSpace = instance.currentWorldToView * matrix;
@@ -51,6 +69,9 @@ namespace Engine
             instance.spriteBatch.Draw(texture, position, null, color, radians, Vector2.Zero, scale, effect, depth);
         }
         
+        /// <summary>
+        /// Draws a texture with respect to the current camera view.
+        /// </summary>
         public static void Draw(Texture2D texture, Color color, Rectangle sourceRectangle, ref Matrix3x3 matrix, float depth, SpriteEffects effect = SpriteEffects.None)
         {
             var viewSpace = instance.currentWorldToView * matrix;
@@ -60,6 +81,9 @@ namespace Engine
             instance.spriteBatch.Draw(texture, position, sourceRectangle, color, radians, Vector2.Zero, scale, effect, depth);
         }
 
+        /// <summary>
+        /// Draws text with respect to the current camera view.
+        /// </summary>
         public static void DrawText(SpriteFont font, string text, float fontSize, Color color, ref Matrix3x3 matrix, float depth)
         {
             var viewSpace = instance.currentWorldToView * matrix;
@@ -70,6 +94,9 @@ namespace Engine
                 SpriteEffects.None, depth);
         }
 
+        /// <summary>
+        /// Draws a texture in screen space.
+        /// </summary>
         public static void DrawGuiSprite(Texture2D texture, Color color, Vector2 size, Vector2 position, float rotation, SpriteEffects effect = SpriteEffects.None)
         {
             var scale = Vector2.One;
@@ -78,6 +105,9 @@ namespace Engine
             instance.spriteBatch.Draw(texture, position, null, color, 0f, Vector2.Zero, scale, effect, 0f);
         }
 
+        /// <summary>
+        /// Draws a texture in screen space.
+        /// </summary>
         public static void DrawGuiSprite(Texture2D texture, Color color, Rectangle sourceRectangle, Vector2 size, Vector2 position, float rotation, SpriteEffects effect = SpriteEffects.None)
         {
             var scale = Vector2.One;
@@ -86,6 +116,9 @@ namespace Engine
             instance.spriteBatch.Draw(texture, position, sourceRectangle, color, 0f,  Vector2.Zero, scale, effect, 0f);
         }
 
+        /// <summary>
+        /// Draws text in screen space.
+        /// </summary>
         public static void DrawGuiText(SpriteFont font, string text, float fontSize, Color color, Vector2 position, float rotation)
         {
             var height = FontManager.GetFontInfo(font).Height;
@@ -94,7 +127,7 @@ namespace Engine
                 SpriteEffects.None, 0f);
         }
 
-        public static void Init() { }
+        internal static void Init() { }
 
         internal static void BeginRender(Camera camera)
         {
