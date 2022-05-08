@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="15" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="2" nextobjectid="1">
+ <tileset firstgid="1" source="tiles/sandpersand_brown.tsx"/>
+ <tileset firstgid="65" source="tiles/sandpersand2.tsx"/>
+ <tileset firstgid="129" source="tiles/TilesetItems.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="15" height="10">
+  <data encoding="csv">
+36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,
+36,0,0,0,0,0,0,0,0,0,0,0,0,0,36,
+36,0,0,0,0,0,0,0,0,0,0,0,0,0,36,
+36,0,0,0,0,0,0,0,0,0,0,0,0,66,36,
+36,0,0,0,0,0,0,0,0,0,0,134,36,36,36,
+36,0,0,0,0,0,0,0,0,133,36,36,36,36,36,
+36,0,0,0,0,0,0,129,36,36,36,36,36,36,36,
+36,0,0,0,65,0,36,36,36,36,36,36,36,36,36,
+36,36,36,36,36,36,36,36,36,36,36,36,36,36,36,
+36,36,36,36,36,36,36,36,36,36,36,36,36,36,36
+</data>
+ </layer>
+</map>

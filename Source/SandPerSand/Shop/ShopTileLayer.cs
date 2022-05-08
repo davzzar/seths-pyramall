@@ -61,7 +61,7 @@ namespace SandPerSand
                     _ = AddPolygonCollider(newTileGo, tile);
                     break;
                 case "Entry":
-                    _ = newTileGo.AddComponent<EntryScript>();
+                    _ = newTileGo.AddComponent<ShopEntryScript>();
                     //_ = newTileGo.AddComponent<ShopEntryScript>();
                     break;
                 case "Exit":

@@ -20,6 +20,9 @@
       <Generator>mgcb</Generator>
       <CustomToolNamespace>MonoGame.Content.Builder.Task</CustomToolNamespace>
     </None>
+        <None Update="Content\shop_map.tmx">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Content\test_map.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

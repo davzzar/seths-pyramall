@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
@@ -93,9 +93,7 @@ namespace SandPerSand
                     if (exitTrigger)
                     {
                         currentState = GameState.CountDown;
-                        exitTrigger = false;
                         Debug.Print("GameState: InRound-> CountDown");
-                        //
                         countDowncounter = 0f;
                     }
                     break;
@@ -104,6 +102,7 @@ namespace SandPerSand
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
                         countDowncounter = 0f;
+                        exitTrigger = false;
                         PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug

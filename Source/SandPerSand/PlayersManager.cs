@@ -36,6 +36,16 @@ namespace SandPerSand
         public List<Vector2> InitialPositions
         {
             get => initialPositions;
+            private set
+            {
+                initialPositions = value;
+            }
+        }
+
+        private static Vector2 shopEntryPosition;
+        public Vector2 ShopEntryPosition {
+            get => shopEntryPosition;
+            set { shopEntryPosition = value; }
         }
 
 
@@ -46,15 +56,48 @@ namespace SandPerSand
 
         public GameState LastGameState { get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
-        private float passedTime = 0;
+        // TODO hard coded shopTime
+        private float shopTime = 3f;
+        private float shopTimeCounter = 0;
         private int curRank = 0;
         private PlayerIndex[] rankList;
+
         protected override void Update()
         {
-            if (CurrentGameState == GameState.Shop)
+            if (CurrentGameState == GameState.InRound)
             {
-                if(LastGameState != GameState.Shop)
+                if (LastGameState == GameState.Shop)
                 {
+                    // this holds because we clear initial positions each time we exit a round
+                    // initial positions are round specific
+                    if (InitialPositions.ToArray().Length <= 0)
+                    {
+                        Debug.Print("Cannot respawn Players, because the map is " +
+                            "not loaded or no initial positions on map.");
+                        return;
+                    }
+                    LastGameState = GameState.InRound;
+                    foreach (PlayerIndex playerIndex in Players.Keys)
+                    {
+                        RespawnPlayer(playerIndex, GetRandomInitialPos());
+                    }
+                }
+            }
+            else if (CurrentGameState == GameState.Shop)
+            {
+                if (LastGameState != GameState.Shop)
+                {
+                    // FIXME wait for shop map
+                    if (ShopEntryPosition.X < 4)
+                    {
+                        Debug.Print("Cannot respawn Player in the shop, " +
+                            "because initial position is not yet loaded or invalid.");
+                        return;
+                    }
+                    // clear initial positions when exit a round
+                    // since they are round-specific FIXME better place to do this???
+                    InitialPositions = new List<Vector2>();
+
                     // calculate rank list
                     rankList = new PlayerIndex[Players.Count];
                     foreach (var item in PlayersManager.Instance.Players)
@@ -62,22 +105,26 @@ namespace SandPerSand
                         int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
                         if (rank > 0) rankList[rank - 1] = item.Key;
                     }
+
                     // respawn players -> queue by rank list
                     // disable all players controller
-                    // FIXME get correct shop entrys
-                    int entryX = 10;
-                    int entryY = 3;
+                    var entryX = ShopEntryPosition.X;
                     foreach (var playerIndex in rankList)
                     {
-                        RespawnPlayer(playerIndex, new Vector2(entryX--, entryY));
+                        RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
                         GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
                     }
+                    // ShopEntryPsition can be reset right after use
+                    // If not reset, players will be spawned before shop map is
+                    // loaded next time ... then drop
+                    ShopEntryPosition = Vector2.Zero;
+                    LastGameState = GameState.Shop;
+                    shopTimeCounter = shopTime;
                 }
-                passedTime += Time.DeltaTime;
-                // TODO hard coded
-                if (passedTime >= 2f)
+                shopTimeCounter += Time.DeltaTime;
+                if (shopTimeCounter >= shopTime)
                 {
-                    passedTime = 0;
+                    shopTimeCounter = 0;
                     if (curRank >= rankList.Length)
                     {
                         curRank = 0;
@@ -88,8 +135,6 @@ namespace SandPerSand
                 }
 
             }
-
-            LastGameState = CurrentGameState;
         }
 
 

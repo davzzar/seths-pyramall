@@ -455,7 +455,7 @@ namespace SandPerSand
             protected override void OnAwake()
             {
                 Debug.Print("Loaded ShopScene");
-                CreateShopMap("test_level_1");
+                CreateShopMap("shop_map");
                 CreateCamera();
             }
         }

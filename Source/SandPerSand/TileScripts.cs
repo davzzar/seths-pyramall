@@ -1,4 +1,4 @@
-﻿using Engine;
+using Engine;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -11,6 +11,16 @@ namespace SandPerSand
             base.OnEnable();
             var playersManager = PlayersManager.Instance;
             PlayersManager.Instance.InitialPositions.Add(this.Owner.Transform.Position);
+            this.Owner.Destroy();
+        }
+    }
+    public class ShopEntryScript : Behaviour
+    {
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            var playersManager = PlayersManager.Instance;
+            PlayersManager.Instance.ShopEntryPosition = this.Owner.Transform.Position;
             this.Owner.Destroy();
         }
     }
