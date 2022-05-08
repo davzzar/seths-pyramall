@@ -62,10 +62,9 @@ namespace SandPerSand
                     break;
                 case "Entry":
                     _ = newTileGo.AddComponent<ShopEntryScript>();
-                    //_ = newTileGo.AddComponent<ShopEntryScript>();
                     break;
                 case "Exit":
-                    //_ = newTileGo.AddComponent<ShopExitScript>();
+                    _ = newTileGo.AddComponent<ShopExitScript>();
                     _ = AddTileRenderer(newTileGo, tile);
                     break;
                 case "Item":

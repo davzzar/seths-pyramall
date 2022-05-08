@@ -90,7 +90,7 @@ namespace SandPerSand
                     }
                     break;
                 case GameState.InRound:
-                    if (exitTrigger)
+                    if (PlayersManager.Instance.CheckOneExit())
                     {
                         currentState = GameState.CountDown;
                         Debug.Print("GameState: InRound-> CountDown");
@@ -128,7 +128,7 @@ namespace SandPerSand
                     // enable the next first player's controller
                     // ...
                     // after all player is moved to exit, proceed to the next round
-                    if (finishShopTrigger)
+                    if (PlayersManager.Instance.CheckAllFinishedShop())
                     {
                         finishShopTrigger = false;
                         ShopToInRound();

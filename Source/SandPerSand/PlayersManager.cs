@@ -57,9 +57,9 @@ namespace SandPerSand
         public GameState LastGameState { get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         // TODO hard coded shopTime
-        private float shopTime = 3f;
+        private float shopTime = 10f;
         private float shopTimeCounter = 0;
-        private int curRank = 0;
+        private int curRank;
         private PlayerIndex[] rankList;
 
         protected override void Update()
@@ -100,10 +100,14 @@ namespace SandPerSand
 
                     // calculate rank list
                     rankList = new PlayerIndex[Players.Count];
-                    foreach (var item in PlayersManager.Instance.Players)
+                    foreach (var item in Players)
                     {
                         int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
-                        if (rank > 0) rankList[rank - 1] = item.Key;
+                        if (rank <= 0)
+                        {
+                            throw new Exception("Invalid rank at end");
+                        }
+                        rankList[rank - 1] = item.Key;
                     }
 
                     // respawn players -> queue by rank list
@@ -120,18 +124,19 @@ namespace SandPerSand
                     ShopEntryPosition = Vector2.Zero;
                     LastGameState = GameState.Shop;
                     shopTimeCounter = shopTime;
+                    curRank = 0;
                 }
                 shopTimeCounter += Time.DeltaTime;
                 if (shopTimeCounter >= shopTime)
                 {
                     shopTimeCounter = 0;
-                    if (curRank >= rankList.Length)
+                    if(curRank < rankList.Length) Players[rankList[curRank]].GetComponent<PlayerControlComponent>().IsActive = true;
+                    if(curRank>0)
                     {
-                        curRank = 0;
-                        GameStateManager.Instance.TriggerFinishShop();
-                        return;
+                        Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
+                        //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
                     }
-                    Players[rankList[curRank++]].GetComponent<PlayerControlComponent>().IsActive = true;
+                    curRank++;
                 }
 
             }
@@ -321,6 +326,23 @@ namespace SandPerSand
             return allExitedFlag;
         }
 
+        public Boolean CheckAllFinishedShop()
+        {
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            var allExitedFlag = true;
+            foreach (var player in players.Values)
+            {
+                if (!player.GetComponent<PlayerStates>().FnishedShop)
+                {
+                    allExitedFlag = false;
+                }
+            }
+            return allExitedFlag;
+        }
+
         public void finalizeRanks()
         {
             int notExitedFrom = 1;
@@ -349,6 +371,7 @@ namespace SandPerSand
         public string MajorItem;
         public int Coins;
         public bool Exited { get; set; }
+        public bool FnishedShop { get; set; }
         public int RoundRank { get; set; }
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
@@ -363,6 +386,7 @@ namespace SandPerSand
             MajorItem = null;
             Coins = 0;
             Exited = false;
+            FnishedShop = false;
             RoundRank = -1;
         }
 
@@ -375,12 +399,19 @@ namespace SandPerSand
             {
                 TogglePrepared();
             }
-            if (LastGameState != CurrentGameState
-                && CurrentGameState == GameState.InRound)
+            if (LastGameState != CurrentGameState)
             {
-                // reset round states
-                Exited = false;
-                RoundRank = -1;
+                if(LastGameState == GameState.RoundCheck )
+                {
+
+                    FnishedShop = false;
+                }else if(LastGameState == GameState.Shop)
+                {
+                    // reset round states
+                    Exited = false;
+                    RoundRank = -1;
+                }
+                LastGameState = CurrentGameState;
             }
 
         }
