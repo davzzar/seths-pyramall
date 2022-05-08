@@ -7,8 +7,14 @@ using System.Diagnostics;
 
 namespace Engine
 {
+    /// <summary>
+    /// Renderer class for rendering a single sprite in screen space
+    /// </summary>
     public sealed class GuiSpriteRenderer : GuiRenderer
     {
+        /// <summary>
+        /// Enum used to differentiate between relative and absolute coordinate modes.
+        /// </summary>
         public enum ScreenPositionMode
         {
             /// <summary>
@@ -23,57 +29,73 @@ namespace Engine
         }
 
         private string loadFromContentPath;
+        
+        /// <summary>
+        /// Gets or sets how the position should be interpreted.
+        /// </summary>
         public ScreenPositionMode PositionMode { get; set; } = ScreenPositionMode.Absolute;
 
+        /// <summary>
+        /// Gets or sets a color tint for the sprite.
+        /// </summary>
         public Color Color { get; set; }
-        public Texture2D texture { get; set; }
-        public Vector2 size { get; set; }
-        public Vector2 sizeUnits { get; set; }
-        public Vector2 screenPosition { get; set; }
+
+        /// <summary>
+        /// Gets or sets the sprite texture.
+        /// </summary>
+        public Texture2D Texture { get; set; }
+
+        public Vector2 Size { get; set; }
+
+        public Vector2 SizeUnits { get; set; }
+
+        public Vector2 ScreenPosition { get; set; }
 
         //one unit is 10 percent of the height of the screen
-        public Vector2 screenPositionUnits { get; set; }
-        public Rectangle? sourceRectangle { get; set; }
-        public Vector2 rotation { get; set; }
+        public Vector2 ScreenPositionUnits { get; set; }
 
-        public int horizontalAlignment { get; set; }
+        public Rectangle? SourceRectangle { get; set; }
 
-        public int verticalAlignment { get; set; }
+        public Vector2 Rotation { get; set; }
+
+        public int HorizontalAlignment { get; set; }
+
+        public int VerticalAlignment { get; set; }
 
         private bool canRender;
-        public string path;
+        private string path;
 
         public override void Draw()
         {
             float Unit = Graphics.ScreenSize.Y * 0.1f;
-            if (this.texture == null)
+            if (this.Texture == null)
             {
                 return;
             }
 
             if (this.canRender)
             {
-                var screenPos = this.screenPosition;
-                var tmp_size = this.size;
+                var screenPos = this.ScreenPosition;
+                var tmp_size = this.Size;
 
                 if (this.PositionMode == ScreenPositionMode.Relative)
                 {
-                    screenPos = this.screenPosition * Graphics.ScreenSize + screenPositionUnits * Unit;
-                    tmp_size = this.size * Graphics.ScreenSize + sizeUnits * Unit;
+                    screenPos = this.ScreenPosition * Graphics.ScreenSize + this.ScreenPositionUnits * Unit;
+                    tmp_size = this.Size * Graphics.ScreenSize + this.SizeUnits * Unit;
                 }
                 else
                 {
-                    screenPos = this.screenPosition + screenPositionUnits * Unit;
-                    tmp_size = this.size + sizeUnits * Unit;
+                    screenPos = this.ScreenPosition + this.ScreenPositionUnits * Unit;
+                    tmp_size = this.Size + this.SizeUnits * Unit;
                 }
 
-                if (this.sourceRectangle == null)
+                if (this.SourceRectangle == null)
                 {
-                    Graphics.DrawGuiSprite(this.texture, this.Color, tmp_size, screenPos, 0f);
+                    Graphics.DrawGuiSprite(this.Texture, this.Color, tmp_size, screenPos, 0f);
                 }
                 else
                 {
-                    Graphics.DrawGuiSprite(this.texture, this.Color, this.sourceRectangle.Value, tmp_size, screenPos, 0f);
+                    Graphics.DrawGuiSprite(this.Texture, this.Color, this.SourceRectangle.Value, tmp_size, screenPos, 0f);
                 }
 
             }
@@ -111,7 +133,7 @@ namespace Engine
         {
             if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
             {
-                this.texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
+                this.Texture = GameEngine.Instance.Content.Load<Texture2D>(this.loadFromContentPath);
                 this.loadFromContentPath = null;
             }
             this.canRender = true;
@@ -119,14 +141,14 @@ namespace Engine
 
         public void SetSourceRectangle(int tileId, int tileWidth, int tileHeight)
         {
-            if (this.texture == null)
+            if (this.Texture == null)
             {
                 throw new InvalidOperationException("Can't set source rectangle before texture is ready!");
             }
 
-            this.sourceRectangle = new Rectangle(
-                    tileId * tileWidth % texture.Width,
-                    tileId * tileWidth / texture.Width * tileHeight,
+            this.SourceRectangle = new Rectangle(
+                    tileId * tileWidth % this.Texture.Width,
+                    tileId * tileWidth / this.Texture.Width * tileHeight,
                     tileWidth,
                     tileHeight);
         }

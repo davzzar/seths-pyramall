@@ -6,6 +6,9 @@ using System.Runtime.CompilerServices;
 
 namespace Engine
 {
+    /// <summary>
+    /// Represents a collection of game objects.
+    /// </summary>
     public sealed class Scene
     {
         private readonly List<GameObject> allObjects = new List<GameObject>();
@@ -16,16 +19,34 @@ namespace Engine
 
         private bool isLoaded;
 
+        /// <summary>
+        /// Gets or sets a name for this scene, can be used to differentiate various scenes.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether this scene is the active scene, this is always true if this scene is the only loaded scene.
+        /// </summary>
         public bool IsActiveScene => SceneManager.ActiveScene == this;
 
+        /// <summary>
+        /// Gets a value indicating whether this scene has been loaded and is currently getting event callbacks from the game engine.
+        /// </summary>
         public bool IsLoaded => this.isLoaded;
 
+        /// <summary>
+        /// Gets a read-only accessor to all game objects that are part of this scene.
+        /// </summary>
         public IReadOnlyList<GameObject> Objects => this.allObjects.AsReadOnly();
 
+        /// <summary>
+        /// Gets a read-only accessor to all game objects that are part of this scene and don't have a parent.
+        /// </summary>
         public IEnumerable<GameObject> RootObjects => this.allObjects.Where(go => go.Transform.Parent == null);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Scene"/> type.
+        /// </summary>
         public Scene()
         {
             this.Name = "New Scene";
@@ -55,10 +76,11 @@ namespace Engine
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                if (go.IsEnabledInHierarchy && go.State == GameObject.GameObjectState.Disabled)
+                go.UpdateEnabledState();
+                /*if (go.IsEnabledInHierarchy && go.State == GameObject.GameObjectState.Disabled)
                 {
                     go.OnEnableInternal();
-                }
+                }*/
             }
         }
 
@@ -74,14 +96,14 @@ namespace Engine
                 var go = this.allObjects[i];
                 if (go.IsEnabledInHierarchy)
                 {
-                    go.OnDisableInternal();
+                    go.OnDisableInternal(true);
                 }
             }
 
             for (var i = 0; i < this.allObjects.Count; i++)
             {
                 var go = this.allObjects[i];
-                go.Destroy();
+                go.OnDestroyInternal();
             }
 
             this.isLoaded = false;
