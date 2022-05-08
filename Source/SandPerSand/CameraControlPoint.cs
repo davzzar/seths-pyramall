@@ -10,6 +10,10 @@ namespace SandPerSand
 
         public Border Margin { get; set; } = Border.Zero;
 
+        public Border RequiredMargin { get; set; } = Border.Zero;
+
+        public Border DesiredMargin { get; set; } = Border.Zero;
+
         /// <inheritdoc />
         protected override void OnAwake()
         {
