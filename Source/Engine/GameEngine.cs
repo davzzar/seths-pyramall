@@ -42,7 +42,11 @@ namespace Engine
                 this.GraphicsDeviceManager.IsFullScreen = value;
                 this.GraphicsDeviceManager.ApplyChanges();
             } }
-        public Int2 Resolution { set
+        public Int2 Resolution
+        {
+            get { return new Int2(this.GraphicsDeviceManager.PreferredBackBufferWidth, this.GraphicsDeviceManager.PreferredBackBufferHeight); 
+            } 
+            set
             {
                 this.GraphicsDeviceManager.PreferredBackBufferWidth = value.X;
                 this.GraphicsDeviceManager.PreferredBackBufferHeight = value.Y;

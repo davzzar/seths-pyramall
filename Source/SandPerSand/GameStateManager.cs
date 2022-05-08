@@ -71,8 +71,13 @@ namespace SandPerSand
         }
 
 
-
-        public float countDowncounter { private set; get; }
+        public static float countDowncounter;
+        public float CountDowncounter { 
+            get
+            {
+                return countDowncounter; 
+            } 
+        }
         protected override void Update()
         {
             switch (CurrentState)
@@ -98,6 +103,7 @@ namespace SandPerSand
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
+                    Debug.Print(countDowncounter.ToString());
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
                         PlayersManager.Instance.finalizeRanks();

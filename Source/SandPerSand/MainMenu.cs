@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.IO;
 using Engine;
 using FontStashSharp;
@@ -160,6 +161,7 @@ namespace SandPerSand
             Mode2Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(1);
                 UI.Root = null;
             };
