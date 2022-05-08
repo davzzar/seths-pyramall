@@ -241,6 +241,8 @@ namespace SandPerSand
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
 
+        public List<(string id, float timeleft)> activeItems;
+
         protected override void OnAwake()
         {
             Prepared = false;
@@ -250,6 +252,7 @@ namespace SandPerSand
             Coins = 0;
             Exited = false;
             RoundRank = -1;
+            activeItems = new List<(string id, float timeleft)> ();
         }
 
         /// <summary>
@@ -260,6 +263,24 @@ namespace SandPerSand
             if (PrepareButtonPressed && GameStateManager.Instance.CurrentState == GameState.Prepare)
             {
                 TogglePrepared();
+            }
+
+            float timeDelta = Time.DeltaTime;
+
+            List<int> remove = new List<int>();
+
+            for (int i = 0; i < activeItems.Count; i++)
+            {
+                activeItems[i] = (activeItems[i].id, activeItems[i].timeleft - timeDelta);
+                if (activeItems[i].timeleft < 0)
+                {
+                    remove.Add(i);
+                }
+            }
+
+            for (int i = remove.Count - 1; i >= 0; i--)
+            {
+                activeItems.RemoveAt(remove[i]);
             }
         }
 
@@ -348,6 +369,55 @@ namespace SandPerSand
             {
                 return (false, Coins);
             }
+        }
+
+        public float getJumpFactor()
+        {
+            float jumpfactor = 1;
+            foreach(var item in activeItems)
+            {
+                if(item.id == "wings") 
+                {
+                    jumpfactor *= 1.5f;
+                }
+                else if(item.id == "ice_block")
+                {
+                    jumpfactor *= 0;
+                }
+            }
+            return jumpfactor;
+        }
+
+        public float getAccellerationFactor()
+        {
+            float accelleration = 1;
+
+            foreach (var item in activeItems)
+            {
+                if (item.id == "speedup")
+                {
+                    accelleration *= 1.5f;
+                }
+                else if (item.id == "ice_block")
+                {
+                    accelleration *= 0;
+                }
+            }
+            return accelleration;
+        }
+
+        public float getInvertedMovement()
+        {
+            float invertedMovement = 1;
+
+            foreach (var item in activeItems)
+            {
+                if (item.id == "dizzy_eyes")
+                {
+                    invertedMovement *= -1f;
+                }
+            }
+            return invertedMovement;
         }
     }
 }
