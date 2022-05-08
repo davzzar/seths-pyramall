@@ -5,14 +5,9 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
-using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
-using Myra.Graphics2D.Brushes;
-using Myra.Graphics2D.TextureAtlases;
-using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
 
@@ -34,7 +29,6 @@ namespace SandPerSand
             CreateFpsText();
             Collider.ShowGizmos = true;
 #endif
-
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
             sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
@@ -43,9 +37,7 @@ namespace SandPerSand
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
 
-            CreateGUI();
             CreateBackground();
-
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -123,12 +115,6 @@ namespace SandPerSand
             //leftBorderGo.Transform.Position = new Vector2(61, 0);
             //var leftBorderComp = leftBorderGo.AddComponent<CameraControlPoint>();
             //leftBorderComp.AffectsVertical = false;
-        }
-
-        private static void CreateGUI()
-        {
-            var guiGo = new GameObject();
-            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
         }
 
         private static void CreateBackground()
@@ -333,6 +319,12 @@ namespace SandPerSand
             public void LoadAt(int index)
             {
                 this.RunSceneLoader(index);
+
+                if(GameObject.FindComponent<GraphicalUserInterface>() == null)
+                {
+                    var guiGo = new GameObject();
+                    var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+                }
             }
 
             /// <inheritdoc />
