@@ -94,10 +94,10 @@ namespace SandPerSand
 
         public InputHandler InputHandler { get; set; }
 
-        protected override void OnAwake()
+        protected override void OnEnable()
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
-            base.OnAwake();
+            base.OnEnable();
 
 #if DEBUG
             //FOR DEBUG (updated in the PlayerControlComponent)
@@ -128,12 +128,13 @@ namespace SandPerSand
 
             Owner.AddComponent<GroundCheckComponent>();
 
+            var buttonMasher = Owner.AddComponent<ButtonMashBar>();
+            buttonMasher.InputHandler = InputHandler;
+            buttonMasher.IsActive = false;
+
             var controlComp = Owner.AddComponent<PlayerControlComponent>();
             controlComp.InputHandler = InputHandler;
 
-            var buttonMasher = Owner.AddComponent<ButtonMashBar>();
-            buttonMasher.InputHandler = InputHandler;
-            
             var playerStates = Owner.AddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
 

@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿using System.Diagnostics;
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -20,17 +21,16 @@ namespace SandPerSand
         // A Button Mash Bar has a capacity of 1 and deals with percentages.
 
         public InputHandler InputHandler { get; set; }
-        private const Buttons ActionButton = Buttons.B;
+        private const Buttons ActionButton = Buttons.LeftShoulder;
         private bool ActionButtonPressed => InputHandler.getButtonState(ActionButton) == ButtonState.Pressed;
 
-        public float EmptyLevel { get; set; } = 0.0f;
+        public const float Capacity = 1.0f;
+        public const float EmptyLevel = 0.0f;
         public float DepletionSpeed { get; set; } = 0.05f;
         public float FillSpeed { get; set; } = 0.1f;
-        public const float Capacity = 1.0f;
-        public float FillLevel { get; private set; } = 1.0f;
+        public float FillLevel { get; set; } = 0.5f;
 
-        // Drawing 
-        public bool IsVisible = true;
+        // Drawing
         public float Width { get; set; } = 1.0f;
         public float Height { get; set; } = 0.1f;
         public Vector2 OriginOffset = Vector2.One;
@@ -61,12 +61,14 @@ namespace SandPerSand
             FillLevel = MathUtils.MoveTowards(FillLevel, EmptyLevel, DepletionSpeed * Time.DeltaTime);
 
             FillLevel = MathHelper.Clamp(FillLevel, EmptyLevel, Capacity);
+
+            InputHandler.UpdateState();
+
+            Debug.WriteLine($"Masher Fill Level: {FillLevel}");
         }
 
         public override void Draw()
         {
-            if (!IsVisible) return;
-            
             var origin = Owner.Transform.Position + OriginOffset;
             var fillOrigin = new Vector2(origin.X + (FillWidth - Width) * 0.5f, origin.Y);
             Gizmos.DrawRect(origin, new Vector2(Width, Height), BorderColor);
