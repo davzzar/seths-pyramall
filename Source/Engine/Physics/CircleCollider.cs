@@ -5,10 +5,16 @@ using tainicom.Aether.Physics2D.Common;
 
 namespace Engine
 {
+    /// <summary>
+    /// Represents a circular physics shape collider with a radius and center.
+    /// </summary>
     public sealed class CircleCollider : Collider
     {
         private float radius = 1f;
 
+        /// <summary>
+        /// Gets or sets the radius of the circle in local units.
+        /// </summary>
         public float Radius
         {
             get => this.radius;

@@ -14,6 +14,9 @@ namespace Engine
     {
         private static GameEngine instance;
         
+        /// <summary>
+        /// Gets the singleton instance of <see cref="GameEngine"/>, throws if no <see cref="GameEngine"/> was created beforehand.
+        /// </summary>
         public static GameEngine Instance
         {
             get
