@@ -643,7 +643,7 @@ namespace Engine
                 if (!this.IsEnabledInHierarchy)
                 {
                     this.isChangingEnableState = true;
-                    this.isEnabled = false;
+                    //this.isEnabled = false;
                     this.state = GameObjectState.Disabling;
 
                     for (var i = 0; i < this.behaviours.Count; i++)
