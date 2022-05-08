@@ -6,9 +6,71 @@ using Microsoft.Xna.Framework;
 
 namespace SandPerSand
 {
+
+    interface IPlayerControlState
+    {
+        IPlayerControlState Update();
+        void OnEnter();
+        void OnExit();
+    }
+
+    class InControlState : IPlayerControlState
+    {
+        public IPlayerControlState Update()
+        {
+            // delegate plater control to the controller component
+            return null;
+
+            // implement transition to Trapped state
+            // if SandLevel > Player.pos.y && player.vel.y < 0 -> return trapped state, else null
+
+
+        }
+
+        public void OnEnter()
+        {
+            // gain control of the player (enable controller component)
+            // perform a jump this frame.
+            throw new NotImplementedException();
+        }
+
+        public void OnExit()
+        {
+            // disable controller component
+            // Make player have no velocity
+            throw new NotImplementedException();
+        }
+    }
+
+    class TrappedState : IPlayerControlState
+    {
+        public IPlayerControlState Update()
+        {
+            // delegate player control to button masher
+            throw new NotImplementedException();
+
+            // implement transition to InControllState
+            // if masher level fill event triggers, tansition to Incontroll
+            return null;
+        }
+
+        public void OnEnter()
+        {
+            return;
+        }
+
+        public void OnExit()
+        {
+            return;
+        }
+    }
+
+
     public class PlayerComponent : Behaviour
     {
         private PlayerIndex playerIndex;
+
+        private IPlayerControlState state = new InControlState();
 
         public PlayerIndex PlayerIndex
         {
@@ -69,11 +131,11 @@ namespace SandPerSand
             var controlComp = Owner.AddComponent<PlayerControlComponent>();
             controlComp.InputHandler = InputHandler;
 
-            var playerStates = Owner.AddComponent<PlayerStates>();
-            playerStates.InputHandler = InputHandler;
-
             var buttonMasher = Owner.AddComponent<ButtonMashBar>();
             buttonMasher.InputHandler = InputHandler;
+            
+            var playerStates = Owner.AddComponent<PlayerStates>();
+            playerStates.InputHandler = InputHandler;
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.AddComponent<Animator>();
@@ -99,7 +161,17 @@ namespace SandPerSand
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
             Owner.AddComponent<MyAnimatorController>();
         }
+
+        protected override void Update()
+        {
+            base.Update();
+            var newState = state.Update();
+
+            if (newState == null) return;
+            state.OnExit();
+            this.state = newState;
+            state.OnEnter();
+        }
+
     }
-
-
 }

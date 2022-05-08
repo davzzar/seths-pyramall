@@ -1,11 +1,7 @@
-﻿using System;
-using System.Data;
-using System.Numerics;
-using Engine;
+﻿using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
 
 namespace SandPerSand
@@ -69,6 +65,8 @@ namespace SandPerSand
 
         public override void Draw()
         {
+            if (!IsVisible) return;
+            
             var origin = Owner.Transform.Position + OriginOffset;
             var fillOrigin = new Vector2(origin.X + (FillWidth - Width) * 0.5f, origin.Y);
             Gizmos.DrawRect(origin, new Vector2(Width, Height), BorderColor);
