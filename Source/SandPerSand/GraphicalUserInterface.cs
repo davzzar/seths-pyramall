@@ -35,7 +35,7 @@ namespace SandPerSand
         private Dictionary<string, Vector2> object_size, delta_object;
         private Dictionary<string, int> itemIDtoTiledID;
         private TiledTileset tiledS;
-        private GameState oldGameState = GameState.RoundCheck;
+        private GameState oldGameState = GameState.CountDown;
         private bool oldInMenu;
         private FontSystem _fontSystem;
 
@@ -51,6 +51,7 @@ namespace SandPerSand
         private Dictionary<PlayerIndex, Label> CoinNumber;
         private Dictionary<PlayerIndex, Panel> Characters, MajorItems, MinorItems;
         private Dictionary<PlayerIndex, int> PlayerIndexToInt;
+        private Dictionary<PlayerIndex, Color> PlayerIndexToColor;
 
         protected override void OnAwake()
         {
@@ -62,12 +63,15 @@ namespace SandPerSand
             JoinLabelRoot = new Dictionary<PlayerIndex, Label>();
 
             PlayerIndexToInt = new Dictionary<PlayerIndex, int>();
+            PlayerIndexToColor = new Dictionary<PlayerIndex, Color>();
 
             int i = 0;
             int[] order = { 0, 3, 1, 2 };
+            Color[] CharColors = {new Color(160, 132, 254), new Color(165, 255, 21), new Color(255,17,108), new Color(33,187,255)};
             foreach(PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
             {
                 PlayerIndexToInt[index] = order[i];
+                PlayerIndexToColor[index] = CharColors[i];
                 i++;
             }
 
@@ -158,9 +162,7 @@ namespace SandPerSand
                         UI.Root = rootPanel;
                         MidscreenTextPanel.Text = "Press A to Start the Game";
                     }
-                }
-
-                if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                } else if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
                 {
                     UI.Root = InventoryGrid;
                     foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
@@ -168,17 +170,15 @@ namespace SandPerSand
                         InventoryGrid.RemoveChild(JoinLabelRoot[index]);
                     }
 
-                }
-                if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                }else if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
                 {
                     UI.Root = rootPanel;
                     MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
-                }
-                if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
                 {
                     Score = new Grid()
                     {
-                        ColumnSpacing = 6,
+                        ColumnSpacing = 7,
                         RowSpacing = PlayersManager.Instance.Players.Count,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Center,
@@ -202,21 +202,33 @@ namespace SandPerSand
                                     VerticalAlignment = VerticalAlignment.Center,
                                     HorizontalAlignment = HorizontalAlignment.Right,
                                     Padding = new Thickness(FontSize / 5),
+                                    TextColor = PlayerIndexToColor[item.Key]
+                                };
+
+                                Panel image = new Panel()
+                                {
+                                    GridColumn = 1,
+                                    GridRow = row,
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + item.Key.ToString())),
+                                    Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center,
                                 };
 
                                 Label name = new Label()
                                 {
                                     Text = "Player" + item.Key.ToString(),
-                                    GridColumn = 1,
+                                    GridColumn = 2,
                                     GridColumnSpan = 5,
                                     GridRow = row,
                                     Font = _fontSystem.GetFont(FontSize),
                                     VerticalAlignment = VerticalAlignment.Center,
                                     HorizontalAlignment = HorizontalAlignment.Left,
                                     Padding = new Thickness(FontSize / 5),
-
+                                    TextColor = PlayerIndexToColor[item.Key],
                                 };
                                 Score.AddChild(pos);
+                                Score.AddChild(image);
                                 Score.AddChild(name);
                                 row += 1;
                                 {
@@ -225,8 +237,13 @@ namespace SandPerSand
                             }
                         }
                     }
-                    UI.Root = Score;
+                    rootPanel.AddChild(Score);
+                }else if(oldGameState == GameState.RoundCheck && newGameState == GameState.Prepare)
+                {
+                    rootPanel.RemoveChild(Score);
                 }
+
+                
 
                 oldGameState = newGameState;
                 oldInMenu = newInMenu;
