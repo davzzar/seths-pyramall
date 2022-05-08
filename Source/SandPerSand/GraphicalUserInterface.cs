@@ -160,35 +160,35 @@ namespace SandPerSand
             renderPlayers[playerIndex].character = guiGo.AddComponent<GuiSpriteRenderer>();
             renderPlayers[playerIndex].character.LoadFromContent("player" + playerIndex.ToString());
             renderPlayers[playerIndex].character.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].character.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].character.screenPositionUnits = positionsUnits[playerIndex] + delta_object["char"];
-            renderPlayers[playerIndex].character.sizeUnits = object_size["big"];
-            renderPlayers[playerIndex].character.size = new Vector2(0f, 0f);
+            renderPlayers[playerIndex].character.ScreenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].character.ScreenPositionUnits = positionsUnits[playerIndex] + delta_object["char"];
+            renderPlayers[playerIndex].character.SizeUnits = object_size["big"];
+            renderPlayers[playerIndex].character.Size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].majorItem = guiGo.AddComponent<GuiSpriteRenderer>();
             renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
             renderPlayers[playerIndex].majorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].majorItem.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].majorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["major_item"];
-            renderPlayers[playerIndex].majorItem.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].majorItem.size = new Vector2(0f, 0f);
+            renderPlayers[playerIndex].majorItem.ScreenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].majorItem.ScreenPositionUnits = positionsUnits[playerIndex] + delta_object["major_item"];
+            renderPlayers[playerIndex].majorItem.SizeUnits = object_size["small"];
+            renderPlayers[playerIndex].majorItem.Size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].minorItem = guiGo.AddComponent<GuiSpriteRenderer>();
             renderPlayers[playerIndex].minorItem.LoadFromContent("GUI/Item_slot");
             renderPlayers[playerIndex].minorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].minorItem.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].minorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
-            renderPlayers[playerIndex].minorItem.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].minorItem.size = new Vector2(0f, 0f);
+            renderPlayers[playerIndex].minorItem.ScreenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].minorItem.ScreenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
+            renderPlayers[playerIndex].minorItem.SizeUnits = object_size["small"];
+            renderPlayers[playerIndex].minorItem.Size = new Vector2(0f, 0f);
 
             renderPlayers[playerIndex].coins = guiGo.AddComponent<GuiSpriteRenderer>();
             renderPlayers[playerIndex].coins.LoadFromContent("TilesetCoins");
             renderPlayers[playerIndex].coins.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].coins.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].coins.screenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
-            renderPlayers[playerIndex].coins.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].coins.size = new Vector2(0f, 0f);
-            renderPlayers[playerIndex].coins.sourceRectangle = new Rectangle(0, 0, 32, 32);
+            renderPlayers[playerIndex].coins.ScreenPosition = positions[playerIndex];
+            renderPlayers[playerIndex].coins.ScreenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
+            renderPlayers[playerIndex].coins.SizeUnits = object_size["small"];
+            renderPlayers[playerIndex].coins.Size = new Vector2(0f, 0f);
+            renderPlayers[playerIndex].coins.SourceRectangle = new Rectangle(0, 0, 32, 32);
 
             renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
             renderPlayers[playerIndex].numOfCoins.Text = "00x";
@@ -225,12 +225,12 @@ namespace SandPerSand
             if (Major)
             {
                 renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
-                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+                renderPlayers[playerIndex].minorItem.SourceRectangle = null;
             }
             else
             {
                 renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
-                renderPlayers[playerIndex].minorItem.sourceRectangle = null;
+                renderPlayers[playerIndex].minorItem.SourceRectangle = null;
             }
         }
 
