@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
@@ -10,7 +11,6 @@ namespace SandPerSand
 {
     internal class ItemManager : Behaviour
     {
-        public PlayerIndex playerIndex { get; set; }
         public InputHandler inputHandler { get; set; }
 
         protected override void Update()
@@ -18,6 +18,8 @@ namespace SandPerSand
             base.Update();
 
             string itemId = "";
+
+            var playerIndex = inputHandler.PlayerIndex;
 
             if(inputHandler.getButtonState(Buttons.X) == ButtonState.Pressed)
             {
