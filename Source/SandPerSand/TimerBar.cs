@@ -50,5 +50,17 @@ namespace SandPerSand
             Graphics.Draw(pixel, BorderColor, ref borderMatrix, 0.2f);
             Graphics.Draw(pixel, FillColor, ref fillMatrix, 0.0f);
         }
+
+        public void RefillBar(float level = Capacity)
+        {
+            level = MathHelper.Clamp(level, EmptyLevel, Capacity);
+            FillLevel = level;
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            RefillBar();
+        }
     }
 }
