@@ -452,6 +452,12 @@ namespace Engine
             }
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"GameObject \"{this.Name}\"";
+        }
+
         #endregion
 
         #region Internal Methods
