@@ -128,9 +128,9 @@ namespace SandPerSand
 
             Owner.AddComponent<GroundCheckComponent>();
 
-            var buttonMasher = Owner.AddComponent<ButtonMashBar>();
-            buttonMasher.InputHandler = InputHandler;
-            buttonMasher.IsActive = false;
+            // To show when player is trapped in sand
+            var timerBar = Owner.AddComponent<TimerBar>();
+            timerBar.IsActive = false;
 
             var controlComp = Owner.AddComponent<PlayerControlComponent>();
             controlComp.InputHandler = InputHandler;
