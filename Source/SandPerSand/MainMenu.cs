@@ -150,7 +150,7 @@ namespace SandPerSand
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
-                loadManager.LoadAt(2);
+                loadManager.LoadAt(4);
                 UI.Root = null;
             };
 
