@@ -1,4 +1,4 @@
-﻿using Engine;
+using Engine;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -9,6 +9,7 @@ namespace SandPerSand
         protected override void OnEnable()
         {
             base.OnEnable();
+            var playersManager = PlayersManager.Instance;
             PlayersManager.Instance.InitialPositions.Add(this.Owner.Transform.Position);
             this.Owner.Destroy();
         }
@@ -29,7 +30,8 @@ namespace SandPerSand
             base.Update();
             var currentGameState = GameStateManager.Instance.CurrentState;
             if (currentGameState  != GameState.InRound &&
-                currentGameState != GameState.CountDown)
+                currentGameState != GameState.CountDown &&
+                currentGameState != GameState.Shop)
             {
                 return;
             }
@@ -47,9 +49,9 @@ namespace SandPerSand
                         // a player reached the exit
                         //TODO record round ranking and other information somewhere
                         Debug.Print("Player " + playerIndex + " triggered Exit.");
-                        GameStateManager.Instance.TriggerExit();
                         playerState.Exited = true;
                         playerState.RoundRank = rankingCounter++;
+                        playerState.Score += PlayersManager.Instance.Players.Count + 2 - rankingCounter;
                     }
                 }
             }

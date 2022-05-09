@@ -12,8 +12,10 @@ namespace Engine
     /// To add logic and data, add components using <see cref="AddComponent{T}"/>.<br/>
     /// To get one or multiple reference(s) to other components on a game object instance, use <see cref="GetComponent{T}"/> or <see cref="GetComponents{T}()"/> respectively.
     /// </summary>
-    public sealed class GameObject
+    public class GameObject
     {
+        #region Private Fields
+
         /// <summary>
         /// Contains all components that belong to this game object (including behaviours)
         /// </summary>
@@ -32,7 +34,15 @@ namespace Engine
 
         private int layer;
 
+        #endregion
+
+        #region Events
+
         internal event EventHandler<(int oldLayer, int newLayer)> LayerChanged;
+
+        #endregion
+
+        #region Public Properties
 
         /// <summary>
         /// Gets the <see cref="Transform"/> that belongs to this game object instance.
@@ -93,7 +103,9 @@ namespace Engine
                 this.isEnabled = value;
                 var newEnabled = this.IsEnabledInHierarchy;
 
-                if (!this.isChangingEnableState && wasEnabled != newEnabled)
+                this.UpdateEnabledState();
+
+                /*if (!this.isChangingEnableState && wasEnabled != newEnabled)
                 {
                     if (newEnabled)
                     {
@@ -103,7 +115,7 @@ namespace Engine
                     {
                         this.DisableHierarchyRecursive();
                     }
-                }
+                }*/
             }
         }
 
@@ -152,6 +164,10 @@ namespace Engine
 
         internal GameObjectState State => this.state;
 
+        #endregion
+
+        #region Constructors
+
         /// <summary>
         /// Creates a new game object and adds it to the <see cref="SceneManager.ScopedScene"/>.
         /// </summary>
@@ -187,18 +203,19 @@ namespace Engine
             this.Scene = scene;
             this.Scene.AddGameObject(this);
             this.Transform.SetContainingScene(this.Scene);
+            this.Transform.ParentChanged += this.OnParentChanged;
             this.state = GameObjectState.Created;
 
             if (this.Scene.IsLoaded)
             {
                 this.OnAwakeInternal();
-
-                if (this.IsEnabledInHierarchy)
-                {
-                    this.OnEnableInternal();
-                }
+                this.UpdateEnabledState();
             }
         }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Adds a <see cref="Component"/> of the given type to the game object and returns a reference to the constructed component.
@@ -352,13 +369,29 @@ namespace Engine
                 throw new InvalidOperationException("Can't destroy a dead game object.");
             }
 
+            this.Transform.ParentChanged -= this.OnParentChanged;
+
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                this.Transform.Children[i].Owner.Destroy();
+            }
+
             if (this.IsEnabledInHierarchy)
             {
-                this.OnDisableInternal();
+                this.isEnabled = false;
+                this.OnDisableInternal(true);
             }
 
             this.OnDestroyInternal();
+
+            this.Transform.Parent = null;
             this.Transform.containingScene.RemoveGameObject(this);
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"GameObject \"{this.Name}\"";
         }
 
         /// <summary>
@@ -419,6 +452,10 @@ namespace Engine
             }
         }
 
+        #endregion
+
+        #region Internal Methods
+
         internal void DoUpdate()
         {
             Debug.Assert(this.state == GameObjectState.Enabled);
@@ -426,7 +463,10 @@ namespace Engine
             for (var i = 0; i < this.behaviours.Count; i++)
             {
                 var behavior = this.behaviours[i];
-                behavior.UpdateInternal();
+                if (behavior.IsActive)
+                {
+                    behavior.UpdateInternal();
+                }
             }
         }
 
@@ -466,42 +506,37 @@ namespace Engine
             this.state = GameObjectState.Disabled;
         }
 
-        internal void OnEnableInternal()
-        {
-            Debug.Assert(this.state == GameObjectState.Disabled);
-
-            this.isChangingEnableState = true;
-            this.isEnabled = true;
-            this.state = GameObjectState.Enabling;
-
-            for (var i = 0; i < this.behaviours.Count; i++)
-            {
-                var b = this.behaviours[i];
-                b.OnEnableInternal();
-            }
-
-            this.state = GameObjectState.Enabled;
-            this.isChangingEnableState = false;
-
-            if (!this.IsEnabledInHierarchy && this.IsAlive)
-            {
-                // A component might have disabled the game object
-                this.OnDisableInternal();
-            }
-        }
-
-        internal void OnDisableInternal()
+        internal void OnDisableInternal(bool isDestroying)
         {
             Debug.Assert(this.state == GameObjectState.Enabled);
 
             this.isChangingEnableState = true;
-            this.isEnabled = false;
+            //this.isEnabled = false;
             this.state = GameObjectState.Disabling;
+
+            if (isDestroying)
+            {
+                this.isEnabled = false;
+            }
 
             for (var i = 0; i < this.behaviours.Count; i++)
             {
                 var b = this.behaviours[i];
-                b.OnDisableInternal();
+
+                if (b.IsActive)
+                {
+                    b.OnDisableInternal();
+                }
+            }
+
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                var go = this.Transform.GetChild(i).Owner;
+
+                if (go.isEnabled)
+                {
+                    go.OnDisableInternal(isDestroying);
+                }
             }
 
             this.state = GameObjectState.Disabled;
@@ -509,6 +544,12 @@ namespace Engine
 
             if (this.IsEnabledInHierarchy && this.IsAlive)
             {
+                if (isDestroying)
+                {
+                    throw new InvalidOperationException(
+                        "Can't re-enable a game object during the OnDisable call of it's destruction process.");
+                }
+
                 // A component might have enabled the game object
                 this.OnEnableInternal();
             }
@@ -529,7 +570,33 @@ namespace Engine
 
             this.state = GameObjectState.Destroyed;
         }
+        
+        internal void UpdateEnabledState()
+        {
+            if (this.state == GameObjectState.Disabled)
+            {
+                if (this.IsEnabledInHierarchy)
+                {
+                    this.OnEnableInternal();
+                }
+            }
+            else if (this.state == GameObjectState.Enabled)
+            {
+                if (!this.IsEnabledInHierarchy)
+                {
+                    this.OnDisableInternal(false);
+                }
+            }
+            else if (this.state != GameObjectState.Enabling && this.state != GameObjectState.Disabling)
+            {
+                throw new InvalidOperationException("The game object state is invalid for updating the enabled state.");
+            }
+        }
 
+        #endregion
+
+        #region Private Methods
+        
         private void AddComponentInternal(Component component)
         {
             component.SetupInternal(this);
@@ -554,45 +621,57 @@ namespace Engine
                 component.OnAwakeInternal();
             }
         }
-
-        private void EnableHierarchyRecursive()
-        {
-            if (!this.IsEnabled)
-            {
-                return;
-            }
-
-            Debug.Assert(this.IsEnabledInHierarchy);
-
-            this.OnEnableInternal();
-
-            for (var i = 0; i < this.Transform.ChildCount; i++)
-            {
-                this.Transform.GetChild(i).Owner.EnableHierarchyRecursive();
-            }
-        }
-
-        private void DisableHierarchyRecursive()
-        {
-            if (!this.IsEnabled)
-            {
-                return;
-            }
-
-            Debug.Assert(this.IsEnabledInHierarchy);
-
-            this.OnDisableInternal();
-
-            for (var i = 0; i < this.Transform.ChildCount; i++)
-            {
-                this.Transform.GetChild(i).Owner.DisableHierarchyRecursive();
-            }
-        }
-
+        
         private void OnLayerChanged((int oldLayer, int newLayer) e)
         {
             this.LayerChanged?.Invoke(this, e);
         }
+
+        private void OnEnableInternal()
+        {
+            Debug.Assert(this.state == GameObjectState.Disabled);
+
+            this.isChangingEnableState = true;
+            this.state = GameObjectState.Enabling;
+
+            for (var i = 0; i < this.behaviours.Count; i++)
+            {
+                var b = this.behaviours[i];
+
+                if (b.IsActive)
+                {
+                    b.OnEnableInternal();
+                }
+            }
+
+            for (var i = this.Transform.ChildCount - 1; i >= 0; i--)
+            {
+                var go = this.Transform.GetChild(i).Owner;
+
+                go.UpdateEnabledState();
+            }
+
+            this.state = GameObjectState.Enabled;
+            this.isChangingEnableState = false;
+
+            if (!this.IsEnabledInHierarchy && this.IsAlive)
+            {
+                // A behavior might have disabled the game object during the enabling procedure
+                this.OnDisableInternal(false);
+            }
+        }
+        
+        private void OnParentChanged(object? sender, (Transform oldParent, Transform newParent) e)
+        {
+            if (this.IsAlive)
+            {
+                this.UpdateEnabledState();
+            }
+        }
+
+        #endregion
+
+        #region Data Structures and Enums
 
         internal enum GameObjectState
         {
@@ -646,5 +725,7 @@ namespace Engine
             /// </summary>
             Destroyed
         }
+
+        #endregion
     }
 }

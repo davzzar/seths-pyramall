@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
+using AppContext = System.AppContext;
 
 namespace SandPerSand
 {
@@ -22,19 +25,21 @@ namespace SandPerSand
 
             // Initialize the scene by adding some game objects and components
 
-            #if DEBUG
+#if DEBUG
             CreateFpsText();
             Collider.ShowGizmos = true;
-            #endif
-
+#endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] {typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2) });
 
-            CreateGUI();
-            CreateMultiGamePadTest();
+            var managerGo = new GameObject();
+            managerGo.AddComponent<GameStateManager>();
+            managerGo.AddComponent<PlayersManager>();
+            var itemwiki = managerGo.AddComponent<ItemWiki>();
+            itemwiki.LoadFromContent("TilesetItems");
+
             CreateBackground();
-
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -63,7 +68,7 @@ namespace SandPerSand
         {
             var textGo = new GameObject();
             textGo.Transform.LocalPosition = new Vector2(0.1f, -0.1f);
-            
+
             var textComp = textGo.AddComponent<TextRenderer>();
             textComp.Text = "(0, 0)";
             textComp.Color = Color.Red;
@@ -86,10 +91,22 @@ namespace SandPerSand
 
         private static void CreateMap(string mapName)
         {
-            var tileMapGo = new GameObject();
 
+            var sandGo = new GameObject("Sand");
+            var sandSim = sandGo.AddComponent<SandSimulation>();
+
+            var tileMapGo = new GameObject();
             var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
             tileMapComp.LoadFromContent(mapName);
+
+            sandSim.Min = new Vector2(-.5f, -.5f);
+            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            sandSim.Size = map.Size;
+            Debug.Print(map.Size.ToString());
+            sandSim.ResolutionX = (int)(map.Size.X * 5);
+            sandSim.ResolutionY = (int)(map.Size.Y * 5);
+            sandSim.MaxLayer = 1;
+            sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
@@ -102,10 +119,11 @@ namespace SandPerSand
             //leftBorderComp.AffectsVertical = false;
         }
 
-        private static void CreateGUI()
+        private static void CreateShopMap(string mapName)
         {
-            var guiGo = new GameObject();
-            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+            var tileMapGo = new GameObject();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<ShopTileLayer>>();
+            tileMapComp.LoadFromContent(mapName);
         }
 
         private static void CreateBackground()
@@ -115,7 +133,7 @@ namespace SandPerSand
 
             var backgroundGo = new GameObject();
             //backgroundGo.Transform.Parent = backgroundParent.Transform;
-            backgroundGo.Transform.LocalPosition = new Vector2(29.5f,29.5f);
+            backgroundGo.Transform.LocalPosition = new Vector2(29.5f, 29.5f);
             backgroundGo.Transform.LossyScale = new Vector2(60, 60);
             var background = backgroundGo.AddComponent<SpriteRenderer>();
             background.LoadFromContent("background");
@@ -124,9 +142,7 @@ namespace SandPerSand
 
         private static void CreateMultiGamePadTest()
         {
-            var managerGo = new GameObject();
-            managerGo.AddComponent<GameStateManager>();
-            managerGo.AddComponent<PlayersManager>();
+
         }
 
         private static void CreatePerformanceTest(int count)
@@ -165,7 +181,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -208,7 +224,7 @@ namespace SandPerSand
 
             var groundRndr = groundGo.AddComponent<SpriteRenderer>();
             groundRndr.LoadFromContent("Smiley");
-            
+
             // Create the rigidBody colliders
             for (var y = 0; y < countY; y++)
             {
@@ -225,7 +241,7 @@ namespace SandPerSand
                     {
                         new Vector2(-0.5f, -0.5f), 
                         //new Vector2(0.5f, -0.5f),
-                        new Vector2(0.5f, 0.5f), 
+                        new Vector2(0.5f, 0.5f),
                         new Vector2(-0.5f, 0.5f)
                     };
                 }
@@ -271,7 +287,7 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-            
+
             sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
             sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
@@ -283,18 +299,11 @@ namespace SandPerSand
             sandSim.Min = new Vector2(-.5f, -.5f);
             var map = GameObject.FindComponent<TileMap<MyLayer>>();
             sandSim.Size = map.Size;
-            Debug.Print(map.Size.ToString());
             sandSim.ResolutionX = 300;
             sandSim.ResolutionY = 300;
             sandSim.SimulationStepTime = 1f / 80;
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-
-            sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
-            sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
-
-            
         }
 
         /// <summary>
@@ -302,13 +311,24 @@ namespace SandPerSand
         /// Add scene loaders by adding the component type to SceneLoaderTypes,<br/>
         /// Once the user presses the number key relating to the index of that scene loader, it will be executed.
         /// </summary>
-        private class SceneManagerComponent : Behaviour
+        public class SceneManagerComponent : Behaviour
         {
             public readonly List<Type> SceneLoaderTypes = new List<Type>();
 
             private int loadedSceneIndex = -1;
 
             private Scene loadedScene;
+
+            public void LoadAt(int index)
+            {
+                this.RunSceneLoader(index);
+
+                if(GameObject.FindComponent<GraphicalUserInterface>() == null)
+                {
+                    var guiGo = new GameObject();
+                    var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+                }
+            }
 
             /// <inheritdoc />
             protected override void Update()
@@ -366,7 +386,6 @@ namespace SandPerSand
                 CreateMap("debug_map");
                 CreateCamera();
                 CreateSandPhysics();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5,5));
 
                 Debug.Print("Loaded Scene 0: Debug with Sand");
             }
@@ -381,9 +400,8 @@ namespace SandPerSand
             {
                 CreateMap("debug_map");
                 CreateCamera();
-                //PlayerGo.Create(PlayerIndex.One, new Vector2(5, 5));
                 CreatePhysicsTest3(10, 20, 10, 10);
-                
+
                 Debug.Print("Loaded Scene 1: Debug with Physics");
             }
         }
@@ -394,19 +412,6 @@ namespace SandPerSand
             {
                 CreateMap("controller_testing_map");
                 var cameraGo = CreateCamera();
-                //var playerGo = PlayerGo.Create(PlayerIndex.One, new Vector2(10, 1));
-
-                var cameraSwitcherComp = cameraGo.AddComponent<CameraSwitcherComponent>();
-                //cameraSwitcherComp.Parent = playerGo;
-                /*cameraSwitcherComp.GlobalPosition = new Vector2(24.5f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 30f;*/
-                cameraSwitcherComp.GlobalPosition = new Vector2(24.5f/2f, 2.5f);
-                cameraSwitcherComp.GlobalHeight = 15f;
-                cameraSwitcherComp.InputHandler = new InputHandler(PlayerIndex.One);
-
-                // add camera as a player child GO as a hacky way to make it follow them
-                //cameraGo.Transform.Parent = playerGo.Transform;
-                cameraGo.Transform.LocalPosition = Vector2.Zero; // center camera on player
 
                 Debug.Print("Loaded Scene 2: Controller Testing");
             }
@@ -427,11 +432,39 @@ namespace SandPerSand
                     Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
+
                 CreateMap("test_level_1");
                 CreateCamera();
+///HEAD
                 CreateSandPhysics_level_1();
+            }
+        }
 
+        private class LoadSceneLevel2 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
 
+                CreateMap("level_2");
+                CreateCamera();
+                ///HEAD
+                CreateSandPhysics_level_1();
+            }
+        }
+        private class ShopScene : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded ShopScene");
+                CreateShopMap("shop_map");
+                CreateCamera();
             }
         }
     }

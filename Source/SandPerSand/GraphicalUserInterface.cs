@@ -2,13 +2,22 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
+using System.IO;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using TiledCS;
+using Myra;
+using Myra.Graphics2D;
+using Myra.Graphics2D.Brushes;
+using Myra.Graphics2D.TextureAtlases;
+using Myra.Graphics2D.UI;
+using FontStashSharp;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace SandPerSand
 {
-    public class GraphicalUserInterface : Component
+    public class GraphicalUserInterface : Behaviour
     {
         public static GraphicalUserInterface Instance
         {
@@ -24,35 +33,104 @@ namespace SandPerSand
         private Dictionary<PlayerIndex, RenderPlayer> renderPlayers;
         private Dictionary<PlayerIndex, Vector2> positions, positionsUnits;
         private Dictionary<string, Vector2> object_size, delta_object;
+        private Dictionary<string, int> itemIDtoTiledID;
+        private TiledTileset tiledS;
+        private GameState oldGameState = GameState.CountDown;
+        private bool oldInMenu;
+        private FontSystem _fontSystem;
+
+        private Panel rootPanel;
+        private Label MidscreenTextPanel;
+        private Grid InventoryGrid;
+        private Grid ScoreBoard;
+        private int FontSize;
+        private float InvSize;
+
+        private Dictionary<PlayerIndex, Grid> InventoryRoot;
+        private Dictionary<PlayerIndex, Label> JoinLabelRoot;
+        private Dictionary<PlayerIndex, Label> CoinNumber;
+        private Dictionary<PlayerIndex, Panel> Characters, MajorItems, MinorItems;
+        private Dictionary<PlayerIndex, int> PlayerIndexToInt;
+        private Dictionary<PlayerIndex, Color> PlayerIndexToColor;
+
         protected override void OnAwake()
         {
-            positions = new Dictionary<PlayerIndex, Vector2>{
-                { PlayerIndex.One, new Vector2(0f, 0f) },
-                { PlayerIndex.Two, new Vector2(1f, 0f)},
-                { PlayerIndex.Three, new Vector2(0f, 1f)},
-                { PlayerIndex.Four, new Vector2(1f, 1f)}
+            InventoryRoot = new Dictionary<PlayerIndex, Grid>();
+            Characters = new Dictionary<PlayerIndex, Panel>();
+            MajorItems = new Dictionary<PlayerIndex, Panel>();
+            MinorItems = new Dictionary<PlayerIndex, Panel>();
+            CoinNumber = new Dictionary<PlayerIndex, Label>();
+            JoinLabelRoot = new Dictionary<PlayerIndex, Label>();
+
+            PlayerIndexToInt = new Dictionary<PlayerIndex, int>();
+            PlayerIndexToColor = new Dictionary<PlayerIndex, Color>();
+
+            int i = 0;
+            int[] order = { 0, 3, 1, 2 };
+            Color[] CharColors = {new Color(160, 132, 254), new Color(165, 255, 21), new Color(255,17,108), new Color(33,187,255)};
+            foreach(PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
+            {
+                PlayerIndexToInt[index] = order[i];
+                PlayerIndexToColor[index] = CharColors[i];
+                i++;
+            }
+
+
+            itemIDtoTiledID = new Dictionary<string, int>();
+            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+
+            if (tiledS == null)
+            {
+                throw new NullReferenceException("Load tiledS Failed");
+            }
+
+            foreach (TiledTile tile in tiledS.Tiles)
+            {
+                foreach (TiledProperty property in tile.properties)
+                {
+                    if (property.name == "item_id")
+                    {
+                        itemIDtoTiledID[property.value] = tile.id;
+                    }
+                }
+            }
+
+            _fontSystem = new FontSystem();
+            _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Retro_Gaming.ttf"));
+            FontSize = (int) 64 * GameEngine.Instance.Resolution.X / 1920;
+            InvSize = 1f / 8f;
+
+            MidscreenTextPanel = new Label()
+            {
+                Text = "Press A to start the Game",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                Font = _fontSystem.GetFont(FontSize),
             };
 
-            positionsUnits = new Dictionary<PlayerIndex, Vector2>{
-                { PlayerIndex.One, new Vector2(0f, 0f) },
-                { PlayerIndex.Two, new Vector2(-2f, 0f)},
-                { PlayerIndex.Three, new Vector2(0f, -1f)},
-                { PlayerIndex.Four, new Vector2(-2f, -1f)}
+            InventoryGrid = new Grid()
+            {
+                ColumnSpacing = 4,
             };
 
-            object_size = new Dictionary<string, Vector2>{
-                { "small", new Vector2(0.5f, 0.5f)},
-                { "big" , new Vector2(1f, 1f)}
-            };
+            rootPanel = new Panel();
 
-            delta_object = new Dictionary<string, Vector2>{
-                { "minor_item", new Vector2(1f, 0.5f)},
-                { "major_item" , new Vector2(1.5f, 0.5f)},
-                { "char", new Vector2(0f, 0f)},
-                { "coins" , new Vector2(1.5f, 0f)}
-            };
+            rootPanel.AddChild(MidscreenTextPanel);
+            rootPanel.AddChild(InventoryGrid);
 
-            renderPlayers = new Dictionary<PlayerIndex, RenderPlayer>();
+            foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
+            {
+                JoinLabelRoot[index] = new Label()
+                {
+                    GridColumn = PlayerIndexToInt[index],
+                    GridRow = 0,
+                    Text = "Connect \n to Join \n the Game",
+                    Font = _fontSystem.GetFont((int)(4 * InvSize * FontSize)),
+                    VerticalAlignment = VerticalAlignment.Bottom,
+                    HorizontalAlignment= HorizontalAlignment.Center,
+                };
+                InventoryGrid.AddChild(JoinLabelRoot[index]);
+            }
         }
 
 
@@ -63,120 +141,245 @@ namespace SandPerSand
             guiGo.Transform.LocalPosition = new Vector2(0.0f, 0f);
         }
 
-
-        public void renderMidScreenText(string midScreenText)
+        protected override void Update()
         {
-            midScreenTextComp = guiGo.AddComponent<GuiTextRenderer>();
-            midScreenTextComp.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            midScreenTextComp.Text = midScreenText;
-            midScreenTextComp.FontSize = 30f;
-            midScreenTextComp.IsActive = true;
-            midScreenTextComp.ScreenPosition = new Vector2(0.35f, 0.5f);
-            midScreenTextComp.Depth = 0;
-        }
+            base.Update();
 
-        public void updateMidScreenText(string midScreenText)
-        {
-            midScreenTextComp.Text = midScreenText;
-        }
+            if (GameStateManager.Instance.InMenu)
+            {
+                return;
+            }
 
-        public void destroyMidScreenText()
-        {
-            midScreenTextComp.Destroy();
+            if (oldGameState != GameStateManager.Instance.CurrentState || oldInMenu != GameStateManager.Instance.InMenu)
+            {
+                GameState newGameState = GameStateManager.Instance.CurrentState;
+                bool newInMenu = GameStateManager.Instance.InMenu;
+
+                if (newGameState == GameState.Prepare)
+                {
+                    if (UI.Root != rootPanel)
+                    {
+                        UI.Root = rootPanel;
+                        MidscreenTextPanel.Text = "Press A to Start the Game";
+                    }
+                } else if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                {
+                    UI.Root = InventoryGrid;
+                    foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
+                    {
+                        InventoryGrid.RemoveChild(JoinLabelRoot[index]);
+                    }
+
+                }else if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                {
+                    UI.Root = rootPanel;
+                    MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
+                }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                {
+                    MidscreenTextPanel.Text = "";
+                    ScoreBoard = new Grid()
+                    {
+                        ColumnSpacing = 9,
+                        RowSpacing = PlayersManager.Instance.Players.Count,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        Background = new SolidBrush(new Color(38, 12, 26)),
+                    };
+                    //display ranks on screen
+
+                    (int score, PlayerIndex index)[] scores = new (int, PlayerIndex)[PlayersManager.Instance.Players.Count];
+                    int j = 0;
+                    foreach (var item in PlayersManager.Instance.Players)
+                    {
+                        scores[j] = (item.Value.GetComponent<PlayerStates>().Score, item.Key);
+                    }
+                    Array.Sort(scores);
+                    Array.Reverse(scores);
+
+                    for (int i = 0; i < PlayersManager.Instance.Players.Count; i++)
+                    {
+                                Label pos = new Label()
+                                {
+                                    Text = (i + 1).ToString(),
+                                    GridColumn = 0,
+                                    GridRow = i,
+                                    Font = _fontSystem.GetFont(FontSize),
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    HorizontalAlignment = HorizontalAlignment.Right,
+                                    Padding = new Thickness(FontSize / 5),
+                                    TextColor = PlayerIndexToColor[scores[i].index]
+                                };
+
+                                Panel image = new Panel()
+                                {
+                                    GridColumn = 1,
+                                    GridRow = i,
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + scores[i].index.ToString())),
+                                    Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
+                                    HorizontalAlignment = HorizontalAlignment.Center,
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                };
+
+                                Label name = new Label()
+                                {
+                                    Text = "Player" + scores[i].index.ToString(),
+                                    GridColumn = 2,
+                                    GridColumnSpan = 5,
+                                    GridRow = i,
+                                    Font = _fontSystem.GetFont(FontSize),
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    HorizontalAlignment = HorizontalAlignment.Left,
+                                    Padding = new Thickness(FontSize / 5),
+                                    TextColor = PlayerIndexToColor[scores[i].index],
+                                };
+
+                                Label score = new Label()
+                                {
+                                    Text = scores[i].score.ToString(),
+                                    GridColumn = 8,
+                                    GridRow = i,
+                                    Font = _fontSystem.GetFont(FontSize),
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    HorizontalAlignment = HorizontalAlignment.Right,
+                                    Padding = new Thickness(FontSize / 5),
+                                    TextColor = PlayerIndexToColor[scores[i].index],
+                                };
+
+                                ScoreBoard.AddChild(pos);
+                                ScoreBoard.AddChild(image);
+                                ScoreBoard.AddChild(name);
+                                ScoreBoard.AddChild(score);
+                    }
+                    rootPanel.AddChild(ScoreBoard);
+                }else if(oldGameState == GameState.RoundCheck && newGameState != GameState.RoundCheck)
+                {
+                    rootPanel.RemoveChild(ScoreBoard);
+                }
+
+                
+
+                oldGameState = newGameState;
+                oldInMenu = newInMenu;
+            } else if (GameStateManager.Instance.CurrentState == GameState.CountDown)
+            {
+                MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDowncounter) + " Seconds to Finish the Round";
+            }
         }
 
         public void renderPlayerInfo(PlayerIndex playerIndex)
         {
-            renderPlayers[playerIndex] = new RenderPlayer();
+            JoinLabelRoot[playerIndex].RemoveFromParent();
 
-            renderPlayers[playerIndex].character = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].character.LoadFromContent("player" + playerIndex.ToString());
-            renderPlayers[playerIndex].character.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].character.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].character.screenPositionUnits = positionsUnits[playerIndex] + delta_object["char"];
-            renderPlayers[playerIndex].character.sizeUnits = object_size["big"];
-            renderPlayers[playerIndex].character.size = new Vector2(0f, 0f);
+            InventoryRoot[playerIndex] = new Grid()
+            {
+                GridColumn = PlayerIndexToInt[playerIndex],
+                ColumnSpacing = 4,
+                RowSpacing = 2,
+                VerticalAlignment = VerticalAlignment.Bottom,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w*"+ InvSize.ToString() +";this.h = W.w/2*" + InvSize.ToString() + ";"),
+            };
 
-            renderPlayers[playerIndex].majorItem = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].majorItem.LoadFromContent("GUI/Item_slot");
-            renderPlayers[playerIndex].majorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].majorItem.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].majorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["major_item"];
-            renderPlayers[playerIndex].majorItem.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].majorItem.size = new Vector2(0f, 0f);
+            Debug.Print(InvSize.ToString());
 
-            renderPlayers[playerIndex].minorItem = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].minorItem.LoadFromContent("GUI/Item_slot");
-            renderPlayers[playerIndex].minorItem.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].minorItem.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].minorItem.screenPositionUnits = positionsUnits[playerIndex] + delta_object["minor_item"];
-            renderPlayers[playerIndex].minorItem.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].minorItem.size = new Vector2(0f, 0f);
+            Characters[playerIndex] = new Panel()
+            {
+                GridColumn = 0,
+                GridColumnSpan = 2,
+                GridRowSpan = 2,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + playerIndex.ToString())),
+            };
 
-            renderPlayers[playerIndex].coins = guiGo.AddComponent<GuiSpriteRenderer>();
-            renderPlayers[playerIndex].coins.LoadFromContent("TilesetCoins");
-            renderPlayers[playerIndex].coins.PositionMode = GuiSpriteRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].coins.screenPosition = positions[playerIndex];
-            renderPlayers[playerIndex].coins.screenPositionUnits = positionsUnits[playerIndex] + delta_object["coins"];
-            renderPlayers[playerIndex].coins.sizeUnits = object_size["small"];
-            renderPlayers[playerIndex].coins.size = new Vector2(0f, 0f);
-            renderPlayers[playerIndex].coins.sourceWindow = new Rectangle(0, 0, 32, 32);
+            MajorItems[playerIndex] = new Panel()
+            {
+                GridColumn = 3,
+                GridRow = 1,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
+            };
 
-            renderPlayers[playerIndex].numOfCoins = guiGo.AddComponent<GuiTextRenderer>();
-            renderPlayers[playerIndex].numOfCoins.Text = "00x";
-            renderPlayers[playerIndex].numOfCoins.PositionMode = GuiTextRenderer.ScreenPositionMode.Relative;
-            renderPlayers[playerIndex].numOfCoins.ScreenPosition = positions[playerIndex] + new Vector2(0.059f, 0.01f);
+            MinorItems[playerIndex] = new Panel()
+            {
+                GridColumn = 2,
+                GridRow = 1,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
+            };
+
+            CoinNumber[playerIndex] = new Label()
+            {
+                GridColumn = 2,
+                GridRow = 0,
+                Text = "00x",
+                Font = _fontSystem.GetFont((int) (4 * InvSize * FontSize)),
+                VerticalAlignment = VerticalAlignment.Center,
+            };
+
+            Panel coin = new Panel()
+            {
+                GridColumn = 3,
+                GridRow = 0,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetCoins"), new Rectangle(0,0,32,32)),
+            };
+
+
+
+            InventoryRoot[playerIndex].AddChild(Characters[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(CoinNumber[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(MinorItems[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(MajorItems[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(coin);
+
+            InventoryGrid.AddChild(InventoryRoot[playerIndex]);
+
+
         }
 
         public void destroyPlayerInfo(PlayerIndex playerIndex)
         {
-            renderPlayers[playerIndex].character.Destroy();
-            renderPlayers[playerIndex].majorItem.Destroy();
-            renderPlayers[playerIndex].minorItem.Destroy();
-            renderPlayers[playerIndex].coins.Destroy();
-            renderPlayers[playerIndex].numOfCoins.Destroy();
+            InventoryGrid.RemoveChild(InventoryRoot[playerIndex]);
+            InventoryGrid.AddChild(JoinLabelRoot[playerIndex]);
         }
 
         public void renderItem(PlayerIndex playerIndex, string item, Boolean Major)
         {
-            TileMap<MyLayer> map = GameObject.FindComponent<TileMap<MyLayer>>();
-            var mapping = map.getItemTilesIdsAndPaths();
-            var tiled_id_and_path = mapping[item];
-            int tiled_id = tiled_id_and_path.Item1;
-            string tiled_string = tiled_id_and_path.Item2;
-            Debug.Print(tiled_id.ToString());
+            int id = itemIDtoTiledID[item];
+
+            int x = (id % 8) * 32;
+            int y = (id / 8) * 32;
             if (Major)
             {
-                renderPlayers[playerIndex].majorItem.LoadFromContent(tiled_string);
-                renderPlayers[playerIndex].majorItem.SetSourceRectangle(tiled_id, 32, 32);
+                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
             }
             else
             {
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
-                renderPlayers[playerIndex].minorItem.LoadFromContent(tiled_string);
-                renderPlayers[playerIndex].minorItem.SetSourceRectangle(tiled_id, 32, 32);
-                Debug.Print(renderPlayers[playerIndex].minorItem.sourceWindow.ToString());
+                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
             }
         }
 
         public void removeItem(PlayerIndex playerIndex, Boolean Major)
         {
-
+            if (Major)
+            {
+                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot"));
+            }
+            else
+            {
+                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot"));
+            }
         }
 
         public void renderCoins(PlayerIndex playerIndex, int coins)
         {
             if (coins < 10)
             {
-                renderPlayers[playerIndex].numOfCoins.Text = "0" + coins.ToString() + "x";
+                CoinNumber[playerIndex].Text = "0" + coins.ToString() + "x";
             }
             else if (coins < 100)
             {
-                renderPlayers[playerIndex].numOfCoins.Text = coins.ToString() + "x";
+                CoinNumber[playerIndex].Text = coins.ToString() + "x";
             }
             else
             {
-                renderPlayers[playerIndex].numOfCoins.Text = "99x";
+                CoinNumber[playerIndex].Text = "99x";
             }
         }
 
