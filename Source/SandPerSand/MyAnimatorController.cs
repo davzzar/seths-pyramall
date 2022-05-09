@@ -48,7 +48,7 @@ namespace SandPerSand
             //              HasLanded && BufferedJump ||
             //              !isGrounded && JumpButtonPressed && CanUseCoyote
             jumpFlag = playerControler.WillJump;
-            sandReachedFlag = playerControler.HasSandReachedBefore;
+            sandReachedFlag = playerControler.HasSandReached;
             dieFlag = playerControler.DieFromDrown;
             // TODO set these flags correctly
             collectFlag = false;

@@ -100,10 +100,11 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
-        public bool HasSandReachedBefore;
+        public bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        private bool HasSandReachedBefore;
+        private const float SandResistancePush = 16f;
+        private bool isSandEscapeJump;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
-        private const float sandResistancePush = 8f;
 
         protected override void OnEnable()
         {
@@ -177,6 +178,7 @@ namespace SandPerSand
                     CoyoteEnabled = false;
                     jumpEnded = false;
                     timeOfLeavingGround = float.MinValue;
+                    isSandEscapeJump = true;
 
                     PerformJump();
                     ApplyVelocity();
@@ -203,7 +205,7 @@ namespace SandPerSand
                     // TODO make this speed not dependent on RaisingSandSpeed
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var pushStrength = sandResistancePush / (60 * Time.DeltaTime);
+                    var pushStrength = SandResistancePush / (60 * Time.DeltaTime);
 
                     var restMultiplier = 0.5f;
                     var sandVelocity = Vector2.Zero;
@@ -238,7 +240,11 @@ namespace SandPerSand
             // update the time of leaving ground if we left ground this frame
             // if we just landed, we re-enable coyote time
             if (HasLaunched) timeOfLeavingGround = Time.GameTime;
-            else if (HasLanded) CoyoteEnabled = true;
+            else if (HasLanded)
+            {
+                CoyoteEnabled = true;
+                if (isSandEscapeJump) isSandEscapeJump = false;
+            }
 
             if (JumpButtonPressed)
             {
@@ -261,7 +267,7 @@ namespace SandPerSand
 
             // if jump is released while mid-air and we're moving up
             // (since now we only move up while jumping, will need to explicitly model a jump later)
-            if (JumpButtonUp && !IsGrounded && !jumpEnded && VerticalSpeed > 0) jumpEnded = true;
+            if (!isSandEscapeJump && JumpButtonUp && !IsGrounded && !jumpEnded && VerticalSpeed > 0) jumpEnded = true;
 
             // Apply computed velocity
             ApplyVelocity();
