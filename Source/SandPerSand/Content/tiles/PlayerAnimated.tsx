@@ -120,22 +120,54 @@
  <tile id="88">
   <properties>
    <property name="AnimIsEntry" type="bool" value="false"/>
-   <property name="AnimIsLoop" type="bool" value="false"/>
-   <property name="AnimName" value="Trip"/>
+   <property name="AnimIsLoop" type="bool" value="true"/>
+   <property name="AnimName" value="Drown"/>
   </properties>
- </tile>
- <tile id="96">
-  <properties>
-   <property name="AnimIsEntry" type="bool" value="false"/>
-   <property name="AnimIsLoop" type="bool" value="false"/>
-   <property name="AnimName" value="Die"/>
-  </properties>
+  <animation>
+   <frame tileid="88" duration="48"/>
+   <frame tileid="89" duration="48"/>
+   <frame tileid="90" duration="48"/>
+   <frame tileid="91" duration="48"/>
+   <frame tileid="92" duration="48"/>
+   <frame tileid="93" duration="48"/>
+   <frame tileid="94" duration="48"/>
+   <frame tileid="95" duration="48"/>
+   <frame tileid="96" duration="48"/>
+   <frame tileid="97" duration="48"/>
+   <frame tileid="98" duration="48"/>
+   <frame tileid="99" duration="48"/>
+  </animation>
  </tile>
  <tile id="104">
   <properties>
    <property name="AnimIsEntry" type="bool" value="false"/>
    <property name="AnimIsLoop" type="bool" value="false"/>
+   <property name="AnimName" value="Die"/>
+  </properties>
+  <animation>
+   <frame tileid="104" duration="300"/>
+   <frame tileid="104" duration="300"/>
+   <frame tileid="104" duration="300"/>
+  </animation>
+ </tile>
+ <tile id="112">
+  <properties>
+   <property name="AnimIsEntry" type="bool" value="false"/>
+   <property name="AnimIsLoop" type="bool" value="false"/>
    <property name="AnimName" value="FoundItem"/>
   </properties>
+  <animation>
+   <frame tileid="63" duration="300"/>
+  </animation>
+ </tile>
+ <tile id="113">
+  <properties>
+   <property name="AnimIsEntry" type="bool" value="false"/>
+   <property name="AnimIsLoop" type="bool" value="false"/>
+   <property name="AnimName" value="Trip"/>
+  </properties>
+  <animation>
+   <frame tileid="41" duration="300"/>
+  </animation>
  </tile>
 </tileset>
