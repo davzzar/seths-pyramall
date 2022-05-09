@@ -31,7 +31,7 @@ namespace SandPerSand
 #endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -304,12 +304,6 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 80;
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-
-            sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
-            sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
-
-
         }
 
         /// <summary>
@@ -442,6 +436,25 @@ namespace SandPerSand
                 CreateMap("test_level_1");
                 CreateCamera();
 ///HEAD
+                CreateSandPhysics_level_1();
+            }
+        }
+
+        private class LoadSceneLevel2 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("level_2");
+                CreateCamera();
+                ///HEAD
                 CreateSandPhysics_level_1();
             }
         }
