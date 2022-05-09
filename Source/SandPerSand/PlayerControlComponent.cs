@@ -100,9 +100,9 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-
         private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
-        private bool HasSandReachedBefore;
+        public bool HasSandReachedBefore;
+        public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
         private const float sandResistancePush = 8f;
 
         protected override void OnEnable()

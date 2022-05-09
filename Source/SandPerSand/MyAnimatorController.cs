@@ -23,6 +23,7 @@ namespace SandPerSand
         private float yRBVelo;
         private bool isGrounded;
         private bool jumpFlag;
+        private bool sandReachedFlag;
         // TODO update these flags correctly
         private bool collectFlag;
         private bool tripFlag;
@@ -42,17 +43,17 @@ namespace SandPerSand
             var anim = animator.CurrentAnime;
             xDir = inputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
             (_,yRBVelo) = rigidBody.LinearVelocity;
-
+            isGrounded = groundChecker.IsGrounded;
             //WillJump => isGrounded && JumpButtonPressed ||
             //              HasLanded && BufferedJump ||
             //              !isGrounded && JumpButtonPressed && CanUseCoyote
             jumpFlag = playerControler.WillJump;
-            isGrounded = groundChecker.IsGrounded;
-
+            sandReachedFlag = playerControler.HasSandReachedBefore;
+            dieFlag = playerControler.DieFromDrown;
             // TODO set these flags correctly
             collectFlag = false;
             tripFlag = false;
-            dieFlag = false;
+
 
             switch (anim.Name)
             {
@@ -65,22 +66,22 @@ namespace SandPerSand
                     }
                     break;
                 case "Idle":
+                    switchToAnim("Drown");
                     switchToAnim("Move");
                     switchToAnim("Jump");
                     switchToAnim("FoundItem");
-                    switchToAnim("Trip");
-                    switchToAnim("Die");
                     break;
                 case "Move":
+                    switchToAnim("Drown");
                     switchToAnim("Idle");
                     switchToAnim("Jump");
                     switchToAnim("Fall");
                     switchToAnim("FoundItem");
                     switchToAnim("Trip");
-                    switchToAnim("Die");
                     break;
 
                 case "Jump":
+                    switchToAnim("Drown");
                     if (yRBVelo < 0)
                     {
                         switchToAnim("Fall");
@@ -91,19 +92,15 @@ namespace SandPerSand
                         // can be removed if entering idle has no hDir constraint
                         switchToAnim("Move");
                     }
-                    switchToAnim("Die");
-                    // Trip: let's only have tripping stone on ground at this moment?
-                    // but players can be tripped on the beginning of the jump 
-                    switchToAnim("Trip");
                     // FoundItem: only play foundItem anim after landing on ground?
                     //switchToAnim("FoundItem");
                     break;
                 case "Fall":
+                    switchToAnim("Drown");
                     switchToAnim("Land");
-                    switchToAnim("Trip");
                     break;
                 case "Land":
-                    //switchToAnim("Trip");
+                    switchToAnim("Drown");
                     if (anim.IsAtEnd)
                     {
                         switchToAnim("Idle");
@@ -111,16 +108,22 @@ namespace SandPerSand
                     switchToAnim("Move");
                     switchToAnim("Jump");
                     break;
-                case "FoundItem":
-                case "Trip":
-                    switchToAnim("Idle");
-                    switchToAnim("Move");
+                case "Drown":
+                    if (!sandReachedFlag)
+                    {
+                        animator.NextAnime("Jump");
+                    }
                     switchToAnim("Die");
                     break;
                 case "Die":
                     break;
-                default:
-                    break;
+                //case "FoundItem":
+                //case "Trip":
+                //    switchToAnim("Idle");
+                //    switchToAnim("Move");
+                //    break;
+                //default:
+                //    break;
             }
         }
 
@@ -154,6 +157,12 @@ namespace SandPerSand
                     break;
                 case "Land":
                     if (isGrounded)
+                    {
+                        animator.NextAnime(nextAnimName);
+                    }
+                    break;
+                case "Drown":
+                    if (sandReachedFlag)
                     {
                         animator.NextAnime(nextAnimName);
                     }
