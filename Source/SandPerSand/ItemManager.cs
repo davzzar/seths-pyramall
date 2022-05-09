@@ -6,12 +6,43 @@ using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
+using TiledCS;
 
 namespace SandPerSand
 {
     internal class ItemManager : Behaviour
     {
         public InputHandler inputHandler { get; set; }
+        public SpriteRenderer ItemRenderer { get; set; }
+        private Dictionary<string, int> itemIDtoTiledID;
+        private TiledTileset tiledS;
+
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+            ItemRenderer = this.Owner.AddComponent<SpriteRenderer>();
+            ItemRenderer.LoadFromContent("TilesetItems");
+
+            itemIDtoTiledID = new Dictionary<string, int>();
+            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+
+            if (tiledS == null)
+            {
+                throw new NullReferenceException("Load tiledS Failed");
+            }
+
+            foreach (TiledTile tile in tiledS.Tiles)
+            {
+                foreach (TiledProperty property in tile.properties)
+                {
+                    if (property.name == "item_id")
+                    {
+                        itemIDtoTiledID[property.value] = tile.id;
+                    }
+                }
+            }
+
+        }
 
         protected override void Update()
         {
@@ -98,6 +129,21 @@ namespace SandPerSand
                     //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
                     break;
             }
+
+            var activeItems = PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems;
+
+            if (activeItems.Count > 0)
+            {
+                string id = activeItems[0].id;
+                int tileID = itemIDtoTiledID[id];
+                ItemRenderer.SetSourceRectangle(tileID, 32, 32);
+            }
+            else
+            {
+                ItemRenderer.SetSourceRectangle(63, 32, 32);
+
+            }
+
         }
     }
 }
