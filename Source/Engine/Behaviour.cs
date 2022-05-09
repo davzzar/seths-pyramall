@@ -24,7 +24,7 @@
                 var wasActive = this.IsActiveInHierarchy;
                 this.isActive = value;
 
-                if (this.isActive != wasActive)
+                if (this.IsActiveInHierarchy != wasActive)
                 {
                     if (this.isActive)
                     {

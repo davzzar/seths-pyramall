@@ -173,7 +173,7 @@ namespace Engine
                     Graphics.SpriteBatch.End();
                 }
 
-                #endif
+#endif
 
                 // Draw gui elements
                 if (this.guiRenderers.Count > 0)
@@ -190,6 +190,11 @@ namespace Engine
 
                 Graphics.EndRender();
             }
+
+            
+
+            // Draw Myra UI
+            UI.Draw();
 
             this.isRendering = false;
         }

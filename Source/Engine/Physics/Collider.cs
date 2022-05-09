@@ -4,12 +4,16 @@ using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using tainicom.Aether.Physics2D.Collision.Shapes;
 using tainicom.Aether.Physics2D.Dynamics;
+using tainicom.Aether.Physics2D.Dynamics.Contacts;
 
 namespace Engine
 {
+    /// <summary>
+    /// Base class for all physics collider.
+    /// </summary>
     public abstract class Collider : Behaviour
     {
-        public static bool ShowGizmos = true;
+        private static bool showGizmos = true;
 
         [CanBeNull]
         private RigidBody owningRigidBody;
@@ -29,6 +33,21 @@ namespace Engine
 
         private float friction = 0.1f;
 
+        private bool isTrigger;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Gizmos for all collider should be shown, has no effect in a release build.
+        /// </summary>
+        public static bool ShowGizmos
+        {
+            get => showGizmos;
+            set => showGizmos = value;
+        }
+
+        /// <summary>
+        /// Gets or sets the density of the collider.<br/>
+        /// The collider mass is equals to <c>Density * Area</c>.
+        /// </summary>
         public float Density
         {
             get => this.density;
@@ -48,6 +67,10 @@ namespace Engine
             }
         }
         
+        /// <summary>
+        /// Gets or sets the friction of this collider.<br/>
+        /// A higher friction will cause more energy loss along the collision tangents.
+        /// </summary>
         public float Friction
         {
             get => this.friction;
@@ -66,7 +89,70 @@ namespace Engine
                 }
             }
         }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this collider acts as a trigger or not.<br/>
+        /// Triggers don't affect the physics simulation and won't cause collisions with other collider but can be used to query potential collision using the <see cref="CollisionEnter"/> and <see cref="CollisionExit"/> events.
+        /// </summary>
+        public bool IsTrigger
+        {
+            get => this.isTrigger;
+            set => this.isTrigger = value;
+        }
+
+        /// <summary>
+        /// Gets the rigid-body to which this collider belongs.<br/>
+        /// Returns <c>null</c> if this collider doesn't belong to any rigidbody.
+        /// </summary>
+        [CanBeNull]
+        public RigidBody OwningRigidBody
+        {
+            get => this.owningRigidBody;
+            internal set
+            {
+                if (this.owningRigidBody == value)
+                {
+                    return;
+                }
+
+                if (this.owningRigidBody != null)
+                {
+                    Debug.Assert(this.owningRigidBody.Body != null);
+
+                    if (this.IsActiveInHierarchy)
+                    {
+                        this.owningRigidBody.Body.Remove(this.fixture);
+                        this.DestroyCurrentFixture();
+                    }
+                }
+
+                this.owningRigidBody = value;
+
+                if (this.owningRigidBody != null)
+                {
+                    if (this.body != null)
+                    {
+                        PhysicsManager.World.Remove(this.body);
+                        this.body = null;
+                        this.DestroyCurrentFixture();
+                    }
+
+                    Debug.Assert(this.owningRigidBody.Body != null);
+
+                    if (this.IsActiveInHierarchy)
+                    {
+                        this.fixture = this.CreateFixture(this.owningRigidBody.Body);
+                    }
+                }
+                else if (this.IsActiveInHierarchy)
+                {
+                    this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
+                    Debug.Assert(this.body != null);
+                    this.fixture = this.CreateFixture(this.body);
+                }
+            }
+        }
+
         internal Shape Shape
         {
             get
@@ -81,57 +167,25 @@ namespace Engine
                 return this.shape;
             }
         }
-
-        internal RigidBody OwningRigidBody
-        {
-            get => this.owningRigidBody;
-            set
-            {
-                if (this.owningRigidBody == value)
-                {
-                    return;
-                }
-
-                if (this.owningRigidBody != null)
-                {
-                    Debug.Assert(this.owningRigidBody.Body != null);
-
-                    if (this.IsActiveInHierarchy)
-                    {
-                        this.owningRigidBody.Body.Remove(this.fixture);
-                        this.fixture = null;
-                    }
-                }
-
-                this.owningRigidBody = value;
-
-                if (this.owningRigidBody != null)
-                {
-                    if (this.body != null)
-                    {
-                        PhysicsManager.World.Remove(this.body);
-                        this.body = null;
-                        this.fixture = null;
-                    }
-
-                    Debug.Assert(this.owningRigidBody.Body != null);
-
-                    if (this.IsActiveInHierarchy)
-                    {
-                        this.fixture = this.owningRigidBody.Body.CreateFixture(this.Shape);
-                    }
-                }
-                else if (this.IsActiveInHierarchy)
-                {
-                    this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
-                    Debug.Assert(this.body != null);
-                    this.fixture = this.body.CreateFixture(this.Shape);
-                }
-            }
-        }
-
+        
         internal Collider()
         { }
+        
+        /// <summary>
+        /// Occurs when a new collision is detected between this and another collider.
+        /// </summary>
+        public event EventHandler<Collider> CollisionEnter;
+
+        /// <summary>
+        /// Occurs when a previously detected collision between this and another collider is resolved.
+        /// </summary>
+        public event EventHandler<Collider> CollisionExit;
+
+        /// <inheritdoc />
+        protected override void OnAwake()
+        {
+            this.Transform.ParentChanged += this.OnParentChanged;
+        }
 
         /// <inheritdoc />
         protected override void OnEnable()
@@ -146,9 +200,7 @@ namespace Engine
                 // This can happen when the scene loads, the rigidBody.OnAwake was not called yet and a collider was added in a child GO during the OnAwake call of another component.
                 if (rigidBody != null && rigidBody.Body != null)
                 {
-                    this.fixture = rigidBody.Body.CreateFixture(this.Shape);
-                    this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
-                    this.fixture.Friction = this.friction;
+                    this.fixture = this.CreateFixture(rigidBody.Body);
 
                     rigidBody.AddCollider(this);
                     this.owningRigidBody = rigidBody;
@@ -159,9 +211,7 @@ namespace Engine
             {
                 this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                 Debug.Assert(this.body != null);
-                this.fixture = this.body.CreateFixture(this.Shape);
-                this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
-                this.fixture.Friction = this.friction;
+                this.fixture = this.CreateFixture(this.body);
             }
 
             this.Owner.LayerChanged += this.OwnerOnLayerChanged;
@@ -193,7 +243,13 @@ namespace Engine
                 this.body = null;
             }
 
-            this.fixture = null;
+            this.DestroyCurrentFixture();
+        }
+
+        /// <inheritdoc />
+        protected override void OnDestroy()
+        {
+            this.Transform.ParentChanged -= this.OnParentChanged;
         }
 
         /// <summary>
@@ -202,6 +258,9 @@ namespace Engine
         [NotNull]
         protected abstract Shape GetShape();
 
+        /// <summary>
+        /// Called once per frame when the gizmos is being drawn.
+        /// </summary>
         protected abstract void DrawGizmos();
 
         /// <summary>
@@ -223,9 +282,8 @@ namespace Engine
             Debug.Assert(this.fixture != null);
 
             bodyInUse.Remove(this.fixture);
-            this.fixture = bodyInUse.CreateFixture(this.Shape);
-            this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
-            this.fixture.Friction = this.friction;
+            this.DestroyCurrentFixture();
+            this.fixture = this.CreateFixture(bodyInUse);
         }
 
 #if DEBUG
@@ -235,12 +293,6 @@ namespace Engine
             if (ShowGizmos)
             {
                 this.DrawGizmos();
-
-                var p0 = this.Transform.TransformPoint(Vector2.Zero);
-                var pRight = this.Transform.TransformPoint(Vector2.UnitX * 0.3f);
-                var pUp = this.Transform.TransformPoint(Vector2.UnitY * 0.3f);
-                //Gizmos.DrawLine(p0, pRight, Color.Blue);
-                //Gizmos.DrawLine(p0, pUp, Color.Red);
             }
         }
 
@@ -252,6 +304,70 @@ namespace Engine
             {
                 this.fixture.CollisionCategories = (Category)(1 << this.Owner.Layer);
             }
+        }
+
+        private void OnParentChanged(object? sender, (Transform oldParent, Transform newParent) e)
+        {
+            if (this.IsActiveInHierarchy && this.Owner.Scene.IsLoaded)
+            {
+                this.IsActive = false;
+                this.IsActive = true;
+            }
+        }
+
+        private Fixture CreateFixture([NotNull]Body body)
+        {
+            Debug.Assert(this.fixture == null);
+            Debug.Assert(body != null);
+
+            var result = body.CreateFixture(this.Shape);
+            result.Tag = this;
+            result.CollisionCategories = (Category)(1 << this.Owner.Layer);
+            result.Friction = this.friction;
+            result.OnCollision += this.OnCollision;
+            result.OnSeparation += this.OnSeparation;
+
+            return result;
+        }
+
+        private void DestroyCurrentFixture()
+        {
+            if (this.fixture == null)
+            {
+                return;
+            }
+
+            this.fixture.OnCollision -= this.OnCollision;
+            this.fixture.OnSeparation -= this.OnSeparation;
+            this.fixture = null;
+        }
+
+        private void OnSeparation(Fixture sender, Fixture other, Contact contact)
+        {
+            if (!this.IsTrigger || !((Collider)other.Tag).IsTrigger)
+            {
+                this.OnCollisionExit((Collider)other.Tag);
+            }
+        }
+
+        private bool OnCollision(Fixture sender, Fixture other, Contact contact)
+        {
+            if (!this.IsTrigger || !((Collider)other.Tag).IsTrigger)
+            {
+                this.OnCollisionEnter((Collider)other.Tag);
+            }
+
+            return !this.IsTrigger;
+        }
+
+        private void OnCollisionEnter(Collider e)
+        {
+            this.CollisionEnter?.Invoke(this, e);
+        }
+
+        private void OnCollisionExit(Collider e)
+        {
+            this.CollisionExit?.Invoke(this, e);
         }
     }
 }

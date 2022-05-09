@@ -36,6 +36,16 @@ namespace SandPerSand
         public List<Vector2> InitialPositions
         {
             get => initialPositions;
+            private set
+            {
+                initialPositions = value;
+            }
+        }
+
+        private static Vector2 shopEntryPosition;
+        public Vector2 ShopEntryPosition {
+            get => shopEntryPosition;
+            set { shopEntryPosition = value; }
         }
 
 
@@ -43,6 +53,96 @@ namespace SandPerSand
         {
             Debug.Print("player manager created");
         }
+
+        public GameState LastGameState { get; set; }
+        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
+        // TODO hard coded shopTime
+        private float shopTime = 10f;
+        private float shopTimeCounter = 0;
+        private int curRank;
+        private PlayerIndex[] rankList;
+
+        protected override void Update()
+        {
+            if (CurrentGameState == GameState.InRound)
+            {
+                if (LastGameState == GameState.Shop)
+                {
+                    // this holds because we clear initial positions each time we exit a round
+                    // initial positions are round specific
+                    if (InitialPositions.ToArray().Length <= 0)
+                    {
+                        Debug.Print("Cannot respawn Players, because the map is " +
+                            "not loaded or no initial positions on map.");
+                        return;
+                    }
+                    LastGameState = GameState.InRound;
+                    foreach (PlayerIndex playerIndex in Players.Keys)
+                    {
+                        RespawnPlayer(playerIndex, GetRandomInitialPos());
+                    }
+                }
+            }
+            else if (CurrentGameState == GameState.Shop)
+            {
+                if (LastGameState != GameState.Shop)
+                {
+                    // FIXME wait for shop map
+                    if (ShopEntryPosition.X < 4)
+                    {
+                        Debug.Print("Cannot respawn Player in the shop, " +
+                            "because initial position is not yet loaded or invalid.");
+                        return;
+                    }
+                    // clear initial positions when exit a round
+                    // since they are round-specific FIXME better place to do this???
+                    InitialPositions = new List<Vector2>();
+
+                    // calculate rank list
+                    rankList = new PlayerIndex[Players.Count];
+                    foreach (var item in Players)
+                    {
+                        int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
+                        if (rank <= 0)
+                        {
+                            throw new Exception("Invalid rank at end");
+                        }
+                        rankList[rank - 1] = item.Key;
+                    }
+
+                    // respawn players -> queue by rank list
+                    // disable all players controller
+                    var entryX = ShopEntryPosition.X;
+                    foreach (var playerIndex in rankList)
+                    {
+                        RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
+                        GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
+                    }
+                    // ShopEntryPsition can be reset right after use
+                    // If not reset, players will be spawned before shop map is
+                    // loaded next time ... then drop
+                    ShopEntryPosition = Vector2.Zero;
+                    LastGameState = GameState.Shop;
+                    shopTimeCounter = shopTime;
+                    curRank = 0;
+                }
+                shopTimeCounter += Time.DeltaTime;
+                if (shopTimeCounter >= shopTime)
+                {
+                    shopTimeCounter = 0;
+                    if(curRank < rankList.Length) Players[rankList[curRank]].GetComponent<PlayerControlComponent>().IsActive = true;
+                    if(curRank>0)
+                    {
+                        Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
+                        //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
+                    }
+                    curRank++;
+                }
+
+            }
+        }
+
+
 
         public GameObject GetPlayer(PlayerIndex index) {
             return players[index];
@@ -72,16 +172,31 @@ namespace SandPerSand
                 {
                     players[playerIndex].Destroy();
                 }
-                players[playerIndex] = PlayerGo.Create(playerIndex, position);
+                players[playerIndex] = Template.MakePlayer(playerIndex, position);
             }
             else
             {
-                players.Add(playerIndex, PlayerGo.Create(playerIndex, position));
+                players.Add(playerIndex, Template.MakePlayer(playerIndex, position));
+            }
+        }
+
+        public void RespawnPlayer(PlayerIndex playerIndex, Vector2 position)
+        {
+            if (players.ContainsKey(playerIndex))
+            {
+                players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
+                players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
+                players[playerIndex].Transform.Position = position;
+                players[playerIndex].GetComponent<Animator>().Entry();
+                players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
+                players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
+            }
+            else
+            {
+                throw new InvalidOperationException("");
             }
 
-            PlayerGo.AddAnim(players[playerIndex]);
-
-        }
+            }
 
         public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
             //returns true if item was added. False if it is already full
@@ -105,8 +220,8 @@ namespace SandPerSand
         public void addCoins(PlayerIndex player, int coins)
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
-            GraphicalUserInterface.Instance.renderCoins(player, coins);
-            state.addCoins(coins);
+            int tot_coins = state.addCoins(coins);
+            GraphicalUserInterface.Instance.renderCoins(player, tot_coins);
         }
         public Boolean spendCoins(PlayerIndex player, int coins)
         {
@@ -212,21 +327,38 @@ namespace SandPerSand
             return allExitedFlag;
         }
 
-        public void finalizeRanks()
+        public Boolean CheckAllFinishedShop()
         {
-            int notExited = 1;
+            if (players.Count == 0)
+            {
+                return false;
+            }
+            var allExitedFlag = true;
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                if (!player.GetComponent<PlayerStates>().FnishedShop)
                 {
-                    notExited ++;
+                    allExitedFlag = false;
+                }
+            }
+            return allExitedFlag;
+        }
+
+        public void finalizeRanks()
+        {
+            int notExitedFrom = 1;
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerStates>().RoundRank != -1)
+                {
+                    notExitedFrom++;
                 }
             }
             foreach (var player in players.Values)
             {
                 if (player.GetComponent<PlayerStates>().RoundRank == -1)
                 {
-                    player.GetComponent<PlayerStates>().RoundRank = notExited;
+                    player.GetComponent<PlayerStates>().RoundRank = notExitedFrom++;
                 }
             }
         }
@@ -236,23 +368,32 @@ namespace SandPerSand
     {
         public Boolean Prepared;
         public static Boolean Paused;
-        public string minor_item;
-        public string major_item;
-        public int coins;
+        public string MinorItem;
+        public string MajorItem;
+        public int Coins;
         public bool Exited { get; set; }
+        public bool FnishedShop { get; set; }
         public int RoundRank { get; set; }
+        public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
+        public GameState LastGameState{ get; set; }
+        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
+
+        public List<(string id, float timeleft)> activeItems;
 
         protected override void OnAwake()
         {
             Prepared = false;
             Paused = false;
-            minor_item = null;
-            major_item = null;
-            coins = 0;
+            MinorItem = null;
+            MajorItem = null;
+            Coins = 0;
             Exited = false;
+            FnishedShop = false;
             RoundRank = -1;
+            activeItems = new List<(string id, float timeleft)> ();
+            Score = 0;
         }
 
         /// <summary>
@@ -260,10 +401,46 @@ namespace SandPerSand
         /// </summary>
         protected override void Update()
         {
-            if (PrepareButtonPressed && GameStateManager.Instance.CurrentState == GameState.Prepare)
+            //<<<<<<< Yuchen stuff
+            if (PrepareButtonPressed && CurrentGameState == GameState.Prepare)
             {
                 TogglePrepared();
             }
+            if (LastGameState != CurrentGameState)
+            {
+                if(LastGameState == GameState.RoundCheck )
+                {
+
+                    FnishedShop = false;
+                }else if(LastGameState == GameState.Shop)
+                {
+                    // reset round states
+                    Exited = false;
+                    RoundRank = -1;
+                }
+                LastGameState = CurrentGameState;
+            }
+            //======= End of Yuchen stuff
+
+            //<<<<<<< Clemens stuff
+            float timeDelta = Time.DeltaTime;
+
+            List<int> remove = new List<int>();
+
+            for (int i = 0; i < activeItems.Count; i++)
+            {
+                activeItems[i] = (activeItems[i].id, activeItems[i].timeleft - timeDelta);
+                if (activeItems[i].timeleft < 0)
+                {
+                    remove.Add(i);
+                }
+            }
+
+            for (int i = remove.Count - 1; i >= 0; i--)
+            {
+                activeItems.RemoveAt(remove[i]);
+            }
+            //======= End of Clemens stuff
         }
 
         public void TogglePrepared()
@@ -299,17 +476,17 @@ namespace SandPerSand
             //returns true if item was added
             if (Major)
             {
-                if(major_item == null)
+                if(MajorItem == null)
                 {
-                    major_item = item;
+                    MajorItem = item;
                     return true;
                 }
             }
             else
             {
-                if (minor_item == null)
+                if (MinorItem == null)
                 {
-                    minor_item = item;
+                    MinorItem = item;
                     return true;
                 }
             }
@@ -321,36 +498,85 @@ namespace SandPerSand
         {
             if (Major)
             {
-                string tmp = major_item;
-                major_item = null;
+                string tmp = MajorItem;
+                MajorItem = null;
                 return tmp;
             }
             else
             {
-                string tmp = minor_item;
-                minor_item=null;
+                string tmp = MinorItem;
+                MinorItem=null;
                 return tmp;
             }
         }
 
         public int addCoins(int amount)
         {
-            coins += amount;
-            return coins;
+            Coins += amount;
+            return Coins;
         }
 
         public (Boolean, int) spendCoins(int amount)
             //returns true when action was successfull
         {
-            if(coins > amount)
+            if(Coins >= amount)
             {
-                coins = amount = coins;
-                return (true, coins);
+                Coins -= amount;
+                return (true, Coins);
             }
             else
             {
-                return (false, coins);
+                return (false, Coins);
             }
+        }
+
+        public float getJumpFactor()
+        {
+            float jumpfactor = 1;
+            foreach(var item in activeItems)
+            {
+                if(item.id == "wings") 
+                {
+                    jumpfactor *= 1.5f;
+                }
+                else if(item.id == "ice_block")
+                {
+                    jumpfactor *= 0;
+                }
+            }
+            return jumpfactor;
+        }
+
+        public float getAccellerationFactor()
+        {
+            float accelleration = 1;
+
+            foreach (var item in activeItems)
+            {
+                if (item.id == "speedup")
+                {
+                    accelleration *= 1.5f;
+                }
+                else if (item.id == "ice_block")
+                {
+                    accelleration *= 0;
+                }
+            }
+            return accelleration;
+        }
+
+        public float getInvertedMovement()
+        {
+            float invertedMovement = 1;
+
+            foreach (var item in activeItems)
+            {
+                if (item.id == "dizzy_eyes")
+                {
+                    invertedMovement *= -1f;
+                }
+            }
+            return invertedMovement;
         }
     }
 }

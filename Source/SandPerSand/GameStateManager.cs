@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
@@ -12,22 +12,29 @@ namespace SandPerSand
     {
         private static GameStateManager instance;
 
-        public bool exitTrigger;
+        private static bool exitTrigger = false;
         public bool TriggerExit()
         {
             Debug.Print("exit trigger script is run");
-            Debug.Print(currentState.ToString());
-            Debug.Print(exitTrigger.ToString());
             if(currentState== GameState.InRound||
                 currentState== GameState.CountDown)
             {
-                Debug.Print("reached if statement");
                 if (exitTrigger == false)
                 {
                     exitTrigger = true;
-                    Debug.Print(this.exitTrigger.ToString());
                     return true;
                 }
+            }
+            return false;
+        }
+
+        private static bool finishShopTrigger = false;
+        public bool TriggerFinishShop()
+        {
+            if (currentState == GameState.Shop&&!finishShopTrigger)
+            {
+                finishShopTrigger = true;
+                return true;
             }
             return false;
         }
@@ -49,7 +56,7 @@ namespace SandPerSand
                 {
                     instance = new GameStateManager();
                     currentState = GameState.Prepare;
-                    GraphicalUserInterface.Instance.renderMidScreenText("To Start The Game Press A");
+                    inMenu = true;
                 }
                 return instance;
             }
@@ -65,9 +72,23 @@ namespace SandPerSand
             }
         }
 
+        public static bool inMenu;
+        
+        public bool InMenu { get
+            {
+                return inMenu;
+            }
+            set { inMenu = value; }
+        }
 
 
-        private float countDowncounter;
+        public static float countDowncounter;
+        public float CountDowncounter { 
+            get
+            {
+                return countDowncounter; 
+            } 
+        }
         protected override void Update()
         {
             switch (CurrentState)
@@ -78,26 +99,25 @@ namespace SandPerSand
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
                         currentState = GameState.InRound;
-                        GraphicalUserInterface.Instance.destroyMidScreenText();
                         Debug.Print("GameState: Prepare-> InRound");
+                        exitTrigger = false;
                     }
                     break;
                 case GameState.InRound:
                     if (PlayersManager.Instance.CheckOneExit())
                     {
                         currentState = GameState.CountDown;
-                        exitTrigger = false;
                         Debug.Print("GameState: InRound-> CountDown");
-                        //
                         countDowncounter = 0f;
-                        GraphicalUserInterface.Instance.renderMidScreenText( "10.0 Seconds to Finish the Round");
                     }
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
-                    GraphicalUserInterface.Instance.updateMidScreenText(String.Format("{0:0.0}", 10f - countDowncounter) + " Seconds to Finish the Round");
+                    Debug.Print(countDowncounter.ToString());
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
+                        countDowncounter = 0f;
+                        exitTrigger = false;
                         PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
@@ -107,20 +127,52 @@ namespace SandPerSand
                             Debug.Print("Player "+ item.Key + " : Rank " +
                                 item.Value.GetComponent<PlayerStates>().RoundRank);
                         }
-
-                        string ranks = "";
-                        //display ranks on screen
-                        foreach (var item in PlayersManager.Instance.Players)
-                        {
-                            ranks += item.Value.GetComponent<PlayerStates>().RoundRank + " - Player " + item.Key + "\n";
-                        }
-                        GraphicalUserInterface.Instance.updateMidScreenText(ranks);
-
                     }
                     break;
                 case GameState.RoundCheck:
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 2f)
+                    {
+                        countDowncounter = 0f;
+                        RoundCheckToShop();
+                    }
+                    break;
+                case GameState.Shop:
+                    // disable the current player's controller after they finished shopping or after the time limit
+                    // move the finished player to the exit if they is not there
+                    // enable the next first player's controller
+                    // ...
+                    // after all player is moved to exit, proceed to the next round
+                    if (PlayersManager.Instance.CheckAllFinishedShop())
+                    {
+                        finishShopTrigger = false;
+                        ShopToInRound();
+                    }
                     break;
             }
+        }
+
+        private void RoundCheckToShop()
+        {
+            currentState = GameState.Shop;
+            Debug.Print("GameState: RoundCheck-> Shop");
+            // load new scene
+            // FIXME correct shop scene number
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load ShopScene current index = 3
+            sceneManager.LoadAt(3);
+
+        }
+
+        private void ShopToInRound()
+        {
+            currentState = GameState.InRound;
+            Debug.Print("GameState: Shop-> InRound");
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
+
         }
     }
 
@@ -130,5 +182,6 @@ namespace SandPerSand
         InRound,
         CountDown,
         RoundCheck,
+        Shop,
     }
 }

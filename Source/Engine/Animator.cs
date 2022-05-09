@@ -9,9 +9,13 @@ namespace Engine
 {
     public class Animator : Behaviour
     {
+        // paths
+        private string loadFromContentPath;
+        private string textureAssetName = null;
+        // contents
         private Dictionary<string, Animation> animes;
         private string currentAnimeKey = null;
-        private string loadFromContentPath;
+        private string entryAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
 
@@ -44,9 +48,18 @@ namespace Engine
                 SyncRect();
             }
         }
+        public void Entry()
+        {
+            NextAnime(this.entryAnimeKey);
+        }
 
         public void NextAnime(string animName)
         {
+            if (this.CurrentAnime != null)
+            {
+                this.CurrentAnime.Reset();
+            }
+
             if (this.animes.ContainsKey(animName))
             {
                 this.currentAnimeKey = animName;
@@ -70,9 +83,28 @@ namespace Engine
             {
                 throw new ArgumentNullException(nameof(path));
             }
-
             this.loadFromContentPath = path;
             this.LoadFromContentPath();
+        }
+
+        public void LoadFromContent(string path, string texture)
+        {
+            this.textureAssetName = texture;
+            LoadFromContent(path);
+        }
+
+        private void ClearContent()
+        {
+            // clear existing content
+            animes = new Dictionary<string, Animation>();
+            currentAnimeKey = null;
+            entryAnimeKey = null;
+            passedTime = 0f;
+            if (renderer != null)
+            {
+                renderer.Destroy();
+                renderer = null;
+            }
         }
 
         private void LoadFromContentPath()
@@ -81,6 +113,9 @@ namespace Engine
             {
                 return;
             }
+
+            ClearContent();
+
             // load .tsx file
             //FIXME hard code path
             var tiledS = new TiledTileset($"Content/tiles/{loadFromContentPath}.tsx");
@@ -91,7 +126,10 @@ namespace Engine
 
             // TODO load texture in SpriteRenderer;
             // TODO better Tiled project structure and accurate paths
-            var textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            if (textureAssetName == null)
+            {
+                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            }
             var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
             this.renderer.LoadFromContent(textureAssetName);
@@ -99,70 +137,99 @@ namespace Engine
             // foreach tile, check if it is anime
             foreach (TiledTile tile in tiledS.Tiles)
             {
-                if (tile.animation != null)
+                var newAnim = ParseTiledAnimation(tile, tiledS);
+                if (newAnim!=null)
                 {
-                    // found a animation
-                    // foreach anime calculate list of sourceRect <- (tileId, tile-w&h, texture-w)
-                    // and note frame-length for each frame
-                    List<Frame> frameList = new List<Frame>();
-                    foreach (TiledTileAnimation tiledFrame in tile.animation)
-                    {
-                        // Calculate source rectangle of the frame
-                        int tileId = tiledFrame.tileid;
-                        Rectangle sourceRectangle = new Rectangle(
-                            tileId * tiledS.TileWidth % texture.Width,
-                            tileId * tiledS.TileWidth / texture.Width * tiledS.TileHeight,
-                            tiledS.TileWidth,
-                            tiledS.TileHeight);
-                        // Calculate duration in seconds
-                        float duration = tiledFrame.duration / 1000f;
-                        // Create new Frame
-                        frameList.Add(new Frame(sourceRectangle, duration));
-                    }
-                    var newAnim = new Animation(frameList.ToArray());
-
-                    var animIsEntry = false;
-                    foreach (TiledProperty p in tile.properties)
-                    {
-                        // TODO hard code
-                        switch (p.name)
-                        {
-                            case "AnimName":
-                                newAnim.Name = p.value;
-                                break;
-                            case "AnimIsLoop":
-                                // TODO not used
-                                newAnim.IsLoop = bool.Parse(p.value);
-                                break;
-                            case "AnimIsEntry":
-                                animIsEntry = bool.Parse(p.value);
-                                break;
-                        }
-                    }
-                    if (newAnim.Name == null)
-                    {
-                        throw new ArgumentNullException(nameof(newAnim.Name));
-                    }
-                    if (animIsEntry)
-                    {
-                        if (this.currentAnimeKey == null)
-                        {
-                            this.currentAnimeKey = newAnim.Name;
-                        }
-                        else
-                        {
-                            throw new ArgumentException("Multiple animation entries!");
-                        }
-                    }
                     animes.Add(newAnim.Name, newAnim);
                 }
-
             }
-            if (this.currentAnimeKey == null)
+            if (this.entryAnimeKey == null)
             {
                 throw new ArgumentNullException("No entry animation defined!");
             }
+            this.currentAnimeKey = this.entryAnimeKey;
             SyncRect();
+        }
+
+        private void LoadSingleAnimationFromTile(TiledTile tile, TiledTileset tiledS)
+        {
+            if (textureAssetName == null)
+            {
+                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            }
+            this.renderer = this.Owner.AddComponent<SpriteRenderer>();
+            this.renderer.LoadFromContent(textureAssetName);
+            var newAnim = ParseTiledAnimation(tile, tiledS);
+            if (newAnim != null)
+            {
+                animes.Add(newAnim.Name, newAnim);
+            }
+            this.entryAnimeKey = newAnim.Name;
+            this.currentAnimeKey = newAnim.Name;
+            SyncRect();
+        }
+
+            private Animation ParseTiledAnimation(TiledTile tile, TiledTileset tiledS)
+        {
+            if (tile.animation != null)
+            {
+                // found a animation
+                // foreach anime calculate list of sourceRect <- (tileId, tile-w&h, texture-w)
+                // and note frame-length for each frame
+                int textureWidth = this.renderer.Texture.Width;
+                List<Frame> frameList = new List<Frame>();
+                foreach (TiledTileAnimation tiledFrame in tile.animation)
+                {
+                    // Calculate source rectangle of the frame
+                    int tileId = tiledFrame.tileid;
+                    Rectangle sourceRectangle = new Rectangle(
+                        tileId * tiledS.TileWidth % textureWidth,
+                        tileId * tiledS.TileWidth / textureWidth * tiledS.TileHeight,
+                        tiledS.TileWidth,
+                        tiledS.TileHeight);
+                    // Calculate duration in seconds
+                    float duration = tiledFrame.duration / 1000f;
+                    // Create new Frame
+                    frameList.Add(new Frame(sourceRectangle, duration));
+                }
+                var newAnim = new Animation(frameList.ToArray());
+
+                var animIsEntry = false;
+                foreach (TiledProperty p in tile.properties)
+                {
+                    // TODO hard code
+                    switch (p.name)
+                    {
+                        case "AnimName":
+                            newAnim.Name = p.value;
+                            break;
+                        case "AnimIsLoop":
+                            // TODO not used
+                            newAnim.IsLoop = bool.Parse(p.value);
+                            break;
+                        case "AnimIsEntry":
+                            animIsEntry = bool.Parse(p.value);
+                            break;
+                    }
+                }
+                if (newAnim.Name == null)
+                {
+                    throw new ArgumentNullException(nameof(newAnim.Name));
+                }
+                if (animIsEntry)
+                {
+                    if (this.entryAnimeKey == null)
+                    {
+                        this.entryAnimeKey = newAnim.Name;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Multiple animation entries!");
+                    }
+                }
+                return newAnim;
+            }
+            return null;
         }
     }
 
@@ -205,6 +272,12 @@ namespace Engine
             {
                 IsAtEnd = true;
             }
+        }
+
+        public void Reset()
+        {
+            IsAtEnd = false;
+            FrameItr = 0;
         }
 
     }
