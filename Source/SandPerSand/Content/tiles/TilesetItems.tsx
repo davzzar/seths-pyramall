@@ -3,7 +3,10 @@
  <image source="TilesetItems.png" width="256" height="256"/>
  <tile id="0" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="lightning"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="6"/>
    <property name="item_type" value="minor"/>
   </properties>
   <objectgroup draworder="index" id="2">
@@ -12,7 +15,10 @@
  </tile>
  <tile id="1" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="magnet"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
   <objectgroup draworder="index" id="2">
@@ -21,51 +27,99 @@
  </tile>
  <tile id="2" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="ice_block"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="3">
+   <object id="2" x="5.18873" y="4.08293" width="25.4333" height="25.7735"/>
+  </objectgroup>
  </tile>
  <tile id="3" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="portable_sand_source"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="3.99787" y="2.97714" width="24.2424" height="23.8171"/>
+  </objectgroup>
  </tile>
  <tile id="4" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="sunglasses"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0.255183" y="11.9086" width="31.6427" height="5.6991"/>
+  </objectgroup>
  </tile>
  <tile id="5" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="position_swap"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="major"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="0.425306" y="4.33812" width="30.7071" height="25.3482"/>
+  </objectgroup>
  </tile>
  <tile id="6" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="wings"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="5.61404" y="5.10367" width="20.0744" height="21.8607"/>
+  </objectgroup>
  </tile>
  <tile id="7" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="speedup"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="8.7613" y="6.88995" width="15.6512" height="17.1823"/>
+  </objectgroup>
  </tile>
  <tile id="8" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="dizzy_eyes"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="3.99787" y="4.5933" width="23.9872" height="24.0723"/>
+  </objectgroup>
  </tile>
  <tile id="9" type="Item">
   <properties>
+   <property name="item_description" value="this is a dummy description"/>
    <property name="item_id" value="shield"/>
+   <property name="item_image_path" type="file" value="../shop/item_unknown.png"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
   </properties>
+  <objectgroup draworder="index" id="2">
+   <object id="1" x="3.99787" y="3.14726" width="24.8379" height="23.2217"/>
+  </objectgroup>
  </tile>
  <tile id="10" type="Item"/>
  <tile id="11" type="Item"/>

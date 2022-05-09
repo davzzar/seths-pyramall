@@ -129,7 +129,7 @@ namespace Engine
 
     }
 
-    public struct Tile
+    public class Tile
     {
         public int X;
         public int Y;
@@ -145,6 +145,18 @@ namespace Engine
 
         public TiledTile TiledTile;
         public Vector2[] ColliderOutline;
+
+        public string GetTileProperty(string propertyName)
+        {
+            foreach (TiledProperty p in TiledTile.properties)
+            {
+                if (p.name == propertyName)
+                {
+                    return p.value;
+                }
+            }
+            throw new Exception("Undefined property name!");
+        }
 
     }
 }

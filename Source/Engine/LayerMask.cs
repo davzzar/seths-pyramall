@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.WindowsRuntime;
-using System.Text;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace Engine
 {
+    /// <summary>
+    /// Represents a layer mask to mask the individual layers.
+    /// </summary>
     public readonly struct LayerMask
     {
         public static readonly LayerMask None = new LayerMask(0);
@@ -114,5 +113,24 @@ namespace Engine
 
             return new LayerMask(value);
         }
+    }
+    
+    public enum Layers : int
+    {
+        Default = 0,
+
+        Ground = 1,
+
+        Player = 2,
+
+        Coins = 3,
+
+        Items = 4,
+
+        Shop = 5,
+
+        Interactable = 6,
+
+        Overlay = 7
     }
 }

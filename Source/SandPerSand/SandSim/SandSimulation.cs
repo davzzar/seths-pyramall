@@ -5,6 +5,7 @@ using System.Text;
 using Engine;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand.SandSim
 {
@@ -33,12 +34,10 @@ namespace SandPerSand.SandSim
 
         private readonly SandGridReader sandGridReader;
 
-        // Used to determine the level of the raising sand
-        private int number_of_updates;
-        private int raising_sand_current_depth;
-        private bool raising_sand_needs_update;
-        private int raising_sand_step;
-        private int raising_sand_upper_margin;
+        private float raisingSandSpeed = 0.6f;
+        private float raisingSandDelay = 4f;
+        private float raisingSandCurrentTime = 0f;
+        private int raisingSandCurrentRow = -1;
 
         public int ResolutionX
         {
@@ -112,6 +111,39 @@ namespace SandPerSand.SandSim
             set => this.simulationStepTime = MathF.Max(value, 1e-5f);
         }
 
+        /// <summary>
+        /// Gets or sets the speed at which the raising sand raises in world units per second.
+        /// </summary>
+        public float RaisingSandSpeed
+        {
+            get => this.raisingSandSpeed;
+            set => this.raisingSandSpeed = MathF.Max(value, 0f);
+        }
+
+        /// <summary>
+        /// Gets or sets the length of the initial delay after which the raising sand starts raising.
+        /// </summary>
+        public float RaisingSandDelay
+        {
+            get => this.raisingSandDelay;
+            set => this.raisingSandDelay = MathF.Max(value, 0f);
+        }
+
+        /// <summary>
+        /// Gets or sets the distance from the top of the sand simulation at which the raising sand stops in world units.
+        /// </summary>
+        public float RaisingSandUpperMargin { get; set; } = 9.4f;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the raising sand simulation should be paused.
+        /// </summary>
+        public bool PauseRaisingSand { get; set; }
+
+        /// <summary>
+        /// Gets the height of the raising sand as y-coordinate in world space.
+        /// </summary>
+        public float RaisingSandHeight { get; private set; }
+
         [CanBeNull]
         public SandRenderer Renderer => this.sandRenderer;
 
@@ -145,12 +177,6 @@ namespace SandPerSand.SandSim
             this.newSandLookup = new HashSet<Int2>();
 
             this.sandGridReader = new SandGridReader();
-
-            this.number_of_updates = 0;
-            this.raising_sand_current_depth = 1;
-            this.raising_sand_needs_update = false;
-            this.raising_sand_step = 7;
-            this.raising_sand_upper_margin = 10;
         }
 
         public void AddSandSource(in Aabb rect)
@@ -243,6 +269,11 @@ namespace SandPerSand.SandSim
                 this.InvalidateSandGrid();
             }
 
+            if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
+            {
+                return;
+            }
+
             var deltaT = Time.GameTime - this.currentSimulationTime;
             var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
             this.currentSimulationTime += this.SimulationStepTime * numSteps;
@@ -253,6 +284,12 @@ namespace SandPerSand.SandSim
                 deltaT -= this.SimulationStepTime;
                 this.DoSimulationStep();
             }
+
+            this.HandleRaisingSand();
+
+            var min = this.sandBackBuffer.Position;
+            var max = new Vector2(this.sandBackBuffer.Position.X + this.sandBackBuffer.Size.X, this.RaisingSandHeight);
+            Gizmos.DrawRect((min + max) / 2f, max - min, Color.BurlyWood, 2f);
 
             this.sandRenderer.MaxLayer = this.MaxLayer;
         }
@@ -363,10 +400,6 @@ namespace SandPerSand.SandSim
 
         private void DoSimulationStep()
         {
-            if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
-            {
-                return;
-            }
             // Swap the update buffers and prepare them for the next update
             (this.updateFrontBuffer, this.updateBackBuffer) = (this.updateBackBuffer, this.updateFrontBuffer);
             this.updateBackBuffer.Clear();
@@ -393,29 +426,6 @@ namespace SandPerSand.SandSim
                     }
                 }
             }
-
-            // Fill Sand from Below
-            if (this.raising_sand_needs_update == true)
-            {
-                for (int i = 1; i < this.ResolutionX - 1; i++)
-                {
-                    int j = this.raising_sand_current_depth;
-                    Int2 index = new Int2(i, j);
-
-                    var cell = this.sandFrontBuffer[in index];
-
-                    if (cell.IsEmpty)
-                    {
-                        cell.MarkSand();
-                        var newLayer = this.GetSandLayer(cell, index.X, index.Y);
-                        cell.Layer = (byte)newLayer;
-                        this.sandBackBuffer[in index] = cell;
-                        this.MarkNeighborsForUpdate(index.X, index.Y);
-                        this.MarkForStabilityCheck(index.X, index.Y);
-                    }
-                }
-                this.raising_sand_needs_update = false;
-            }
             
             for (var i = 0; i < this.newSandBuffer.Count; i++)
             {
@@ -430,16 +440,6 @@ namespace SandPerSand.SandSim
             (this.sandFrontBuffer, this.sandBackBuffer) = (this.sandBackBuffer, this.sandFrontBuffer);
             this.sandRenderer.SandGrid = this.sandFrontBuffer;
             this.sandGridReader.SandGrid = this.sandFrontBuffer;
-
-            this.number_of_updates += 1;
-            if (this.number_of_updates > 500 && this.number_of_updates % this.raising_sand_step == 0)
-            {
-                if (this.raising_sand_current_depth + this.raising_sand_upper_margin < this.ResolutionY)
-                {
-                    this.raising_sand_current_depth += 1;
-                    this.raising_sand_needs_update = true;
-                }
-            }
         }
 
         private int GetSandLayer(SandCell cell, int x, int y)
@@ -600,6 +600,49 @@ namespace SandPerSand.SandSim
 
             this.newSandBuffer.Add(index);
             this.newSandLookup.Add(index);
+        }
+
+        private void HandleRaisingSand()
+        {
+            if (this.PauseRaisingSand)
+            {
+                return;
+            }
+
+            var deltaT = Time.DeltaTime;
+
+            if (this.raisingSandCurrentTime < this.raisingSandDelay)
+            {
+                deltaT -= this.raisingSandDelay - this.raisingSandCurrentTime;
+                this.raisingSandCurrentTime += Time.DeltaTime;
+            }
+
+            if (deltaT <= 0)
+            {
+                return;
+            }
+
+            var deltaH = this.RaisingSandSpeed * deltaT;
+
+            this.RaisingSandHeight = MathF.Min(this.RaisingSandHeight + deltaH, this.sandBackBuffer.Position.Y + this.sandBackBuffer.Size.Y - this.RaisingSandUpperMargin);
+            
+            var newRow = this.sandBackBuffer.PointToIndexClamped(new Vector2(0f, this.RaisingSandHeight - this.sandBackBuffer.CellSize.Y / 2f)).Y;
+
+            while (newRow > this.raisingSandCurrentRow)
+            {
+                this.raisingSandCurrentRow++;
+
+                for (var x = 0; x < this.sandBackBuffer.ResolutionX; x++)
+                {
+                    ref var cell = ref this.sandBackBuffer[x, this.raisingSandCurrentRow];
+
+                    cell.MarkSand();
+                    cell.IsSandStable = true;
+                    this.MarkForUpdate(x, this.raisingSandCurrentRow);
+                }
+            }
+
+            this.sandBackBuffer.CopyTo(this.sandFrontBuffer);
         }
 
         /// <summary>
