@@ -189,6 +189,7 @@ namespace SandPerSand
                 players[playerIndex].Transform.Position = position;
                 players[playerIndex].GetComponent<Animator>().Entry();
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
+                players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
             }
             else
             {
