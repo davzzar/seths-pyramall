@@ -24,7 +24,7 @@ namespace SandPerSand
         private const Buttons ActionButton = Buttons.A;
         private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
         private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
+        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
 
         // State
         public bool IsGrounded { get; private set; }
@@ -39,7 +39,7 @@ namespace SandPerSand
 
         public float CurrentAcceleration { get; private set; }
 
-        public const float MaxAcceleration = 110f;
+        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
 
         public const float MaxArialAcceleration = 30f;
 
@@ -55,7 +55,8 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public const float JumpHeight = 8f; // explicit jump height
+        public float JumpHeight => 8f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
 

@@ -15,6 +15,7 @@ namespace Engine
         // contents
         private Dictionary<string, Animation> animes;
         private string currentAnimeKey = null;
+        private string entryAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
 
@@ -47,10 +48,18 @@ namespace Engine
                 SyncRect();
             }
         }
+        public void Entry()
+        {
+            NextAnime(this.entryAnimeKey);
+        }
 
         public void NextAnime(string animName)
         {
-            this.CurrentAnime.Reset();
+            if (this.CurrentAnime != null)
+            {
+                this.CurrentAnime.Reset();
+            }
+
             if (this.animes.ContainsKey(animName))
             {
                 this.currentAnimeKey = animName;
@@ -89,6 +98,7 @@ namespace Engine
             // clear existing content
             animes = new Dictionary<string, Animation>();
             currentAnimeKey = null;
+            entryAnimeKey = null;
             passedTime = 0f;
             if (renderer != null)
             {
@@ -133,10 +143,11 @@ namespace Engine
                     animes.Add(newAnim.Name, newAnim);
                 }
             }
-            if (this.currentAnimeKey == null)
+            if (this.entryAnimeKey == null)
             {
                 throw new ArgumentNullException("No entry animation defined!");
             }
+            this.currentAnimeKey = this.entryAnimeKey;
             SyncRect();
         }
 
@@ -153,6 +164,7 @@ namespace Engine
             {
                 animes.Add(newAnim.Name, newAnim);
             }
+            this.entryAnimeKey = newAnim.Name;
             this.currentAnimeKey = newAnim.Name;
             SyncRect();
         }
@@ -206,9 +218,9 @@ namespace Engine
                 }
                 if (animIsEntry)
                 {
-                    if (this.currentAnimeKey == null)
+                    if (this.entryAnimeKey == null)
                     {
-                        this.currentAnimeKey = newAnim.Name;
+                        this.entryAnimeKey = newAnim.Name;
                     }
                     else
                     {

@@ -388,6 +388,12 @@ namespace Engine
             this.Transform.containingScene.RemoveGameObject(this);
         }
 
+        /// <inheritdoc />
+        public override string ToString()
+        {
+            return $"GameObject \"{this.Name}\"";
+        }
+
         /// <summary>
         /// Finds a single <see cref="Component"/> of the specific type in the game, returns the first found instance or <b>null</b> if there exists no instance.
         /// </summary>
