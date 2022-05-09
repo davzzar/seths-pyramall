@@ -277,14 +277,14 @@ namespace SandPerSand.SandSim
                 this.InvalidateSandGrid();
             }
 
+            var deltaT = Time.GameTime - this.currentSimulationTime;
+            var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
+            this.currentSimulationTime += this.SimulationStepTime * numSteps;
+
             if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
             {
                 return;
             }
-
-            var deltaT = Time.GameTime - this.currentSimulationTime;
-            var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
-            this.currentSimulationTime += this.SimulationStepTime * numSteps;
 
             for (var i = 0; i < numSteps; i++)
             {
@@ -479,7 +479,7 @@ namespace SandPerSand.SandSim
                     return cellBC.Layer + 1;
                 }
 
-                if (cellL.IsSolidUnderground || cellR.IsSolidUnderground)
+                if ((cellTL.HasSand && cellL.IsSolidUnderground || cellTR.HasSand && cellR.IsSolidUnderground) && true)
                 {
                     return 0;
                 }
