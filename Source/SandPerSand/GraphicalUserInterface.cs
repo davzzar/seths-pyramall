@@ -42,7 +42,7 @@ namespace SandPerSand
         private Panel rootPanel;
         private Label MidscreenTextPanel;
         private Grid InventoryGrid;
-        private Grid Score;
+        private Grid ScoreBoard;
         private int FontSize;
         private float InvSize;
 
@@ -176,7 +176,8 @@ namespace SandPerSand
                     MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
                 }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
                 {
-                    Score = new Grid()
+                    MidscreenTextPanel.Text = "";
+                    ScoreBoard = new Grid()
                     {
                         ColumnSpacing = 7,
                         RowSpacing = PlayersManager.Instance.Players.Count,
@@ -227,9 +228,9 @@ namespace SandPerSand
                                     Padding = new Thickness(FontSize / 5),
                                     TextColor = PlayerIndexToColor[item.Key],
                                 };
-                                Score.AddChild(pos);
-                                Score.AddChild(image);
-                                Score.AddChild(name);
+                                ScoreBoard.AddChild(pos);
+                                ScoreBoard.AddChild(image);
+                                ScoreBoard.AddChild(name);
                                 row += 1;
                                 {
 
@@ -237,10 +238,10 @@ namespace SandPerSand
                             }
                         }
                     }
-                    rootPanel.AddChild(Score);
-                }else if(oldGameState == GameState.RoundCheck && newGameState == GameState.Prepare)
+                    rootPanel.AddChild(ScoreBoard);
+                }else if(oldGameState == GameState.RoundCheck && newGameState != GameState.RoundCheck)
                 {
-                    rootPanel.RemoveChild(Score);
+                    rootPanel.RemoveChild(ScoreBoard);
                 }
 
                 
