@@ -5,14 +5,9 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Engine;
-using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
-using Myra.Graphics2D.Brushes;
-using Myra.Graphics2D.TextureAtlases;
-using Myra.Graphics2D.UI;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
 
@@ -34,18 +29,17 @@ namespace SandPerSand
             CreateFpsText();
             Collider.ShowGizmos = true;
 #endif
-
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(LoadScene2), typeof(LoadScene0) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
+            var itemwiki = managerGo.AddComponent<ItemWiki>();
+            itemwiki.LoadFromContent("TilesetItems");
 
-            CreateGUI();
             CreateBackground();
-
 
             // If needed, uncomment the following lines to disable the frame lock (60 fps), required for performance tests
             //engine.VSync = false;
@@ -125,10 +119,11 @@ namespace SandPerSand
             //leftBorderComp.AffectsVertical = false;
         }
 
-        private static void CreateGUI()
+        private static void CreateShopMap(string mapName)
         {
-            var guiGo = new GameObject();
-            var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+            var tileMapGo = new GameObject();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<ShopTileLayer>>();
+            tileMapComp.LoadFromContent(mapName);
         }
 
         private static void CreateBackground()
@@ -309,12 +304,6 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 80;
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-
-            sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
-            sandSim.AddSandSource(new Aabb(17f, 52f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new Aabb(42f, 52f, 0.5f, 0.5f));
-
-
         }
 
         /// <summary>
@@ -333,6 +322,12 @@ namespace SandPerSand
             public void LoadAt(int index)
             {
                 this.RunSceneLoader(index);
+
+                if(GameObject.FindComponent<GraphicalUserInterface>() == null)
+                {
+                    var guiGo = new GameObject();
+                    var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
+                }
             }
 
             /// <inheritdoc />
@@ -440,7 +435,36 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
+///HEAD
                 CreateSandPhysics_level_1();
+            }
+        }
+
+        private class LoadSceneLevel2 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("level_2");
+                CreateCamera();
+                ///HEAD
+                CreateSandPhysics_level_1();
+            }
+        }
+        private class ShopScene : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded ShopScene");
+                CreateShopMap("shop_map");
+                CreateCamera();
             }
         }
     }

@@ -1,26 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using Engine;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 using Myra.Graphics2D;
 using Myra.Graphics2D.Brushes;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D.UI;
-using SandPerSand.SandSim;
-using AppContext = System.AppContext;
 
 namespace SandPerSand
 {
     public class MainMenu : Component
     {
-
         // STYLESHEET
 
         private FontSystem _fontSystem;
@@ -156,7 +149,8 @@ namespace SandPerSand
             Mode1Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                loadManager.LoadAt(2);
+                GameStateManager.Instance.InMenu = false;
+                loadManager.LoadAt(4);
                 UI.Root = null;
             };
 
@@ -167,6 +161,7 @@ namespace SandPerSand
             Mode2Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(1);
                 UI.Root = null;
             };
