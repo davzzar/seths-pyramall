@@ -179,7 +179,7 @@ namespace SandPerSand
                     MidscreenTextPanel.Text = "";
                     ScoreBoard = new Grid()
                     {
-                        ColumnSpacing = 8,
+                        ColumnSpacing = 9,
                         RowSpacing = PlayersManager.Instance.Players.Count,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Center,
@@ -236,7 +236,7 @@ namespace SandPerSand
                                 Label score = new Label()
                                 {
                                     Text = scores[i].score.ToString(),
-                                    GridColumn = 7,
+                                    GridColumn = 8,
                                     GridRow = i,
                                     Font = _fontSystem.GetFont(FontSize),
                                     VerticalAlignment = VerticalAlignment.Center,
