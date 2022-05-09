@@ -178,7 +178,13 @@ namespace SandPerSand
                 {
                     // (Exit trapped state) and die
                     Debug.WriteLine($"Player {InputHandler.PlayerIndex} has died!");
+                    
                     rigidBody.LinearVelocity = Vector2.Zero;
+                    if (Owner.GetComponent<SpriteRenderer>() != null)
+                    {
+                        Owner.GetComponent<SpriteRenderer>()!.Color = new Color(Color.DarkGray * 0.8f, 0.8f);
+                    }
+                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
                     timerBar.IsActive = false;
                     this.IsActive = false;
                 }
@@ -189,7 +195,7 @@ namespace SandPerSand
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
                     var sandSpeedMultiplier = JumpButtonPressed ? 3f : sandSimulation.IsSandRising ? 0.5f : 0.0f;
-                    rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+                    rigidBody.LinearVelocity = new Vector2(sandSpeedMultiplier * HorizontalDirection, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
                 }
                 return;
             }
