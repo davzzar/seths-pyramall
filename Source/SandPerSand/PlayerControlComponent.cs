@@ -17,7 +17,7 @@ namespace SandPerSand
         private RigidBody rigidBody;
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
-        private ButtonMashBar buttonMasher;
+        private TimerBar timerBar;
 
         // Input
         private const Buttons JumpButton = Buttons.A;
@@ -112,7 +112,7 @@ namespace SandPerSand
 
             textRenderer = Owner.GetComponent<GuiTextRenderer>();
 
-            buttonMasher = Owner.GetComponent<ButtonMashBar>();
+            timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
 
             Owner.Layer = 1;
@@ -120,15 +120,23 @@ namespace SandPerSand
 
         protected override void Update()
         {
-#if DEBUG
+            ControlUpdate();
+            // Update the input handler's state after every control update
+            InputHandler.UpdateState();
+        }
+
+        private void ControlUpdate()
+        {
+            #if DEBUG
             ShowDebug();
-#endif
+            #endif
+            
             // Sand Interaction
             if (HasSandReached && !HasSandReachedBefore)
             {
                 // enable mashing bar
-                buttonMasher.IsActive = true;
-                buttonMasher.FillLevel = 1f;
+                timerBar.IsActive = true;
+                timerBar.FillLevel = 1f;
 
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
@@ -155,7 +163,7 @@ namespace SandPerSand
                 if (!HasSandReached)
                 {
                     // Exit trapped state and perform jump
-                    buttonMasher.IsActive = false;
+                    timerBar.IsActive = false;
                     HasSandReachedBefore = false;
 
                     // Do jump
@@ -166,12 +174,12 @@ namespace SandPerSand
                     PerformJump();
                     ApplyVelocity();
                 } 
-                else if (buttonMasher.FillLevel <= ButtonMashBar.EmptyLevel + 1e-05f)
+                else if (timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f)
                 {
                     // (Exit trapped state) and die
                     Debug.WriteLine($"Player {InputHandler.PlayerIndex} has died!");
                     rigidBody.LinearVelocity = Vector2.Zero;
-                    buttonMasher.IsActive = false;
+                    timerBar.IsActive = false;
                     this.IsActive = false;
                 }
                 else
@@ -183,7 +191,6 @@ namespace SandPerSand
                     var sandSpeedMultiplier = JumpButtonPressed ? 3f : sandSimulation.IsSandRising ? 0.5f : 0.0f;
                     rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
                 }
-
                 return;
             }
 
@@ -224,12 +231,10 @@ namespace SandPerSand
 
             // Apply computed velocity
             ApplyVelocity();
-#if DEBUG
+            
+            #if DEBUG
             DrawVelocityVector(rigidBody.LinearVelocity, Color.Magenta);
-#endif
-
-            // Update the input handler's state
-            InputHandler.UpdateState();
+            #endif
         }
 
         /// <summary>
