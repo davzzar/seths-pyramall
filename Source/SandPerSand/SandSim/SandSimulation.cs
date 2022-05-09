@@ -34,7 +34,7 @@ namespace SandPerSand.SandSim
 
         private readonly SandGridReader sandGridReader;
 
-        private float raisingSandSpeed = 1.2f;
+        private float raisingSandSpeed = 0.6f;
         private float raisingSandDelay = 4f;
         private float raisingSandCurrentTime = 0f;
         private int raisingSandCurrentRow = -1;
@@ -190,15 +190,28 @@ namespace SandPerSand.SandSim
         public void AddSandSource(in Aabb rect)
         {
             this.sandSources.Add(rect);
-            this.MarkSandSource(in rect);
+            this.AddSandSourceToSimData(in rect);
         }
 
-        public void AddSandDrain(in Aabb rect)
+        /// <summary>
+        /// Removes all sand source rectangles that intersect the given rect.
+        /// </summary>
+        public void RemoveSandSource(in Aabb rect)
         {
-            this.sandDrains.Add(rect);
-            this.MarkSandDrain(in rect);
-        }
+            for (var i = this.sandSources.Count - 1; i >= 0; i--)
+            {
+                var source = this.sandSources[i];
 
+                if (rect.IntersectsRect(source.Min, source.Max))
+                {
+                    this.sandSources.RemoveAt(i);
+                    this.RemoveSandSourceFromSimData(in source);
+                }
+            }
+
+            this.RemoveSandSourceFromSimData(in rect);
+        }
+        
         public void ClearSandSources()
         {
             if (this.sandSources.Count == 0)
@@ -221,6 +234,8 @@ namespace SandPerSand.SandSim
                             {
                                 this.sandFrontBuffer[x, y].MarkSand();
                                 this.sandBackBuffer[x, y].MarkSand();
+                                this.MarkForUpdate(x, y);
+                                this.MarkNeighborsForUpdate(x, y);
                             }
                         }
                     }
@@ -229,38 +244,7 @@ namespace SandPerSand.SandSim
 
             this.sandSources.Clear();
         }
-
-        public void ClearSandDrains()
-        {
-            if (this.sandSources.Count == 0)
-            {
-                return;
-            }
-
-            if (this.sandFrontBuffer != null)
-            {
-                foreach (var rect in this.sandDrains)
-                {
-                    var min = this.sandFrontBuffer.PointToIndexClamped(rect.Min);
-                    var max = this.sandFrontBuffer.PointToIndexClamped(rect.Max);
-
-                    for (var y = min.Y; y <= max.Y; y++)
-                    {
-                        for (var x = min.X; x <= max.X; x++)
-                        {
-                            if (this.sandFrontBuffer[x, y].HasDrain)
-                            {
-                                this.sandFrontBuffer[x, y].MarkEmpty();
-                                this.sandBackBuffer[x, y].MarkEmpty();
-                            }
-                        }
-                    }
-                }
-            }
-
-            this.sandSources.Clear();
-        }
-
+        
         /// <inheritdoc />
         protected override void OnEnable()
         {
@@ -280,6 +264,11 @@ namespace SandPerSand.SandSim
             var deltaT = Time.GameTime - this.currentSimulationTime;
             var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
             this.currentSimulationTime += this.SimulationStepTime * numSteps;
+
+            //if (Keyboard.GetState().IsKeyDown(Keys.P))
+            //{
+            //    this.ClearSandSources();
+            //}
 
             if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
             {
@@ -353,7 +342,7 @@ namespace SandPerSand.SandSim
 
             foreach (var rect in this.sandSources)
             {
-                this.MarkSandSource(rect);
+                this.AddSandSourceToSimData(rect);
             }
 
             foreach (var rect in this.sandDrains)
@@ -364,7 +353,7 @@ namespace SandPerSand.SandSim
             this.sandFrontBuffer.CopyTo(this.sandBackBuffer);
         }
 
-        private void MarkSandSource(in Aabb rect)
+        private void AddSandSourceToSimData(in Aabb rect)
         {
             if (this.sandFrontBuffer == null)
             {
@@ -381,6 +370,31 @@ namespace SandPerSand.SandSim
                     this.sandFrontBuffer[x, y].MarkSandSource();
                     this.sandBackBuffer[x, y].MarkSandSource();
                     this.MarkNeighborsForUpdate(x, y);
+                }
+            }
+        }
+
+        private void RemoveSandSourceFromSimData(in Aabb rect)
+        {
+            if (this.sandFrontBuffer == null)
+            {
+                return;
+            }
+
+            var min = this.sandFrontBuffer.PointToIndexClamped(rect.Min);
+            var max = this.sandFrontBuffer.PointToIndexClamped(rect.Max);
+
+            for (var y = min.Y; y <= max.Y; y++)
+            {
+                for (var x = min.X; x <= max.X; x++)
+                {
+                    if (this.sandBackBuffer[x, y].IsSandSource)
+                    {
+                        this.sandFrontBuffer[x, y].MarkEmpty();
+                        this.sandBackBuffer[x, y].MarkEmpty();
+                        this.MarkForUpdate(x, y);
+                        this.MarkNeighborsForUpdate(x, y);
+                    }
                 }
             }
         }
@@ -420,7 +434,8 @@ namespace SandPerSand.SandSim
             {
                 var cell = this.sandFrontBuffer[in index];
 
-                if (cell.IsEmpty)
+                //if (cell.IsEmpty)
+                if(cell.IsEmpty)
                 {
                     var newLayer = this.GetSandLayer(cell, index.X, index.Y);
 
@@ -428,6 +443,26 @@ namespace SandPerSand.SandSim
                     {
                         cell.MarkSand();
                         cell.Layer = (byte)newLayer;
+                        this.sandBackBuffer[in index] = cell;
+                        this.MarkNeighborsForUpdateUnsafe(in index);
+                        this.MarkForStabilityCheck(index.X, index.Y);
+                    }
+                }
+                else if (cell.HasSand && !cell.IsSandStable && !cell.IsSandSource)
+                {
+                    var newLayer = this.GetSandLayer(cell, index.X, index.Y);
+
+                    if (newLayer != cell.Layer)
+                    {
+                        if (newLayer < 0)
+                        {
+                            cell.MarkEmpty();
+                        }
+                        else
+                        {
+                            cell.Layer = (byte)newLayer;
+                        }
+
                         this.sandBackBuffer[in index] = cell;
                         this.MarkNeighborsForUpdateUnsafe(in index);
                         this.MarkForStabilityCheck(index.X, index.Y);
@@ -479,7 +514,7 @@ namespace SandPerSand.SandSim
                     return cellBC.Layer + 1;
                 }
 
-                if ((cellTL.HasSand && cellL.IsSolidUnderground || cellTR.HasSand && cellR.IsSolidUnderground) && true)
+                if (cellTL.HasSand && cellL.IsSolidUnderground || cellTR.HasSand && cellR.IsSolidUnderground)
                 {
                     return 0;
                 }
