@@ -54,6 +54,8 @@ namespace SandPerSand
 
                 // if there was no collision, skip
                 if (!Physics.RayCast(ray, out var hit, MaxDownRayLength, groundLayer)) continue;
+                if (hit.Collider.IsTrigger) continue;
+
                 Gizmos.DrawLine(origin, hit.Point, Color.Red);
                 // check the angle of hit to see if we're colliding with a floor.   
                 IsGrounded |= hit.Normal.Y >= MaxIncline;
