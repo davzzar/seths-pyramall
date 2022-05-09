@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
@@ -12,7 +12,7 @@ namespace SandPerSand
     {
         private static GameStateManager instance;
 
-        public bool exitTrigger;
+        private static bool exitTrigger = false;
         public bool TriggerExit()
         {
             Debug.Print("exit trigger script is run");
@@ -24,6 +24,17 @@ namespace SandPerSand
                     exitTrigger = true;
                     return true;
                 }
+            }
+            return false;
+        }
+
+        private static bool finishShopTrigger = false;
+        public bool TriggerFinishShop()
+        {
+            if (currentState == GameState.Shop&&!finishShopTrigger)
+            {
+                finishShopTrigger = true;
+                return true;
             }
             return false;
         }
@@ -89,15 +100,14 @@ namespace SandPerSand
                     {
                         currentState = GameState.InRound;
                         Debug.Print("GameState: Prepare-> InRound");
+                        exitTrigger = false;
                     }
                     break;
                 case GameState.InRound:
                     if (PlayersManager.Instance.CheckOneExit())
                     {
                         currentState = GameState.CountDown;
-                        exitTrigger = false;
                         Debug.Print("GameState: InRound-> CountDown");
-                        //
                         countDowncounter = 0f;
                     }
                     break;
@@ -106,6 +116,8 @@ namespace SandPerSand
                     Debug.Print(countDowncounter.ToString());
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
+                        countDowncounter = 0f;
+                        exitTrigger = false;
                         PlayersManager.Instance.finalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
@@ -118,8 +130,49 @@ namespace SandPerSand
                     }
                     break;
                 case GameState.RoundCheck:
+                    countDowncounter += Time.DeltaTime;
+                    if (countDowncounter >= 2f)
+                    {
+                        countDowncounter = 0f;
+                        RoundCheckToShop();
+                    }
+                    break;
+                case GameState.Shop:
+                    // disable the current player's controller after they finished shopping or after the time limit
+                    // move the finished player to the exit if they is not there
+                    // enable the next first player's controller
+                    // ...
+                    // after all player is moved to exit, proceed to the next round
+                    if (PlayersManager.Instance.CheckAllFinishedShop())
+                    {
+                        finishShopTrigger = false;
+                        ShopToInRound();
+                    }
                     break;
             }
+        }
+
+        private void RoundCheckToShop()
+        {
+            currentState = GameState.Shop;
+            Debug.Print("GameState: RoundCheck-> Shop");
+            // load new scene
+            // FIXME correct shop scene number
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load ShopScene current index = 3
+            sceneManager.LoadAt(3);
+
+        }
+
+        private void ShopToInRound()
+        {
+            currentState = GameState.InRound;
+            Debug.Print("GameState: Shop-> InRound");
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
+
         }
     }
 
@@ -129,5 +182,6 @@ namespace SandPerSand
         InRound,
         CountDown,
         RoundCheck,
+        Shop,
     }
 }

@@ -34,7 +34,7 @@ namespace SandPerSand.SandSim
 
         private readonly SandGridReader sandGridReader;
 
-        private float raisingSandSpeed = 0.6f;
+        private float raisingSandSpeed = 1.2f;
         private float raisingSandDelay = 4f;
         private float raisingSandCurrentTime = 0f;
         private int raisingSandCurrentRow = -1;
@@ -110,6 +110,14 @@ namespace SandPerSand.SandSim
             get => this.simulationStepTime;
             set => this.simulationStepTime = MathF.Max(value, 1e-5f);
         }
+
+        /// <summary>
+        /// Gets a value indicating if the RaisingSand is raising
+        /// </summary>
+        public bool IsSandRising =>
+            this.sandBackBuffer.Position.Y + this.sandBackBuffer.Size.Y - this.RaisingSandUpperMargin > this.RaisingSandHeight &&
+            !this.PauseRaisingSand && this.RaisingSandHeight > 0.0f;
+
 
         /// <summary>
         /// Gets or sets the speed at which the raising sand raises in world units per second.
@@ -269,14 +277,14 @@ namespace SandPerSand.SandSim
                 this.InvalidateSandGrid();
             }
 
+            var deltaT = Time.GameTime - this.currentSimulationTime;
+            var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
+            this.currentSimulationTime += this.SimulationStepTime * numSteps;
+
             if (GameStateManager.Instance.CurrentState != GameState.InRound && GameStateManager.Instance.CurrentState != GameState.CountDown)
             {
                 return;
             }
-
-            var deltaT = Time.GameTime - this.currentSimulationTime;
-            var numSteps = Math.Min((int)(deltaT / this.SimulationStepTime), this.MaxSimulationSteps);
-            this.currentSimulationTime += this.SimulationStepTime * numSteps;
 
             for (var i = 0; i < numSteps; i++)
             {

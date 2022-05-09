@@ -1,10 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Reflection.Metadata.Ecma335;
+using System.Resources;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -16,12 +17,14 @@ namespace SandPerSand
         private RigidBody rigidBody;
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
+        private ButtonMashBar buttonMasher;
 
         // Input
         private const Buttons JumpButton = Buttons.A;
+        private const Buttons ActionButton = Buttons.A;
         private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
         private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
+        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
 
         // State
         public bool IsGrounded { get; private set; }
@@ -36,7 +39,7 @@ namespace SandPerSand
 
         public float CurrentAcceleration { get; private set; }
 
-        public const float MaxAcceleration = 110f;
+        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
 
         public const float MaxArialAcceleration = 30f;
 
@@ -52,7 +55,8 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public const float JumpHeight = 8f; // explicit jump height
+        public float JumpHeight => 8f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
 
@@ -94,15 +98,22 @@ namespace SandPerSand
         public bool WillJump =>
             IsGrounded && JumpButtonPressed || HasLanded && BufferedJump || !IsGrounded && JumpButtonPressed && CanUseCoyote;
 
-        protected override void OnAwake()
-        {
+        // Sand Interaction
+        private SandSimulation sandSimulation;
+        private bool HasSandReached => this.sandSimulation.RaisingSandHeight >= Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        private bool HasSandReachedBefore;
 
+        protected override void OnEnable()
+        {
             // add needed components
             rigidBody = Owner.GetOrAddComponent<RigidBody>();
             rigidBody.IgnoreGravity = true;
             groundChecker = Owner.GetOrAddComponent<GroundCheckComponent>();
 
             textRenderer = Owner.GetComponent<GuiTextRenderer>();
+
+            buttonMasher = Owner.GetComponent<ButtonMashBar>();
+            sandSimulation = GameObject.FindComponent<SandSimulation>();
 
             Owner.Layer = 1;
         }
@@ -112,6 +123,70 @@ namespace SandPerSand
 #if DEBUG
             ShowDebug();
 #endif
+            // Sand Interaction
+            if (HasSandReached && !HasSandReachedBefore)
+            {
+                // enable mashing bar
+                buttonMasher.IsActive = true;
+                buttonMasher.FillLevel = 1f;
+
+                // reset velocities
+                rigidBody.LinearVelocity = Vector2.Zero;
+                HorizontalSpeed = VerticalSpeed = 0.0f;
+
+                // TODO Use current vertical speed to set player depth in sand accordingly
+                // TODO (use ray casts with max depth to avoid clipping)
+                if (this.Transform.Position.Y - this.Transform.Scale.Y / 2 < sandSimulation.RaisingSandHeight)
+                {
+                    // snap us to be just below the sand level
+                    var pos = this.Transform.Position;
+                    // Note, adding the -0.1f to this prevents continuous jumping on sand when its not rising
+                    pos.Y = sandSimulation.RaisingSandHeight + this.Transform.Scale.Y / 2 - 0.1f;
+                    this.Transform.Position = pos;
+                }
+
+                HasSandReachedBefore = true;
+            }
+            
+            //HasSandReachedBefore = HasSandReached;
+
+            if (HasSandReachedBefore)
+            {
+                if (!HasSandReached)
+                {
+                    // Exit trapped state and perform jump
+                    buttonMasher.IsActive = false;
+                    HasSandReachedBefore = false;
+
+                    // Do jump
+                    CoyoteEnabled = false;
+                    jumpEnded = false;
+                    timeOfLeavingGround = float.MinValue;
+
+                    PerformJump();
+                    ApplyVelocity();
+                } 
+                else if (buttonMasher.FillLevel <= ButtonMashBar.EmptyLevel + 1e-05f)
+                {
+                    // (Exit trapped state) and die
+                    Debug.WriteLine($"Player {InputHandler.PlayerIndex} has died!");
+                    rigidBody.LinearVelocity = Vector2.Zero;
+                    buttonMasher.IsActive = false;
+                    this.IsActive = false;
+                }
+                else
+                {
+                    // TODO make this speed not dependent on RaisingSandSpeed
+
+                    // Note If we don't check for sand rising,
+                    // we will get stuck in loop of entering, snapping, and exit jumping
+                    var sandSpeedMultiplier = JumpButtonPressed ? 3f : sandSimulation.IsSandRising ? 0.5f : 0.0f;
+                    rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+                }
+
+                return;
+            }
+
 
             // Update DummyState
             (HorizontalSpeed, VerticalSpeed) = rigidBody.LinearVelocity;

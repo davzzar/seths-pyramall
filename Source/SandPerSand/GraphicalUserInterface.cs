@@ -42,7 +42,7 @@ namespace SandPerSand
         private Panel rootPanel;
         private Label MidscreenTextPanel;
         private Grid InventoryGrid;
-        private Grid Score;
+        private Grid ScoreBoard;
         private int FontSize;
         private float InvSize;
 
@@ -176,22 +176,34 @@ namespace SandPerSand
                     MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
                 }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
                 {
-                    Score = new Grid()
+                    MidscreenTextPanel.Text = "";
+                    ScoreBoard = new Grid()
                     {
-                        ColumnSpacing = 7,
+                        ColumnSpacing = 8,
                         RowSpacing = PlayersManager.Instance.Players.Count,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         Background = new SolidBrush(new Color(38, 12, 26)),
                     };
-                    string ranks = "";
                     //display ranks on screen
                     int row = 0;
-                    for(int i = 0; i < PlayersManager.Instance.Players.Count; i++)
+
+                    int[] scores = new int[PlayersManager.Instance.Players.Count];
+                    int j = 0;
+                    foreach (var item in PlayersManager.Instance.Players)
                     {
+                        scores[j] = item.Value.GetComponent<PlayerStates>().Score;
+                    }
+                    Array.Sort(scores);
+                    Array.Reverse(scores);
+
+                    for (int i = 0; i < PlayersManager.Instance.Players.Count; i++)
+                    {
+
+
                         foreach (var item in PlayersManager.Instance.Players)
                         {
-                            if(item.Value.GetComponent<PlayerStates>().RoundRank == i + 1)
+                            if(item.Value.GetComponent<PlayerStates>().Score == scores[i])
                             {
                                 Label pos = new Label()
                                 {
@@ -227,9 +239,23 @@ namespace SandPerSand
                                     Padding = new Thickness(FontSize / 5),
                                     TextColor = PlayerIndexToColor[item.Key],
                                 };
-                                Score.AddChild(pos);
-                                Score.AddChild(image);
-                                Score.AddChild(name);
+
+                                Label score = new Label()
+                                {
+                                    Text = item.Value.GetComponent<PlayerStates>().Score.ToString(),
+                                    GridColumn = 7,
+                                    GridRow = row,
+                                    Font = _fontSystem.GetFont(FontSize),
+                                    VerticalAlignment = VerticalAlignment.Center,
+                                    HorizontalAlignment = HorizontalAlignment.Right,
+                                    Padding = new Thickness(FontSize / 5),
+                                    TextColor = PlayerIndexToColor[item.Key]
+                                };
+
+                                ScoreBoard.AddChild(pos);
+                                ScoreBoard.AddChild(image);
+                                ScoreBoard.AddChild(name);
+                                ScoreBoard.AddChild(score);
                                 row += 1;
                                 {
 
@@ -237,10 +263,10 @@ namespace SandPerSand
                             }
                         }
                     }
-                    rootPanel.AddChild(Score);
-                }else if(oldGameState == GameState.RoundCheck && newGameState == GameState.Prepare)
+                    rootPanel.AddChild(ScoreBoard);
+                }else if(oldGameState == GameState.RoundCheck && newGameState != GameState.RoundCheck)
                 {
-                    rootPanel.RemoveChild(Score);
+                    rootPanel.RemoveChild(ScoreBoard);
                 }
 
                 
