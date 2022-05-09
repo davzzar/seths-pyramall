@@ -179,7 +179,8 @@ namespace SandPerSand
 
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var sandSpeedMultiplier = JumpButtonPressed ? 3f : sandSimulation.IsSandRising ? 0.5f : 0.0f;
+                    var pushStrength = 8f / (60 * Time.DeltaTime);
+                    var sandSpeedMultiplier = JumpButtonPressed ? pushStrength : sandSimulation.IsSandRising ? 0.5f : 0.0f;
                     rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
                 }
 
