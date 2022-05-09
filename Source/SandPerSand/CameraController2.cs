@@ -5,6 +5,7 @@ using System.Text;
 using Engine;
 using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
+using TiledCS;
 
 namespace SandPerSand
 {
@@ -46,6 +47,15 @@ namespace SandPerSand
         protected override void OnEnable()
         {
             this.camera = this.Owner.GetOrAddComponent<Camera>();
+
+            var tileMap = GameObject.FindComponent<TileMap<MyLayer>>();
+
+            if (tileMap != null)
+            {
+                var size = tileMap.Size;
+                this.camera.Transform.Position = new Vector2(size.X / 2f, 9.5f);
+                this.camera.Height = 20;
+            }
         }
 
         protected override void Update()

@@ -130,6 +130,7 @@ namespace SandPerSand
 
             // To show when player is trapped in sand
             var timerBar = Owner.AddComponent<TimerBar>();
+            timerBar.DepletionSpeed = 0.2f;
             timerBar.IsActive = false;
 
             var controlComp = Owner.AddComponent<PlayerControlComponent>();

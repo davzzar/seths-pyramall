@@ -103,6 +103,7 @@ namespace SandPerSand
 
         private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
         private bool HasSandReachedBefore;
+        private const float sandResistancePush = 8f;
 
         protected override void OnEnable()
         {
@@ -179,19 +180,42 @@ namespace SandPerSand
                 {
                     // (Exit trapped state) and die
                     Debug.WriteLine($"Player {InputHandler.PlayerIndex} has died!");
+                    
                     rigidBody.LinearVelocity = Vector2.Zero;
+                    if (Owner.GetComponent<SpriteRenderer>() != null)
+                    {
+                        Owner.GetComponent<SpriteRenderer>()!.Color = new Color(Color.DarkGray * 0.8f, 0.8f);
+                    }
+                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
                     timerBar.IsActive = false;
                     this.IsActive = false;
                 }
                 else
                 {
                     // TODO make this speed not dependent on RaisingSandSpeed
-
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var pushStrength = 8f / (60 * Time.DeltaTime);
-                    var sandSpeedMultiplier = JumpButtonPressed ? pushStrength : sandSimulation.IsSandRising ? 0.5f : 0.0f;
-                    rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+                    var pushStrength = sandResistancePush / (60 * Time.DeltaTime);
+
+                    var restMultiplier = 0.5f;
+                    var sandVelocity = Vector2.Zero;
+                    if (JumpButtonPressed)
+                    {
+                        sandVelocity.X = MathF.Sign(HorizontalDirection) * pushStrength;
+                        sandVelocity.Y = sandSimulation.RaisingSandSpeed * pushStrength;
+                    }
+                    else
+                    {
+                        sandVelocity.X = 0.0f;
+                        sandVelocity.Y =  sandSimulation.RaisingSandSpeed * restMultiplier;
+                    }
+
+                    if (!sandSimulation.IsSandRising)
+                    {
+                        sandVelocity.Y = 0.0f;
+                    }
+
+                    rigidBody.LinearVelocity = sandVelocity;
                 }
                 return;
             }
