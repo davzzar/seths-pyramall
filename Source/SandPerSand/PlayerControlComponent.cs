@@ -193,12 +193,29 @@ namespace SandPerSand
                 else
                 {
                     // TODO make this speed not dependent on RaisingSandSpeed
-
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
                     var pushStrength = sandResistancePush / (60 * Time.DeltaTime);
-                    var sandSpeedMultiplier = JumpButtonPressed ? pushStrength : sandSimulation.IsSandRising ? 0.5f : 0.0f;
-                    rigidBody.LinearVelocity = new Vector2(HorizontalDirection * sandSpeedMultiplier, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+
+                    var restMultiplier = 0.5f;
+                    var sandVelocity = Vector2.Zero;
+                    if (JumpButtonPressed)
+                    {
+                        sandVelocity.X = MathF.Sign(HorizontalDirection) * pushStrength;
+                        sandVelocity.Y = sandSimulation.RaisingSandSpeed * pushStrength;
+                    }
+                    else
+                    {
+                        sandVelocity.X = 0.0f;
+                        sandVelocity.Y =  sandSimulation.RaisingSandSpeed * restMultiplier;
+                    }
+
+                    if (!sandSimulation.IsSandRising)
+                    {
+                        sandVelocity.Y = 0.0f;
+                    }
+
+                    rigidBody.LinearVelocity = sandVelocity;
                 }
                 return;
             }
