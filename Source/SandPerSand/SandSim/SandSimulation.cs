@@ -479,7 +479,7 @@ namespace SandPerSand.SandSim
                     return cellBC.Layer + 1;
                 }
 
-                if ((cellTL.HasSand && cellL.IsSolidUnderground || cellTR.HasSand && cellR.IsSolidUnderground) && true)
+                if (cellTL.HasSand && cellL.IsSolidUnderground || cellTR.HasSand && cellR.IsSolidUnderground)
                 {
                     return 0;
                 }
