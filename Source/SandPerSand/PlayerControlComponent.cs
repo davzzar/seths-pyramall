@@ -100,7 +100,8 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        private bool HasSandReached => this.sandSimulation.RaisingSandHeight >= Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+
+        private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
         private bool HasSandReachedBefore;
 
         protected override void OnEnable()
@@ -194,8 +195,9 @@ namespace SandPerSand
 
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var sandSpeedMultiplier = JumpButtonPressed ? 3f : sandSimulation.IsSandRising ? 0.5f : 0.0f;
-                    rigidBody.LinearVelocity = new Vector2(sandSpeedMultiplier * HorizontalDirection, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+                    var pushStrength = 8f / (60 * Time.DeltaTime);
+                    var sandSpeedMultiplier = JumpButtonPressed ? pushStrength : sandSimulation.IsSandRising ? 0.5f : 0.0f;
+                    rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
                 }
                 return;
             }
