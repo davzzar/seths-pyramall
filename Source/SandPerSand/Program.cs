@@ -57,6 +57,18 @@ namespace SandPerSand
             cameraComp.Height = 50;
             var cameraController = cameraGo.AddComponent<CameraController2>();
             cameraController.Bounds = Aabb.FromMinMax(new Vector2(-2, -2f), new Vector2(51, 100f));
+
+            var sandLevelGo = new GameObject("Sand level camera control point");
+            var sandLevelCcp = sandLevelGo.AddComponent<CameraControlPoint>();
+            sandLevelCcp.AffectsHorizontal = false;
+            sandLevelCcp.Margin = new Border(0, 0, 0, 1f);
+            var sandLevelAe = sandLevelGo.AddComponent<ActionExecutor>();
+            sandLevelAe.Action = () =>
+                sandLevelGo.Transform.Position =
+                    new Vector2(0, GameObject.FindComponent<SandSimulation>()?.RaisingSandHeight ?? 0f);
+            sandLevelAe.Mode = ActionExecutor.ExecutionMode.ConditionIsTrue;
+            sandLevelAe.Repeat = true;
+
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
