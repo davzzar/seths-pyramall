@@ -179,49 +179,42 @@ namespace SandPerSand
                     MidscreenTextPanel.Text = "";
                     ScoreBoard = new Grid()
                     {
-                        ColumnSpacing = 8,
+                        ColumnSpacing = 9,
                         RowSpacing = PlayersManager.Instance.Players.Count,
                         VerticalAlignment = VerticalAlignment.Center,
                         HorizontalAlignment = HorizontalAlignment.Center,
                         Background = new SolidBrush(new Color(38, 12, 26)),
                     };
                     //display ranks on screen
-                    int row = 0;
 
-                    int[] scores = new int[PlayersManager.Instance.Players.Count];
+                    (int score, PlayerIndex index)[] scores = new (int, PlayerIndex)[PlayersManager.Instance.Players.Count];
                     int j = 0;
                     foreach (var item in PlayersManager.Instance.Players)
                     {
-                        scores[j] = item.Value.GetComponent<PlayerStates>().Score;
+                        scores[j] = (item.Value.GetComponent<PlayerStates>().Score, item.Key);
                     }
                     Array.Sort(scores);
                     Array.Reverse(scores);
 
                     for (int i = 0; i < PlayersManager.Instance.Players.Count; i++)
                     {
-
-
-                        foreach (var item in PlayersManager.Instance.Players)
-                        {
-                            if(item.Value.GetComponent<PlayerStates>().Score == scores[i])
-                            {
                                 Label pos = new Label()
                                 {
-                                    Text = item.Value.GetComponent<PlayerStates>().RoundRank.ToString(),
+                                    Text = (i + 1).ToString(),
                                     GridColumn = 0,
-                                    GridRow = row,
+                                    GridRow = i,
                                     Font = _fontSystem.GetFont(FontSize),
                                     VerticalAlignment = VerticalAlignment.Center,
                                     HorizontalAlignment = HorizontalAlignment.Right,
                                     Padding = new Thickness(FontSize / 5),
-                                    TextColor = PlayerIndexToColor[item.Key]
+                                    TextColor = PlayerIndexToColor[scores[i].index]
                                 };
 
                                 Panel image = new Panel()
                                 {
                                     GridColumn = 1,
-                                    GridRow = row,
-                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + item.Key.ToString())),
+                                    GridRow = i,
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + scores[i].index.ToString())),
                                     Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     VerticalAlignment = VerticalAlignment.Center,
@@ -229,39 +222,33 @@ namespace SandPerSand
 
                                 Label name = new Label()
                                 {
-                                    Text = "Player" + item.Key.ToString(),
+                                    Text = "Player" + scores[i].index.ToString(),
                                     GridColumn = 2,
                                     GridColumnSpan = 5,
-                                    GridRow = row,
+                                    GridRow = i,
                                     Font = _fontSystem.GetFont(FontSize),
                                     VerticalAlignment = VerticalAlignment.Center,
                                     HorizontalAlignment = HorizontalAlignment.Left,
                                     Padding = new Thickness(FontSize / 5),
-                                    TextColor = PlayerIndexToColor[item.Key],
+                                    TextColor = PlayerIndexToColor[scores[i].index],
                                 };
 
                                 Label score = new Label()
                                 {
-                                    Text = item.Value.GetComponent<PlayerStates>().Score.ToString(),
-                                    GridColumn = 7,
-                                    GridRow = row,
+                                    Text = scores[i].score.ToString(),
+                                    GridColumn = 8,
+                                    GridRow = i,
                                     Font = _fontSystem.GetFont(FontSize),
                                     VerticalAlignment = VerticalAlignment.Center,
                                     HorizontalAlignment = HorizontalAlignment.Right,
                                     Padding = new Thickness(FontSize / 5),
-                                    TextColor = PlayerIndexToColor[item.Key]
+                                    TextColor = PlayerIndexToColor[scores[i].index],
                                 };
 
                                 ScoreBoard.AddChild(pos);
                                 ScoreBoard.AddChild(image);
                                 ScoreBoard.AddChild(name);
                                 ScoreBoard.AddChild(score);
-                                row += 1;
-                                {
-
-                                };
-                            }
-                        }
                     }
                     rootPanel.AddChild(ScoreBoard);
                 }else if(oldGameState == GameState.RoundCheck && newGameState != GameState.RoundCheck)
