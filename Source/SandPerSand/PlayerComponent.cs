@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
@@ -71,6 +72,7 @@ namespace SandPerSand
         private PlayerIndex playerIndex;
 
         private IPlayerControlState state = new InControlState();
+        private bool isAlive = true;
 
         public PlayerIndex PlayerIndex
         {
@@ -89,6 +91,41 @@ namespace SandPerSand
                 playerIndex = value;
                 InputHandler.PlayerIndex = value;
                 SetPlayerAnimationSprite();
+            }
+        }
+
+        public bool IsAlive
+        {
+            get => this.isAlive;
+            set
+            {
+                if (this.isAlive == value)
+                {
+                    return;
+                }
+
+                this.isAlive = value;
+                
+                Color color;
+
+                if (this.isAlive)
+                {
+                    color = Color.White;
+                    var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
+                    ccp.Margin = new Border(5, 10, 5, 5);
+                }
+                else
+                {
+                    color = Color.DarkGray * 0.8f;
+                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
+                }
+                
+                var renderer = Owner.GetComponent<SpriteRenderer>();
+
+                if (renderer != null)
+                {
+                    renderer.Color = color;
+                }
             }
         }
 
@@ -116,38 +153,40 @@ namespace SandPerSand
             var colliderGo = new GameObject("Player collider");
             colliderGo.Transform.Parent = Owner.Transform;
             colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);
-            var playerCollider = colliderGo.AddComponent<CircleCollider>();
+            var playerCollider = colliderGo.GetOrAddComponent<CircleCollider>();
             playerCollider.Radius = 0.325f;
             playerCollider.Friction = 0.0f;
 
 
-            var playerRB = Owner.AddComponent<RigidBody>();
+            var playerRB = Owner.GetOrAddComponent<RigidBody>();
             playerRB.IsKinematic = false;
             playerRB.FreezeRotation = true;
             playerRB.IgnoreGravity = true;
 
-            Owner.AddComponent<GroundCheckComponent>();
+            Owner.GetOrAddComponent<GroundCheckComponent>();
 
             // To show when player is trapped in sand
-            var timerBar = Owner.AddComponent<TimerBar>();
+            var timerBar = Owner.GetOrAddComponent<TimerBar>();
             timerBar.DepletionSpeed = 0.2f;
             timerBar.IsActive = false;
 
-            var controlComp = Owner.AddComponent<PlayerControlComponent>();
+            var controlComp = Owner.GetOrAddComponent<PlayerControlComponent>();
             controlComp.InputHandler = InputHandler;
 
-            var playerStates = Owner.AddComponent<PlayerStates>();
+            var playerStates = Owner.GetOrAddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
 
             // animator need to be created after controlComp and input handler
-            var playerAnimator = Owner.AddComponent<Animator>();
+            var playerAnimator = Owner.GetOrAddComponent<Animator>();
             SetPlayerAnimationSprite();
 
-            var cameraControlPoint = Owner.AddComponent<CameraControlPoint>();
+            var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
 
-            var itemsManager = Owner.AddComponent<ItemManager>();
+            var itemsManager = Owner.GetOrAddComponent<ItemManager>();
             itemsManager.inputHandler = InputHandler;
+
+            this.IsAlive = true;
         }
 
         private void SetPlayerAnimationSprite()
@@ -169,6 +208,11 @@ namespace SandPerSand
 
         protected override void Update()
         {
+            if (Keyboard.GetState().IsKeyDown(Keys.P))
+            {
+                this.IsAlive = !this.IsAlive;
+            }
+
             base.Update();
             var newState = state.Update();
 

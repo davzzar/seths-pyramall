@@ -132,6 +132,11 @@ namespace SandPerSand
             #if DEBUG
             ShowDebug();
             #endif
+
+            if (!Owner.GetComponent<PlayerComponent>()?.IsAlive ?? false)
+            {
+                return;
+            }
             
             // Sand Interaction
             if (HasSandReached && !HasSandReachedBefore)
@@ -182,11 +187,14 @@ namespace SandPerSand
                     Debug.WriteLine($"Player {InputHandler.PlayerIndex} has died!");
                     
                     rigidBody.LinearVelocity = Vector2.Zero;
-                    if (Owner.GetComponent<SpriteRenderer>() != null)
+
+                    var player = this.Owner.GetComponent<PlayerComponent>();
+                    
+                    if (player != null)
                     {
-                        Owner.GetComponent<SpriteRenderer>()!.Color = new Color(Color.DarkGray * 0.8f, 0.8f);
+                        player.IsAlive = false;
                     }
-                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
+
                     timerBar.IsActive = false;
                     this.IsActive = false;
                 }
