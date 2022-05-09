@@ -100,9 +100,9 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        public bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
         private bool HasSandReachedBefore;
-        private const float sandResistancePush = 8f;
+        private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
 
@@ -197,7 +197,7 @@ namespace SandPerSand
                     // TODO make this speed not dependent on RaisingSandSpeed
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var pushStrength = sandResistancePush / (60 * Time.DeltaTime);
+                    var pushStrength = SandResistancePush / (60 * Time.DeltaTime);
 
                     var restMultiplier = 0.5f;
                     var sandVelocity = Vector2.Zero;
