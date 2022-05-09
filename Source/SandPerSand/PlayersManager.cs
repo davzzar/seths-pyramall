@@ -373,6 +373,7 @@ namespace SandPerSand
         public bool Exited { get; set; }
         public bool FnishedShop { get; set; }
         public int RoundRank { get; set; }
+        public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
         public GameState LastGameState{ get; set; }
@@ -391,6 +392,7 @@ namespace SandPerSand
             FnishedShop = false;
             RoundRank = -1;
             activeItems = new List<(string id, float timeleft)> ();
+            Score = 0;
         }
 
         /// <summary>
