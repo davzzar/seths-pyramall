@@ -100,7 +100,7 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        private bool HasSandReached => this.sandSimulation.RaisingSandHeight >= Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        private bool HasSandReached =>  this.sandSimulation != null ? this.sandSimulation.RaisingSandHeight >= Owner.Transform.Position.Y - this.Transform.Scale.Y / 2 : false;
         private bool HasSandReachedBefore;
 
         protected override void OnEnable()
