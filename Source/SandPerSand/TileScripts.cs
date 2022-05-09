@@ -51,6 +51,7 @@ namespace SandPerSand
                         Debug.Print("Player " + playerIndex + " triggered Exit.");
                         playerState.Exited = true;
                         playerState.RoundRank = rankingCounter++;
+                        playerState.Score += PlayersManager.Instance.Players.Count + 2 - rankingCounter;
                     }
                 }
             }
