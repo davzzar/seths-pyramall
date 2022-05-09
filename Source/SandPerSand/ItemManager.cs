@@ -52,12 +52,12 @@ namespace SandPerSand
 
             var playerIndex = inputHandler.PlayerIndex;
 
-            if(inputHandler.getButtonState(Buttons.X) == ButtonState.Pressed)
+            if(inputHandler.getButtonState(Buttons.X) == ButtonState.Pressed && GameStateManager.Instance.CurrentState == GameState.InRound)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, false);
             }
 
-            if (inputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed)
+            if (inputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed && GameStateManager.Instance.CurrentState == GameState.InRound)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, true);
             }
