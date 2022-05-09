@@ -103,6 +103,7 @@ namespace SandPerSand
 
         private bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
         private bool HasSandReachedBefore;
+        private const float sandResistancePush = 8f;
 
         protected override void OnEnable()
         {
@@ -195,9 +196,9 @@ namespace SandPerSand
 
                     // Note If we don't check for sand rising,
                     // we will get stuck in loop of entering, snapping, and exit jumping
-                    var pushStrength = 8f / (60 * Time.DeltaTime);
+                    var pushStrength = sandResistancePush / (60 * Time.DeltaTime);
                     var sandSpeedMultiplier = JumpButtonPressed ? pushStrength : sandSimulation.IsSandRising ? 0.5f : 0.0f;
-                    rigidBody.LinearVelocity = new Vector2(0.0f, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
+                    rigidBody.LinearVelocity = new Vector2(HorizontalDirection * sandSpeedMultiplier, sandSimulation.RaisingSandSpeed * sandSpeedMultiplier);
                 }
                 return;
             }
