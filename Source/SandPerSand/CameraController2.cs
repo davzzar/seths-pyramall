@@ -48,7 +48,7 @@ namespace SandPerSand
         {
             this.camera = this.Owner.GetOrAddComponent<Camera>();
 
-            var tileMap = GameObject.FindComponent<TileMap<MyLayer>>();
+            var tileMap = GameObject.FindComponent<TileMap<LevelTileLayer>>();
 
             if (tileMap != null)
             {

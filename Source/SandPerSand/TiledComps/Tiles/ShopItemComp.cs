@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace SandPerSand
 {
-    public class ShopItemScript : Behaviour
+    public class ShopItemComp : Behaviour
     {
 
         // player referrences
@@ -63,7 +63,7 @@ namespace SandPerSand
             //create item info go
             infoGo = new GameObject();
             infoGo.Transform.Parent = this.Transform;
-            var infoComp = infoGo.AddComponent<ShopItemInfoComponent>();
+            var infoComp = infoGo.AddComponent<ShopItemInfoComp>();
             price = item.Price;
             infoComp.FillInForm(ItemId, item.Price, stock, item.ImageName, item.Description);
             infoGo.IsEnabled = false;
@@ -155,7 +155,7 @@ namespace SandPerSand
         {
             if (infoGo != null)
             {
-                infoGo.GetComponent<ShopItemInfoComponent>().UpdateStock(stock);
+                infoGo.GetComponent<ShopItemInfoComp>().UpdateStock(stock);
             }
         }
     }

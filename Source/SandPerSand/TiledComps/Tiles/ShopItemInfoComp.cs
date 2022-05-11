@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace SandPerSand
 {
-    public class ShopItemInfoComponent : Behaviour
+    public class ShopItemInfoComp : Behaviour
     {
         private SpriteRenderer infoRenderer;
         

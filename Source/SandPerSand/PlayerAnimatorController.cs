@@ -9,7 +9,7 @@ using Engine;
 using System.Diagnostics;
 namespace SandPerSand
 {
-    public class MyAnimatorController : Behaviour
+    public class PlayerAnimatorController : Behaviour
     {
         private Animator animator;
         private InputHandler inputHandler;

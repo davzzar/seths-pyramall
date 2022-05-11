@@ -203,7 +203,7 @@ namespace SandPerSand
             };
 
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
-            Owner.AddComponent<MyAnimatorController>();
+            Owner.AddComponent<PlayerAnimatorController>();
         }
 
         protected override void Update()

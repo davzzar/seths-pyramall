@@ -17,6 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="TiledComps\" />
+    <None Remove="TiledComps\Shop\" />
+    <None Remove="TiledComps\Tiles\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="Content\Content.mgcb">
       <Generator>mgcb</Generator>
       <CustomToolNamespace>MonoGame.Content.Builder.Task</CustomToolNamespace>
@@ -32,4 +37,8 @@
 	</None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TiledComps\" />
+    <Folder Include="TiledComps\Tiles\" />
+  </ItemGroup>
 </Project>

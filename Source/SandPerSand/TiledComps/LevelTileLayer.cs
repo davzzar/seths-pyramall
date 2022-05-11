@@ -12,11 +12,11 @@ using SandPerSand.SandSim;
 namespace SandPerSand
 {
     
-    public class MyLayer : TileLayer
+    public class LevelTileLayer : TileLayer
     {
         public float Depth { get; set; }
 
-        public MyLayer() 
+        public LevelTileLayer() 
         {
             Depth = 0f;
         }
