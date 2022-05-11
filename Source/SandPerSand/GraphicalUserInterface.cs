@@ -77,7 +77,7 @@ namespace SandPerSand
 
 
             itemIDtoTiledID = new Dictionary<string, int>();
-            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+            tiledS = new TiledTileset($"Content/Tiled/Tiledset/TilesetItems.tsx");
 
             if (tiledS == null)
             {

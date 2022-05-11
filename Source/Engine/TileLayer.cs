@@ -98,7 +98,7 @@ namespace Engine
             tile.PixelHeight = tiledS.TileHeight;
             tile.GridWidth = tiledS.TileWidth / this.TileWidth;
             tile.GridHeight = tiledS.TileHeight / this.TileHeight;
-            tile.TextureName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+            tile.TextureName = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(tiledS.Image.source)}";
             tile.TiledTile = tiledS.Tiles[tileId];
             //Debug.Print(tiledS.TileWidth + " / " + TiledLayer.width + "==" + tile.GridWidth);
             // Get outline (if applicable)

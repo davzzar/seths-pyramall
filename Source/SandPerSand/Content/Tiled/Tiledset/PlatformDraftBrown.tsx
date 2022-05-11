@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.4" tiledversion="1.4.3" name="try" tilewidth="32" tileheight="32" tilecount="64" columns="8">
- <image source="TilesetTexture_brown.png" trans="ff00ff" width="256" height="256"/>
+    <image source="../TiledsetTexture/PlatformDraftBrown.png" trans="ff00ff" width="256" height="256"/>
  <tile id="0" type="Platform"/>
  <tile id="1" type="Platform"/>
  <tile id="2" type="Platform"/>

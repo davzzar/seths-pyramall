@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <map version="1.8" tiledversion="1.8.2" orientation="orthogonal" renderorder="right-down" width="60" height="60" tilewidth="32" tileheight="32" infinite="0" nextlayerid="9" nextobjectid="1">
- <tileset firstgid="1" source="tiles/sandpersand_brown.tsx"/>
- <tileset firstgid="65" source="tiles/sandpersand2.tsx"/>
- <tileset firstgid="129" source="tiles/TilesetItems.tsx"/>
- <tileset firstgid="193" source="tiles/TilesetCoins.tsx"/>
+ <tileset firstgid="1" source="../Tiledset/PlatformDraftBrown.tsx"/>
+ <tileset firstgid="65" source="../Tiledset/MarkerTiles.tsx"/>
+ <tileset firstgid="129" source="../Tiledset/TilesetItems.tsx"/>
+ <tileset firstgid="193" source="../Tiledset/TilesetCoins.tsx"/>
  <layer id="1" name="Ground Layer" width="60" height="60">
   <properties>
    <property name="depth" value="0.75"/>

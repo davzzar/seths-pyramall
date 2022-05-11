@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.8" tiledversion="1.8.2" name="TilesetItems" tilewidth="32" tileheight="32" tilecount="64" columns="8">
- <image source="TilesetItems.png" width="256" height="256"/>
+    <image source="../TiledsetTexture/TilesetItems.png" width="256" height="256"/>
  <tile id="0" type="Item">
   <properties>
    <property name="item_description" value="this is a dummy description"/>

@@ -3,7 +3,7 @@
  <properties>
   <property name="depth" type="float" value="1"/>
  </properties>
- <image source="TilesetTexture2.png" trans="ff00ff" width="256" height="256"/>
+    <image source="../TiledsetTexture/MarkerTiles.png" trans="ff00ff" width="256" height="256"/>
  <tile id="0" type="Entry"/>
  <tile id="1" type="Exit"/>
  <tile id="2" type="Marker"/>

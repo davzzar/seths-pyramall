@@ -40,7 +40,7 @@ namespace SandPerSand
                 return;
             }
             ClearContent();
-            ItemTiledS = new TiledTileset($"Content/tiles/{loadFromContentPath}.tsx");
+            ItemTiledS = new TiledTileset($"Content/Tiled/Tiledset/{loadFromContentPath}.tsx");
             if (ItemTiledS == null)
             {
                 throw new NullReferenceException("Load tiledS Failed");

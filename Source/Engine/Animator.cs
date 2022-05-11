@@ -118,7 +118,7 @@ namespace Engine
 
             // load .tsx file
             //FIXME hard code path
-            var tiledS = new TiledTileset($"Content/tiles/{loadFromContentPath}.tsx");
+            var tiledS = new TiledTileset($"Content/Tiled/Tiledset/{loadFromContentPath}.tsx");
             if (tiledS == null)
             {
                 throw new NullReferenceException("Load tiledS Failed");
@@ -128,7 +128,7 @@ namespace Engine
             // TODO better Tiled project structure and accurate paths
             if (textureAssetName == null)
             {
-                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+                textureAssetName = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(tiledS.Image.source)}";
             }
             var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
@@ -155,7 +155,7 @@ namespace Engine
         {
             if (textureAssetName == null)
             {
-                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
+                textureAssetName = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(tiledS.Image.source)}";
             }
             this.renderer = this.Owner.AddComponent<SpriteRenderer>();
             this.renderer.LoadFromContent(textureAssetName);

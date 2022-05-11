@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.8" tiledversion="1.8.2" name="TilesetCoins" tilewidth="32" tileheight="32" tilecount="64" columns="8">
- <image source="TilesetCoins.png" width="256" height="256"/>
+    <image source="../TiledsetTexture/TilesetCoins.png" width="256" height="256"/>
  <tile id="0" type="Coin">
   <objectgroup draworder="index" id="3">
    <object id="2" x="1.45125" y="1.6422" width="28.8722" height="28.8722">

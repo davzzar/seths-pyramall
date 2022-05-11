@@ -24,7 +24,7 @@ namespace SandPerSand
             ItemRenderer.LoadFromContent("TilesetItems");
 
             itemIDtoTiledID = new Dictionary<string, int>();
-            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+            tiledS = new TiledTileset($"Content/Tiled/Tiledset/TilesetItems.tsx");
 
             if (tiledS == null)
             {
