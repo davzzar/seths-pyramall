@@ -154,6 +154,7 @@ namespace SandPerSand
             {
                 sandDetector = -sandDetector;
             }
+        try { 
             var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
             var sandGrid = sandSimulation.SandData[index];
             var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
@@ -186,6 +187,11 @@ namespace SandPerSand
                     blockHControl = false;// not allowed to accelerate horizontally for 2s 
                 });
             }
+        }catch (NullReferenceException e)
+        {
+            Debug.WriteLine("SandData.PointToIndex failed for position :" + (Transform.Position + sandDetector));
+            return;
+        }
             if (JumpButtonPressed&& canHardJump)
             {
                 // TODO Play hard jump halo animation then inactive halo animation
