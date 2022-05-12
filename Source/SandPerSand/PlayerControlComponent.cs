@@ -26,6 +26,10 @@ namespace SandPerSand
         private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
         private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
 
+        private bool hardjump = false;
+        private bool shieldSandDetact = false;
+        private bool shieldHorizontalControl = false;
+
         // State
         public bool IsGrounded { get; private set; }
         public bool WasGrounded { get; private set; }
@@ -123,9 +127,52 @@ namespace SandPerSand
 
         protected override void Update()
         {
+
             ControlUpdate();
             // Update the input handler's state after every control update
             InputHandler.UpdateState();
+        }
+
+        private void HaddleUnstableSand()
+        {
+            if (GameStateManager.Instance.CurrentState == GameState.InRound)
+            {
+                if (sandSimulation != null)
+                {
+                    var index = sandSimulation.SandData.PointToIndex(Transform.Position);
+                    var sandGrid = sandSimulation.SandData[index];
+                    if ((!shieldSandDetact) && sandGrid.HasSand && (!sandGrid.IsSandStable))
+                    {
+                        //press A within 0.5s otherwise fall
+                        // set onjump delegate
+                        hardjump = true;
+                        shieldSandDetact = true;
+                        shieldHorizontalControl = true;
+                        rigidBody.LinearVelocity = new Vector2(rigidBody.LinearVelocity.X, 0);
+                        //PlayerUtils.StopPlayer(Owner);
+                        Owner.AddComponent<GoTimer>().Init(0.5f,()=> {
+                            hardjump = false;
+                        });
+                        Owner.AddComponent<GoTimer>().Init(1f, () => {
+                            shieldSandDetact = false;
+                        });
+                        Owner.AddComponent<GoTimer>().Init(2f, () => {
+                            shieldHorizontalControl = false;
+                        });
+                    }
+                }
+                if (JumpButtonPressed&& hardjump)
+                {
+                    CoyoteEnabled = false;
+                    jumpEnded = false;
+                    timeOfLeavingGround = float.MinValue;
+                    isSandEscapeJump = true;
+                    PerformJump();
+                    ApplyVelocity();
+                    hardjump = false;
+                    shieldHorizontalControl = false;
+                }
+            }
         }
 
         private void ControlUpdate()
@@ -138,8 +185,10 @@ namespace SandPerSand
             {
                 return;
             }
-            
+
             // Sand Interaction
+            HaddleUnstableSand();
+
             if (HasSandReached && !HasSandReachedBefore)
             {
                 // enable mashing bar
@@ -342,7 +391,7 @@ namespace SandPerSand
         private void ComputeHorizontalSpeed()
         {
             // NOTE: Check assumes there is a dead zone on the stick input.
-            if (HorizontalDirection != 0)
+            if (HorizontalDirection != 0 && !shieldHorizontalControl) //
             {
                 // use the appropriate acceleration
                 CurrentAcceleration = IsGrounded ? MaxAcceleration : MaxArialAcceleration;
@@ -378,6 +427,7 @@ namespace SandPerSand
         /// </summary>
         private void PerformJump()
         {
+
             // reset vertical speed so we don't get shitty "half-jumps" or velocity negated jumps
             VerticalSpeed = 0;
 

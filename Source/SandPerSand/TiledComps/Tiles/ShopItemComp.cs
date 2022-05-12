@@ -83,14 +83,12 @@ namespace SandPerSand
 
         private void OnCollisionEnter(object sender, GameObject playerGo)
         {
-            Debug.Print("oncollision enter");
             playerInput = playerGo.GetComponent<PlayerStates>().InputHandler;
             infoGo.IsEnabled = true;
         }
 
         private void OnCollisionExit(object sender, GameObject playerGo)
         {
-            Debug.Print("oncollision exit");
             playerInput = null;
             infoGo.IsEnabled = false;
         }
