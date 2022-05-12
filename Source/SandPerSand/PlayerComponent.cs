@@ -195,10 +195,10 @@ namespace SandPerSand
 
             string animationTexture = PlayerIndex switch
             {
-                (PlayerIndex.One) => "PlayerAnimated",
-                (PlayerIndex.Two) => "PlayerAnimated2",
-                (PlayerIndex.Three) => "PlayerAnimated3",
-                (PlayerIndex.Four) => "PlayerAnimated4",
+                (PlayerIndex.One) => "Tiled/TiledsetTexture/PlayerAnimated",
+                (PlayerIndex.Two) => "Tiled/TiledsetTexture/PlayerAnimated2",
+                (PlayerIndex.Three) => "Tiled/TiledsetTexture/PlayerAnimated3",
+                (PlayerIndex.Four) => "Tiled/TiledsetTexture/PlayerAnimated4",
                 _ => ""
             };
 
