@@ -13,8 +13,6 @@ namespace SandPerSand
 {
     public class ShopTileLayer : TileLayer
     {
-        public float Depth { get; set; }
-
         public ShopTileLayer() : base()
         {
             Depth = 0f;
@@ -74,27 +72,6 @@ namespace SandPerSand
                     _ = AddTileRenderer(newTileGo, tile);
                     break;
             }
-        }
-
-        private SpriteRenderer AddTileRenderer(GameObject Go, Tile tile)
-        {
-            var tileRenderer = Go.AddComponent<SpriteRenderer>();
-            tileRenderer.LoadFromContent(tile.TextureName);
-            tileRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
-            tileRenderer.Depth = this.Depth;
-            return tileRenderer;
-        }
-
-        private PolygonCollider AddPolygonCollider(GameObject Go, Tile tile)
-        {
-            var outline = tile.ColliderOutline;
-            if (outline != null)
-            {
-                var tileCollider = Go.AddComponent<PolygonCollider>();
-                tileCollider.Outline = outline;
-                return tileCollider;
-            }
-            return null;
         }
     }
 }

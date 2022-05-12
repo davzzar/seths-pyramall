@@ -48,6 +48,10 @@ namespace SandPerSand
             {
                 InitShopItem();
             }
+            var trigger = Owner.GetOrAddComponent<CircleTriggerComp>();
+            trigger.Radius = 1f;
+            trigger.CollisionEnter += this.OnCollisionEnter;
+            trigger.CollisionExit += this.OnCollisionExit;
         }
 
         private void InitShopItem()
@@ -71,56 +75,23 @@ namespace SandPerSand
 
         protected override void Update()
         {
-            var isOnCollision = CheckPlayerCollision();
-            if (isOnCollision)
+            if (BuyButtonPressed)
             {
-                if (!wasOnCollision)
-                {
-                    OnCollisionEnter();
-                }
-                // check input handler
-                if (BuyButtonPressed)
-                {
-                    Buy();
-                }
-            }
-            else
-            {
-                if (wasOnCollision)
-                {
-                    OnCollisionExit();
-                }
+                Buy();
             }
         }
 
-        private bool CheckPlayerCollision()
-        {
-            foreach (var item in PlayersManager.Instance.Players)
-            {
-                var playerGo = item.Value;
-                Vector2 distance = this.Transform.Position - playerGo.Transform.Position;
-                if (distance.Length() <= 1f)
-                {
-                    this.playerIndex = item.Key;
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private void OnCollisionEnter()
+        private void OnCollisionEnter(object sender, GameObject playerGo)
         {
             Debug.Print("oncollision enter");
-            var playerGo = PlayersManager.Instance.GetPlayer(playerIndex);
             playerInput = playerGo.GetComponent<PlayerStates>().InputHandler;
-            wasOnCollision = true;
             infoGo.IsEnabled = true;
         }
 
-        private void OnCollisionExit()
+        private void OnCollisionExit(object sender, GameObject playerGo)
         {
             Debug.Print("oncollision exit");
-            wasOnCollision = false;
+            playerInput = null;
             infoGo.IsEnabled = false;
         }
 

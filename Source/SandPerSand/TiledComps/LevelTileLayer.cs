@@ -61,40 +61,28 @@ namespace SandPerSand
             {
                 case "Platform":
                     // Add Renderer
-                    var tileRenderer = newTileGo.AddComponent<SpriteRenderer>();
-                    tileRenderer.LoadFromContent(textureAssetName);
-                    tileRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
-                    tileRenderer.Depth = this.Depth;
-
+                    _ = AddTileRenderer(newTileGo, tile);
                     // Add collider and other compounents for the Tile GameObject
-                    if (outline != null)
-                    {
-                        var tileCollider = newTileGo.AddComponent<PolygonCollider>();
-                        tileCollider.Outline = outline;
-                    }
+                    _ = AddPolygonCollider(newTileGo, tile);
                     break;
                 case "Entry":
                     var entryScript = newTileGo.AddComponent<EntryScript>();
                     break;
                 case "Exit":
                     var exitScript = newTileGo.AddComponent<ExitScript>();
-                    var exitRenderer = newTileGo.AddComponent<SpriteRenderer>();
-                    exitRenderer.LoadFromContent(textureAssetName);
-                    exitRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
-                    exitRenderer.Depth = this.Depth;
+                    _ = AddTileRenderer(newTileGo, tile);
                     break;
                 case "Coin":
-                    // Add Renderer
-                    var itemRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    _ = AddTileRenderer(newTileGo, tile);
                     var itemCollectable = newTileGo.AddComponent<Collectable>();
                     itemCollectable.init(CollectableType.coin, "Coin", outline);
-                    itemRenderer.LoadFromContent(textureAssetName);
-                    itemRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
-                    itemRenderer.Depth = this.Depth;
+                    break;
+                case "Stone":
+                    _ = AddTileRenderer(newTileGo, tile);
+                    var stonComp = newTileGo.AddComponent<TripStone>();
                     break;
                 case "Item":
-                    // Add Renderer
-                    var coinRenderer = newTileGo.AddComponent<SpriteRenderer>();
+                    _ = AddTileRenderer(newTileGo, tile);
                     var coinCollectable = newTileGo.AddComponent<Collectable>();
                     string itemId = "";
                     foreach (TiledProperty property in tiledT.properties)
@@ -106,9 +94,6 @@ namespace SandPerSand
                         }
                     }
                     coinCollectable.init(CollectableType.item, itemId, outline);
-                    coinRenderer.LoadFromContent(textureAssetName);
-                    coinRenderer.SetSourceRectangle(tileId, tile.PixelWidth, tile.PixelHeight);
-                    coinRenderer.Depth = this.Depth;
                     break;
                 case "SandSource":
                     SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();

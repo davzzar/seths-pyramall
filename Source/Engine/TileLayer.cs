@@ -15,6 +15,7 @@ namespace Engine
         public GameObject[,] TileGos { get; set; }
         public int TileWidth { get; set; }
         public int TileHeight { get; set; }
+        public float Depth { get; set; }
 
         public TileLayer()
         {
@@ -125,6 +126,27 @@ namespace Engine
                 tileCollider.Outline = tile.ColliderOutline;
             }
 
+        }
+
+        protected SpriteRenderer AddTileRenderer(GameObject Go, Tile tile)
+        {
+            var tileRenderer = Go.AddComponent<SpriteRenderer>();
+            tileRenderer.LoadFromContent(tile.TextureName);
+            tileRenderer.SetSourceRectangle(tile.ID, tile.PixelWidth, tile.PixelHeight);
+            tileRenderer.Depth = this.Depth;
+            return tileRenderer;
+        }
+
+        protected PolygonCollider AddPolygonCollider(GameObject Go, Tile tile)
+        {
+            var outline = tile.ColliderOutline;
+            if (outline != null)
+            {
+                var tileCollider = Go.AddComponent<PolygonCollider>();
+                tileCollider.Outline = outline;
+                return tileCollider;
+            }
+            return null;
         }
 
     }

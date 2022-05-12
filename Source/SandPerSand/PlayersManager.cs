@@ -116,7 +116,7 @@ namespace SandPerSand
                     foreach (var playerIndex in rankList)
                     {
                         RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
-                        GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
+                        PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
                     }
                     // ShopEntryPsition can be reset right after use
                     // If not reset, players will be spawned before shop map is
@@ -130,11 +130,13 @@ namespace SandPerSand
                 if (shopTimeCounter >= shopTime)
                 {
                     shopTimeCounter = 0;
-                    if(curRank < rankList.Length) Players[rankList[curRank]].GetComponent<PlayerControlComponent>().IsActive = true;
+                    if(curRank < rankList.Length)
+                    {
+                        PlayerUtils.ResumePlayerControl(Players[rankList[curRank]]);
+                    }
                     if(curRank>0)
                     {
                         Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
-                        //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
                     }
                     curRank++;
                 }
@@ -196,7 +198,7 @@ namespace SandPerSand
                 throw new InvalidOperationException("");
             }
 
-            }
+        }
 
         public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
             //returns true if item was added. False if it is already full
