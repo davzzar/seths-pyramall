@@ -140,7 +140,7 @@ namespace SandPerSand
             InputHandler.UpdateState();
         }
 
-        private void HaddleUnstableSand()
+        private void HardJumpThroughFallingSand()
         {
             if (GameStateManager.Instance.CurrentState != GameState.InRound
                 || sandSimulation == null)
@@ -202,7 +202,7 @@ namespace SandPerSand
             }
 
             // Sand Interaction
-            HaddleUnstableSand();
+            HardJumpThroughFallingSand();
 
             if (HasSandReached && !HasSandReachedBefore)
             {
