@@ -26,9 +26,18 @@ namespace SandPerSand
         private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
         private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
 
-        private bool hardjump = false;
-        private bool shieldSandDetact = false;
-        private bool shieldHorizontalControl = false;
+        // Hard Jump
+        private bool canHardJump = false;
+        private bool blockSandDetect = false;
+        private bool doSandDetect => (!blockSandDetect) && rigidBody.LinearVelocity.X != 0 && !IsGrounded;
+        private bool blockHControl = false;
+        
+        // Hard Jump parameters
+        private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
+        private float decelerationForBlockHControl = 0.6f * MaxDeceleration;
+        private float hardJumpSpan = 0.5f;
+        private float blockFallSandSpan = 1f;
+        private float blockHControlSpan = 2f;
 
         // State
         public bool IsGrounded { get; private set; }
@@ -121,13 +130,11 @@ namespace SandPerSand
 
             timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
-
             Owner.Layer = 1;
         }
 
         protected override void Update()
         {
-
             ControlUpdate();
             // Update the input handler's state after every control update
             InputHandler.UpdateState();
@@ -135,43 +142,51 @@ namespace SandPerSand
 
         private void HaddleUnstableSand()
         {
-            if (GameStateManager.Instance.CurrentState == GameState.InRound)
+            if (GameStateManager.Instance.CurrentState != GameState.InRound
+                || sandSimulation == null)
             {
-                if (sandSimulation != null)
-                {
-                    var index = sandSimulation.SandData.PointToIndex(Transform.Position);
-                    var sandGrid = sandSimulation.SandData[index];
-                    if ((!shieldSandDetact) && sandGrid.HasSand && (!sandGrid.IsSandStable))
-                    {
-                        //press A within 0.5s otherwise fall
-                        // set onjump delegate
-                        hardjump = true;
-                        shieldSandDetact = true;
-                        shieldHorizontalControl = true;
-                        rigidBody.LinearVelocity = new Vector2(rigidBody.LinearVelocity.X, 0);
-                        //PlayerUtils.StopPlayer(Owner);
-                        Owner.AddComponent<GoTimer>().Init(0.5f,()=> {
-                            hardjump = false;
-                        });
-                        Owner.AddComponent<GoTimer>().Init(1f, () => {
-                            shieldSandDetact = false;
-                        });
-                        Owner.AddComponent<GoTimer>().Init(2f, () => {
-                            shieldHorizontalControl = false;
-                        });
-                    }
-                }
-                if (JumpButtonPressed&& hardjump)
-                {
-                    CoyoteEnabled = false;
-                    jumpEnded = false;
-                    timeOfLeavingGround = float.MinValue;
-                    isSandEscapeJump = true;
-                    PerformJump();
-                    ApplyVelocity();
-                    hardjump = false;
-                    shieldHorizontalControl = false;
-                }
+                return;
+            }
+            var index = sandSimulation.SandData.PointToIndex(Transform.Position);
+            var sandGrid = sandSimulation.SandData[index];
+            if (doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable)
+            {
+                // press A within 0.5s otherwise fall
+                // set onjump delegate
+                canHardJump = true;
+                blockSandDetect = true;
+                blockHControl = true;
+                // calculate immediate influence
+                var xVelo = rigidBody.LinearVelocity.X;
+                var yVelo = rigidBody.LinearVelocity.Y;
+                xVelo = MathHelper.Clamp(xVelo, -maxHSpeedAfterSand, maxHSpeedAfterSand);
+                yVelo = 0f;
+                // apply immediate influence
+                rigidBody.LinearVelocity = new Vector2(xVelo, yVelo);
+
+                // set timers
+                Owner.AddComponent<GoTimer>().Init(hardJumpSpan, ()=> {
+                    canHardJump = false; // only able to hardjump within 0.5s
+                });
+                Owner.AddComponent<GoTimer>().Init(blockFallSandSpan, () => {
+                    blockSandDetect = false;// stop detect falling sand for 1s
+                });
+                Owner.AddComponent<GoTimer>().Init(blockHControlSpan, () => {
+                    blockHControl = false;// not allowed to accelerate horizontally for 2s 
+                });
+            }
+            if (JumpButtonPressed&& canHardJump)
+            {
+                // just copied these code to make the jump works ...
+                CoyoteEnabled = false;
+                jumpEnded = false;
+                timeOfLeavingGround = float.MinValue;
+                isSandEscapeJump = true;
+                PerformJump();
+                ApplyVelocity();
+                // reset control timers in advance if hard jump is performed
+                canHardJump = false;
+                blockHControl = false;
             }
         }
 
@@ -390,8 +405,13 @@ namespace SandPerSand
 
         private void ComputeHorizontalSpeed()
         {
+            if (blockHControl)
+            {
+                HorizontalSpeed = MathUtils.MoveTowards(HorizontalSpeed, 0, decelerationForBlockHControl * Time.DeltaTime);
+                return;
+            }
             // NOTE: Check assumes there is a dead zone on the stick input.
-            if (HorizontalDirection != 0 && !shieldHorizontalControl) //
+            if (HorizontalDirection != 0) //
             {
                 // use the appropriate acceleration
                 CurrentAcceleration = IsGrounded ? MaxAcceleration : MaxArialAcceleration;
