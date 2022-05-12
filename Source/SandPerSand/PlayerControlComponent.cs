@@ -195,7 +195,24 @@ namespace SandPerSand
                     if (player != null)
                     {
                         player.IsAlive = false;
+                        Debug.WriteLine("Player IsAlive set to false.");
+                    } else
+                    {
+                        Debug.WriteLine("Could not find PlayerComponent.");
                     }
+
+
+                    var playerStates = this.Owner.GetComponent<PlayerStates>();
+
+                    if (playerStates != null) {
+                        // TODO:: This is wrong. Couldn't find a way to fucking set it properly....
+                        // Currently is properly reset at CheckAllDead where I know the proper number of players
+                        playerStates.RoundRank = -1;
+                        Debug.WriteLine("PlayerStates Roundrank of dead player set.");
+                    } else
+                    {
+                        Debug.WriteLine("Could not find PlayerStates.");
+                    } 
 
                     timerBar.IsActive = false;
                     this.IsActive = false;

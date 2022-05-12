@@ -85,6 +85,24 @@ namespace SandPerSand
             }
             else if (CurrentGameState == GameState.Shop)
             {
+                bool atLeastOneAlive = false;
+                foreach (var player in Players)
+                {
+                    if (player.Value.GetComponentInChildren<PlayerComponent>().IsAlive == true)
+                    {
+                        atLeastOneAlive = true;
+                    }
+                }
+                if (!atLeastOneAlive)
+                {
+                    Debug.WriteLine("No players were alive. No shop.");
+                    foreach (var player in Players)
+                    {
+                        player.Value.GetComponentInChildren<PlayerStates>().FnishedShop = true;
+                    }
+                    LastGameState = GameState.Shop;
+                    return;
+                }
                 if (LastGameState != GameState.Shop)
                 {
                     // FIXME wait for shop map
@@ -100,14 +118,14 @@ namespace SandPerSand
 
                     // calculate rank list
                     rankList = new PlayerIndex[Players.Count];
-                    foreach (var item in Players)
+                    foreach (var player in Players)
                     {
-                        int rank = item.Value.GetComponent<PlayerStates>().RoundRank;
+                        int rank = player.Value.GetComponent<PlayerStates>().RoundRank;
                         if (rank <= 0)
                         {
                             throw new Exception("Invalid rank at end");
                         }
-                        rankList[rank - 1] = item.Key;
+                        rankList[rank - 1] = player.Key;
                     }
 
                     // respawn players -> queue by rank list
@@ -115,8 +133,14 @@ namespace SandPerSand
                     var entryX = ShopEntryPosition.X;
                     foreach (var playerIndex in rankList)
                     {
-                        RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
-                        GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
+                        if (players[playerIndex].GetComponentInChildren<PlayerComponent>().IsAlive == true)
+                        {
+                            RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
+                            GetPlayer(playerIndex).GetComponent<PlayerControlComponent>().IsActive = false;
+                        } else
+                        {
+                            players[playerIndex].GetComponentInChildren<PlayerStates>().FnishedShop = true;
+                        }
                     }
                     // ShopEntryPsition can be reset right after use
                     // If not reset, players will be spawned before shop map is
@@ -129,13 +153,18 @@ namespace SandPerSand
                 shopTimeCounter += Time.DeltaTime;
                 if (shopTimeCounter >= shopTime)
                 {
+                    // Reset the shop coutner
                     shopTimeCounter = 0;
-                    if(curRank < rankList.Length) Players[rankList[curRank]].GetComponent<PlayerControlComponent>().IsActive = true;
+
+                    // If this was not the first player, set the one before to be finished with the shop
                     if(curRank>0)
                     {
                         Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
                         //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
                     }
+
+                    // Activate the controller of the next player
+                    if(curRank < rankList.Length) Players[rankList[curRank]].GetComponent<PlayerControlComponent>().IsActive = true;
                     curRank++;
                 }
 
@@ -310,6 +339,24 @@ namespace SandPerSand
             return false;
         }
 
+        public Boolean CheckAllDead()
+        {
+            if (players.Count == 0)
+            {
+                return true;
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerComponent>().IsAlive)
+                {
+                    return false;
+                } else {
+                    player.GetComponent<PlayerStates>().RoundRank = players.Values.Count;
+                }
+            }
+            return true;
+        }
+
         public Boolean CheckAllExit()
         {
             if (players.Count == 0)
@@ -331,7 +378,7 @@ namespace SandPerSand
         {
             if (players.Count == 0)
             {
-                return false;
+                return true;
             }
             var allExitedFlag = true;
             foreach (var player in players.Values)
