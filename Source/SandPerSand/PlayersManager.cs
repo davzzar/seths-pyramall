@@ -427,24 +427,52 @@ namespace SandPerSand
 
             List<int> remove = new List<int>();
 
+            bool lightning = false;
+
             for (int i = 0; i < activeItems.Count; i++)
             {
-                Vector2 pos;
-                float time;
-                if(activeItems[i].pos.Y < 0)
+                Vector2 pos = activeItems[i].pos;
+                float time = activeItems[i].timeleft;
+                if (activeItems[i].id == "position_swap")
                 {
-                    pos = activeItems[i].pos;
-                    time = activeItems[i].timeleft - timeDelta;
-                }
-                else if((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
-                {
-                    pos = -Vector2.One;
-                    time = activeItems[i].timeleft - timeDelta;
+                    Debug.Print((activeItems[i].pos - this.Transform.Position).LengthSquared().ToString());
+                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 5f)
+                    {
+                        this.Transform.Position = activeItems[i].pos;
+                        time = -1f;
+                        var collider = this.Owner.GetComponent<Collider>();
+                        if (collider != null)
+                        {
+                            collider.IsActive = false;
+                        }
+                    }
+                    else
+                    {
+                        this.Transform.Position = activeItems[i].pos * 0.1f + 0.9f * this.Transform.Position;
+                        var collider = this.Owner.GetComponent<Collider>();
+                        if (collider != null)
+                        {
+                            collider.IsActive = true;
+                        }
+                    }
                 }
                 else
                 {
-                    pos = activeItems[i].pos * 0.9f + 0.1f * this.Transform.Position;
-                    time = activeItems[i].timeleft;
+                    if (activeItems[i].pos.Y < 0)
+                    {
+                        pos = activeItems[i].pos;
+                        time = activeItems[i].timeleft - timeDelta;
+                    }
+                    else if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
+                    {
+                        pos = -Vector2.One;
+                        time = activeItems[i].timeleft - timeDelta;
+                    }
+                    else
+                    {
+                        pos = activeItems[i].pos * 0.9f + 0.1f * this.Transform.Position;
+                        time = activeItems[i].timeleft;
+                    }
                 }
 
                 if (activeItems[i].timeleft < 0)
@@ -452,6 +480,20 @@ namespace SandPerSand
                     remove.Add(i);
                 }
                 activeItems[i] = (activeItems[i].id, time, pos);
+
+                if(activeItems[i].id == "lightning")
+                {
+                    lightning = true;
+                }
+            }
+
+            if (lightning)
+            {
+                this.Transform.Transform.LossyScale = Vector2.One * 0.5f;
+            }
+            else
+            {
+                this.Transform.Transform.LossyScale = Vector2.One;
             }
 
             for (int i = remove.Count - 1; i >= 0; i--)
@@ -595,6 +637,18 @@ namespace SandPerSand
                 }
             }
             return invertedMovement;
+        }
+
+        public bool gravityOn()
+        {
+            foreach (var item in activeItems)
+            {
+                if (item.id == "position_swap")
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public void addActiveItem(string id, float timeleft, Vector2 pos)

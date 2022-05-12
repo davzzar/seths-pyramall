@@ -53,14 +53,14 @@ namespace SandPerSand
 
             var playerIndex = inputHandler.PlayerIndex;
 
-            if(inputHandler.getButtonState(Buttons.X) == ButtonState.Pressed && GameStateManager.Instance.CurrentState == GameState.InRound)
-            {
-                itemId = PlayersManager.Instance.useItem(playerIndex, false);
-            }
-
-            if (inputHandler.getButtonState(Buttons.Y) == ButtonState.Pressed && GameStateManager.Instance.CurrentState == GameState.InRound)
+            if((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, true);
+            }
+
+            if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
+            {
+                itemId = PlayersManager.Instance.useItem(playerIndex, false);
             }
 
             switch (itemId)
@@ -74,19 +74,22 @@ namespace SandPerSand
                     PlayerComponent[] players = GameObject.FindComponents<PlayerComponent>();
                     float y = 0;
                     int i = 0;
-                    int firstPlayer = 0;
+                    PlayerIndex firstPlayer = playerIndex;
                     foreach (PlayerComponent p in players)
                     {
                         if(p.Transform.Position.Y > y)
                         {
                             y = p.Transform.Position.Y;
-                            firstPlayer = i;
+                            
+                            firstPlayer = p.PlayerIndex;
                         }
                         i++;
                     }
-                    Vector2 postmp = players[firstPlayer].Transform.Position;
-                    players[firstPlayer].Transform.Position = this.Transform.Position;
-                    this.Transform.Position = postmp;
+                    //Vector2 postmp = players[firstPlayer].Transform.Position;
+                    //players[firstPlayer].Transform.Position = this.Transform.Position;
+                    //this.Transform.Position = postmp;
+                    PlayersManager.Instance.Players[firstPlayer].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, this.Transform.Position);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, PlayersManager.Instance.Players[firstPlayer].Transform.Position);
                     break;
                 case "lightning":
                     PlayerComponent[] playerslit = GameObject.FindComponents<PlayerComponent>();
@@ -120,7 +123,7 @@ namespace SandPerSand
                     PlayerIndex firstPlayer2 = 0;
                     foreach (PlayerComponent p in players2)
                     {
-                        if (p.Transform.Position.Y > y2  && p.PlayerIndex != this.)
+                        if (p.Transform.Position.Y > y2  && p.PlayerIndex != playerIndex)
                         {
                             y = p.Transform.Position.Y;
                             firstPlayer2 = p.PlayerIndex;
@@ -144,7 +147,7 @@ namespace SandPerSand
                     {
                         if(p.PlayerIndex != playerIndex)
                         {
-                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 5, p.Transform.Position));
+                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 5, this.Transform.Position));
                         }
                     }
                     break;
@@ -165,7 +168,7 @@ namespace SandPerSand
                 for(int i = 0; i < activeItems.Count; i++)
                 {
                     ItemRendererList.Add(RenderGameObject.AddComponent<SpriteRenderer>());
-                    string id = activeItems[0].id;
+                    string id = activeItems[i].id;
                     int tileID = itemIDtoTiledID[id];
                     ItemRendererList[i].LoadFromContent($"Tiled/TiledsetTexture/TilesetItems");
                     ItemRendererList[i].SetSourceRectangle(tileID, 32, 32);

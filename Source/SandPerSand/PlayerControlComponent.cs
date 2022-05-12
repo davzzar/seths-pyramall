@@ -326,7 +326,8 @@ namespace SandPerSand
         /// </summary>
         private void ComputeGravityScale()
         {
-            if (IsGrounded) GravityScale = DefaultGravityMultiplier;
+            if (!this.Owner.GetComponentInChildren<PlayerStates>().gravityOn()) GravityScale = 0;
+            else if (IsGrounded) GravityScale = DefaultGravityMultiplier;
 
             else if (VerticalSpeed < JumpVelocityFalloff) GravityScale = FallGravityMultiplier;
             
