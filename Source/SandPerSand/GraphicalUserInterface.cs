@@ -317,7 +317,7 @@ namespace SandPerSand
             {
                 GridColumn = 3,
                 GridRow = 0,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetCoins"), new Rectangle(0,0,32,32)),
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetCoins"), new Rectangle(0,0,32,32)),
             };
 
 
@@ -347,11 +347,11 @@ namespace SandPerSand
             int y = (id / 8) * 32;
             if (Major)
             {
-                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
+                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetItems"), new Rectangle(x, y, 32, 32));
             }
             else
             {
-                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
+                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetItems"), new Rectangle(x, y, 32, 32));
             }
         }
 

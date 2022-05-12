@@ -21,7 +21,7 @@ namespace SandPerSand
         {
             base.OnAwake();
             ItemRenderer = this.Owner.AddComponent<SpriteRenderer>();
-            ItemRenderer.LoadFromContent("TilesetItems");
+            ItemRenderer.LoadFromContent("Tiled/TiledsetTexture/TilesetItems");
 
             itemIDtoTiledID = new Dictionary<string, int>();
             tiledS = new TiledTileset($"Content/Tiled/Tiledset/TilesetItems.tsx");

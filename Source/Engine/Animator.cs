@@ -128,11 +128,11 @@ namespace Engine
             // TODO better Tiled project structure and accurate paths
             if (textureAssetName == null)
             {
-                textureAssetName = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(tiledS.Image.source)}";
+                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
-            var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
+            var textureAssetPath = $"Tiled/TiledsetTexture/{textureAssetName}";
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
-            this.renderer.LoadFromContent(textureAssetName);
+            this.renderer.LoadFromContent(textureAssetPath);
 
             // foreach tile, check if it is anime
             foreach (TiledTile tile in tiledS.Tiles)
@@ -155,10 +155,11 @@ namespace Engine
         {
             if (textureAssetName == null)
             {
-                textureAssetName = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(tiledS.Image.source)}";
+                textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
+            var textureAssetPath = $"Tiled/TiledsetTexture/{textureAssetName}";
             this.renderer = this.Owner.AddComponent<SpriteRenderer>();
-            this.renderer.LoadFromContent(textureAssetName);
+            this.renderer.LoadFromContent(textureAssetPath);
             var newAnim = ParseTiledAnimation(tile, tiledS);
             if (newAnim != null)
             {

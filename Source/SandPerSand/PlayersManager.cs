@@ -85,6 +85,24 @@ namespace SandPerSand
             }
             else if (CurrentGameState == GameState.Shop)
             {
+                bool atLeastOneAlive = false;
+                foreach (var player in Players)
+                {
+                    if (player.Value.GetComponentInChildren<PlayerComponent>().IsAlive == true)
+                    {
+                        atLeastOneAlive = true;
+                    }
+                }
+                if (!atLeastOneAlive)
+                {
+                    Debug.WriteLine("No players were alive. No shop.");
+                    foreach (var player in Players)
+                    {
+                        player.Value.GetComponentInChildren<PlayerStates>().FnishedShop = true;
+                    }
+                    LastGameState = GameState.Shop;
+                    return;
+                }
                 if (LastGameState != GameState.Shop)
                 {
                     // FIXME wait for shop map
@@ -312,6 +330,24 @@ namespace SandPerSand
             return false;
         }
 
+        public Boolean CheckAllDead()
+        {
+            if (players.Count == 0)
+            {
+                return true;
+            }
+            foreach (var player in players.Values)
+            {
+                if (player.GetComponent<PlayerComponent>().IsAlive)
+                {
+                    return false;
+                } else {
+                    player.GetComponent<PlayerStates>().RoundRank = players.Values.Count;
+                }
+            }
+            return true;
+        }
+
         public Boolean CheckAllExit()
         {
             if (players.Count == 0)
@@ -333,7 +369,7 @@ namespace SandPerSand
         {
             if (players.Count == 0)
             {
-                return false;
+                return true;
             }
             var allExitedFlag = true;
             foreach (var player in players.Values)
