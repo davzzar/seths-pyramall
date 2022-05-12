@@ -36,8 +36,8 @@ namespace SandPerSand
         private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
         private float decelerationForBlockHControl = 0.6f * MaxDeceleration;
         private float hardJumpSpan = 0.5f;
-        private float blockFallSandSpan = 1f;
-        private float blockHControlSpan = 2f;
+        private float blockFallSandSpan = 0.7f;
+        private float blockHControlSpan = 0.7f;
 
         // State
         public bool IsGrounded { get; private set; }
@@ -147,8 +147,16 @@ namespace SandPerSand
             {
                 return;
             }
-            var index = sandSimulation.SandData.PointToIndex(Transform.Position);
+            var xVelo = rigidBody.LinearVelocity.X;
+            var yVelo = rigidBody.LinearVelocity.Y;
+            var sandDetector = new Vector2(1f, 0);
+            if (xVelo < 0)
+            {
+                sandDetector = -sandDetector;
+            }
+            var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
             var sandGrid = sandSimulation.SandData[index];
+            var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
             if (doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable)
             {
                 // press A within 0.5s otherwise fall
@@ -157,16 +165,19 @@ namespace SandPerSand
                 blockSandDetect = true;
                 blockHControl = true;
                 // calculate immediate influence
-                var xVelo = rigidBody.LinearVelocity.X;
-                var yVelo = rigidBody.LinearVelocity.Y;
                 xVelo = MathHelper.Clamp(xVelo, -maxHSpeedAfterSand, maxHSpeedAfterSand);
                 yVelo = 0f;
                 // apply immediate influence
                 rigidBody.LinearVelocity = new Vector2(xVelo, yVelo);
-
+                // TODO activate Halo Animation
+                haloGo.IsEnabled = true;
                 // set timers
                 Owner.AddComponent<GoTimer>().Init(hardJumpSpan, ()=> {
                     canHardJump = false; // only able to hardjump within 0.5s
+                    // TODO not exactly what I want
+                    Owner.AddComponent<GoTimer>().Init(0.2f, () => {
+                        haloGo.IsEnabled = false;
+                    });
                 });
                 Owner.AddComponent<GoTimer>().Init(blockFallSandSpan, () => {
                     blockSandDetect = false;// stop detect falling sand for 1s
@@ -177,6 +188,7 @@ namespace SandPerSand
             }
             if (JumpButtonPressed&& canHardJump)
             {
+                // TODO Play hard jump halo animation then inactive halo animation
                 // just copied these code to make the jump works ...
                 CoyoteEnabled = false;
                 jumpEnded = false;

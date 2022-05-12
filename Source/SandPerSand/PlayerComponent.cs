@@ -180,6 +180,15 @@ namespace SandPerSand
             var playerAnimator = Owner.GetOrAddComponent<Animator>();
             SetPlayerAnimationSprite();
 
+            // Add hardjump halo go
+            var haloGo = new GameObject();
+            haloGo.Transform.Parent = Transform;
+            haloGo.Transform.LocalPosition = new Vector2(0, -.1f);
+            var playerEffectAnimator = haloGo.AddComponent<Animator>();
+            playerEffectAnimator.LoadFromContent("PlayerEffectAnimated");
+            haloGo.AddComponent<EffectAnimatorController>();
+            haloGo.IsEnabled = false;
+
             var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
 

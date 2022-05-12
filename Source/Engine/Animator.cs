@@ -30,11 +30,9 @@ namespace Engine
                 return animes[currentAnimeKey];
             }
         }
-        protected override void OnEnable()
+        protected override void OnAwake()
         {
             animes = new Dictionary<string, Animation>();
-            this.LoadFromContentPath();
-
         }
 
         protected override void Update()
