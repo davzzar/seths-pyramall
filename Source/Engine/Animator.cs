@@ -18,6 +18,7 @@ namespace Engine
         private string entryAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
+        public float Depth { get; set; }
 
         public Animation CurrentAnime
         {
@@ -30,6 +31,8 @@ namespace Engine
                 return animes[currentAnimeKey];
             }
         }
+
+
         protected override void OnEnable()
         {
             animes = new Dictionary<string, Animation>();
@@ -41,6 +44,7 @@ namespace Engine
         {
             base.Update();
             this.passedTime += Time.DeltaTime;
+            this.renderer.Depth = this.Depth;
             if(passedTime >= CurrentAnime.CurrentFrame.Duration)
             {
                 passedTime = 0f;
@@ -132,6 +136,7 @@ namespace Engine
             }
             var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
+            this.renderer.Depth = 0f;
             this.renderer.LoadFromContent(textureAssetName);
 
             // foreach tile, check if it is anime

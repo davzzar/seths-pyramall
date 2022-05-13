@@ -178,6 +178,7 @@ namespace SandPerSand
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.GetOrAddComponent<Animator>();
+            playerAnimator.Depth = 0.1f;
             SetPlayerAnimationSprite();
 
             var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();

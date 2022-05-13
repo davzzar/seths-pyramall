@@ -14,7 +14,7 @@ namespace SandPerSand
         [Browsable(false)]
         public InputHandler InputHandler { get; set; }
 
-        private RigidBody rigidBody;
+        public RigidBody rigidBody { get; private set; }
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
         private TimerBar timerBar;

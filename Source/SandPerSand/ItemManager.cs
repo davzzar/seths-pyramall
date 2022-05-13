@@ -13,15 +13,15 @@ namespace SandPerSand
     internal class ItemManager : Behaviour
     {
         public InputHandler inputHandler { get; set; }
+        public List<GameObject> ItemRendererGo;
         public List<SpriteRenderer> ItemRendererList;
-        public GameObject RenderGameObject;
         private Dictionary<string, int> itemIDtoTiledID;
         private TiledTileset tiledS;
 
         protected override void OnAwake()
         {
             base.OnAwake();
-            RenderGameObject = new GameObject();
+            ItemRendererGo = new List<GameObject>();
             ItemRendererList = new List<SpriteRenderer>();
 
             itemIDtoTiledID = new Dictionary<string, int>();
@@ -130,16 +130,16 @@ namespace SandPerSand
                         }
                         i2++;
                     }
-                    PlayersManager.Instance.Players[firstPlayer2].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 3, this.Transform.Position));
+                    PlayersManager.Instance.Players[firstPlayer2].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, this.Transform.Position);
                     break;
                 case "sunglasses":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 100, this.Transform.Position));
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, float.NaN, -Vector2.One);
                     break;
                 case "wings":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10, this.Transform.Position));
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, -Vector2.One);
                     break;
                 case "speedup":
-                    //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10));
+                    //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10);
                     break;
                 case "dizzy_eyes":
                     PlayerComponent[] players3 = GameObject.FindComponents<PlayerComponent>();
@@ -147,31 +147,36 @@ namespace SandPerSand
                     {
                         if(p.PlayerIndex != playerIndex)
                         {
-                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 5, this.Transform.Position));
+                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, this.Transform.Position);
                         }
                     }
                     break;
                 case "shield":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems.Add((itemId, 10, this.Transform.Position));
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10, this.Transform.Position);
                     break;
             }
 
             var activeItems = PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems;
+            bool facingright = this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity.X >= 0;
 
             if (activeItems.Count != ItemRendererList.Count)
             {
                 for(int i = 0; i < ItemRendererList.Count; i++)
                 {
                     ItemRendererList[i].Destroy();
+                    ItemRendererGo[i].Destroy();
                 }
                 ItemRendererList = new List<SpriteRenderer>();
+                ItemRendererGo = new List<GameObject>();
                 for(int i = 0; i < activeItems.Count; i++)
                 {
-                    ItemRendererList.Add(RenderGameObject.AddComponent<SpriteRenderer>());
+                    ItemRendererGo.Add(new GameObject());
+                    ItemRendererList.Add(ItemRendererGo[i].AddComponent<SpriteRenderer>());
                     string id = activeItems[i].id;
                     int tileID = itemIDtoTiledID[id];
                     ItemRendererList[i].LoadFromContent($"Tiled/TiledsetTexture/TilesetItems");
                     ItemRendererList[i].SetSourceRectangle(tileID, 32, 32);
+
                 }
             }
 
@@ -180,10 +185,35 @@ namespace SandPerSand
                 if (activeItems[i].pos.Y < 0)
                 {
                     ItemRendererList[i].Transform.Position = this.Transform.Position;
+
                 }
                 else
                 {
                     ItemRendererList[i].Transform.Position = activeItems[i].pos;
+                }
+                if (facingright && (activeItems[i].id == "wings" || activeItems[i].id == "sunglasses"))
+                {
+                    ItemRendererList[i].Effect = Microsoft.Xna.Framework.Graphics.SpriteEffects.FlipHorizontally;
+                }
+                else
+                {
+                    ItemRendererList[i].Effect = Microsoft.Xna.Framework.Graphics.SpriteEffects.None;
+                }
+                if(activeItems[i].id == "wings")
+                {
+                    ItemRendererList[i].Depth = 0.2f;
+                    ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
+                    ItemRendererList[i].Transform.Position = this.Transform.Position + (facingright ? -Vector2.UnitX * .2f : Vector2.UnitX * .2f);
+                }
+                else if (activeItems[i].id == "sunglasses")
+                {
+                    ItemRendererList[i].Depth = 0.05f;
+                    ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
+                    ItemRendererList[i].Transform.Position = this.Transform.Position + this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity / 50 - (Vector2.UnitY * 0.15f) + (facingright ? -Vector2.UnitX * .1f : Vector2.UnitX * .1f);
+                }
+                else
+                {
+                    ItemRendererList[i].Depth = 0.05f;
                 }
             }
 

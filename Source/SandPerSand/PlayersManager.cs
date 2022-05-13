@@ -380,7 +380,7 @@ namespace SandPerSand
         public GameState LastGameState{ get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
 
-        public List<(string id, float timeleft, Vector2 pos)> activeItems;
+        public List<(string id, float timeleft, Vector2 pos)> activeItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -653,6 +653,14 @@ namespace SandPerSand
 
         public void addActiveItem(string id, float timeleft, Vector2 pos)
         {
+            for (int i = 0; i < activeItems.Count; i++)
+            { 
+                if(id == activeItems[i].id)
+                {
+                    activeItems[i] = (id, timeleft, pos);
+                    return;
+                }
+            }
             activeItems.Add((id, timeleft, pos));
         }
     }
