@@ -12,8 +12,11 @@ namespace SandPerSand
     public class GameStateManager : Behaviour
     {
         private static GameStateManager instance;
-
         private static bool exitTrigger = false;
+        private static GameState currentState;
+        public static bool inMenu;
+        public static float countDowncounter;
+
         public bool TriggerExit()
         {
             Debug.Print("exit trigger script is run");
@@ -25,17 +28,6 @@ namespace SandPerSand
                     exitTrigger = true;
                     return true;
                 }
-            }
-            return false;
-        }
-
-        private static bool finishShopTrigger = false;
-        public bool TriggerFinishShop()
-        {
-            if (currentState == GameState.Shop&&!finishShopTrigger)
-            {
-                finishShopTrigger = true;
-                return true;
             }
             return false;
         }
@@ -63,8 +55,6 @@ namespace SandPerSand
             }
         }
 
-        private static GameState currentState;
-
         public GameState CurrentState
         {
             get
@@ -72,8 +62,6 @@ namespace SandPerSand
                 return currentState;
             }
         }
-
-        public static bool inMenu;
         
         public bool InMenu { get
             {
@@ -82,8 +70,6 @@ namespace SandPerSand
             set { inMenu = value; }
         }
 
-
-        public static float countDowncounter;
         public float CountDowncounter { 
             get
             {
@@ -122,6 +108,12 @@ namespace SandPerSand
                         Debug.Print("GameState: InRound-> CountDown");
                         countDowncounter = 0f;
                     }
+                    if (PlayersManager.Instance.CheckAllDead())
+                    {
+                        currentState = GameState.CountDown;
+                        Debug.Print("GameState: InRound-> CountDown");
+                        countDowncounter = 10.0f;
+                    }
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
@@ -156,8 +148,12 @@ namespace SandPerSand
                     // after all player is moved to exit, proceed to the next round
                     if (PlayersManager.Instance.CheckAllFinishedShop())
                     {
-                        finishShopTrigger = false;
-                        ShopToInRound();
+                        currentState = GameState.Prepare;
+                        Debug.Print("GameState: Shop-> Prepare");
+                        // TODO load correct scene
+                        var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                        // Load RoundScene current index = 1
+                        sceneManager.LoadAt(1);
                     }
                     break;
             }
