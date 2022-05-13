@@ -64,7 +64,7 @@ namespace SandPerSand
 
         protected override void Update()
         {
-            if (CurrentGameState == GameState.InRound)
+            if (CurrentGameState == GameState.RoundStartCountdown)
             {
                 if (LastGameState == GameState.Shop)
                 {
@@ -426,8 +426,9 @@ namespace SandPerSand
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
         public GameState LastGameState{ get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
+        public Collider Collider { get; set; }
 
-        public List<(string id, float timeleft, Vector2 pos)> activeItems;
+        public List<(string id, float timeleft, Vector2 pos)> activeItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -483,24 +484,18 @@ namespace SandPerSand
                 if (activeItems[i].id == "position_swap")
                 {
                     Debug.Print((activeItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 5f)
+                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
                     {
                         this.Transform.Position = activeItems[i].pos;
                         time = -1f;
-                        var collider = this.Owner.GetComponent<Collider>();
-                        if (collider != null)
-                        {
-                            collider.IsActive = false;
-                        }
+                        Collider.IsActive = true;
                     }
                     else
                     {
-                        this.Transform.Position = activeItems[i].pos * 0.1f + 0.9f * this.Transform.Position;
+                        Vector2 vel = (activeItems[i].pos - this.Transform.Position) / (activeItems[i].pos - this.Transform.Position).Length();
+                        this.Transform.Position = (activeItems[i].pos * 0.1f + 0.9f * this.Transform.Position) + vel / 10;
                         var collider = this.Owner.GetComponent<Collider>();
-                        if (collider != null)
-                        {
-                            collider.IsActive = true;
-                        }
+                        Collider.IsActive = false;
                     }
                 }
                 else
@@ -517,7 +512,8 @@ namespace SandPerSand
                     }
                     else
                     {
-                        pos = activeItems[i].pos * 0.9f + 0.1f * this.Transform.Position;
+                        Vector2 vel = (activeItems[i].pos - this.Transform.Position) / (activeItems[i].pos - this.Transform.Position).Length();
+                        pos = activeItems[i].pos * 0.9f + 0.1f * this.Transform.Position - vel / 10;
                         time = activeItems[i].timeleft;
                     }
                 }
@@ -536,15 +532,18 @@ namespace SandPerSand
 
             if (lightning)
             {
-                this.Transform.Transform.LossyScale = Vector2.One * 0.5f;
-            }
-            else
-            {
-                this.Transform.Transform.LossyScale = Vector2.One;
+                Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One * 0.8f;
+                Collider.IsActive = false;
+                Collider.IsActive = true;
             }
 
             for (int i = remove.Count - 1; i >= 0; i--)
             {
+                if (activeItems[i].id == "lightning")
+                {
+                    Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One;
+                    Collider.Transform.LossyScale = Vector2.One * 0.8f;
+                }
                 activeItems.RemoveAt(remove[i]);
             }
             //======= End of Clemens stuff
@@ -650,6 +649,10 @@ namespace SandPerSand
                 {
                     jumpfactor *= 0;
                 }
+                else if ((item.id == "lightning"))
+                {
+                    jumpfactor *= 0.8f;
+                }
             }
             return jumpfactor;
         }
@@ -666,7 +669,11 @@ namespace SandPerSand
                 }
                 else if (item.id == "ice_block")
                 {
-                    accelleration *= 0;
+                    accelleration *= 0f;
+                }
+                else if ((item.id == "lightning"))
+                {
+                    accelleration *= 0.8f;
                 }
             }
             return accelleration;
@@ -700,6 +707,14 @@ namespace SandPerSand
 
         public void addActiveItem(string id, float timeleft, Vector2 pos)
         {
+            for (int i = 0; i < activeItems.Count; i++)
+            { 
+                if(id == activeItems[i].id)
+                {
+                    activeItems[i] = (id, timeleft, pos);
+                    return;
+                }
+            }
             activeItems.Add((id, timeleft, pos));
         }
     }
