@@ -38,6 +38,9 @@ namespace Engine
         /// </summary>
         public Transform Transform => this.Owner.Transform;
 
+        public bool IsAlive => this.owner?.IsAlive ?? false;
+
+
         /// <summary>
         /// Event that is invoked directly before drawing the gizmos, can be used to inject gizmos draw calls that depend on state affected by other components and physics.
         /// </summary>

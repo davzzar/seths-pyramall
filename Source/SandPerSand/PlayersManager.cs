@@ -429,7 +429,7 @@ namespace SandPerSand
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         public Collider Collider { get; set; }
 
-        public List<(string id, float timeleft, Vector2 pos)> activeItems { private set; get; }
+        public List<(string id, float timeleft, float tot_time, Vector2 pos)> activeItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -441,7 +441,7 @@ namespace SandPerSand
             Exited = false;
             FnishedShop = false;
             RoundRank = -1;
-            activeItems = new List<(string id, float timeleft, Vector2 pos)>();
+            activeItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
             Score = 0;
         }
 
@@ -523,7 +523,7 @@ namespace SandPerSand
                 {
                     remove.Add(i);
                 }
-                activeItems[i] = (activeItems[i].id, time, pos);
+                activeItems[i] = (activeItems[i].id, time, activeItems[i].tot_time, pos);
 
                 if(activeItems[i].id == "lightning")
                 {
@@ -706,17 +706,17 @@ namespace SandPerSand
             return true;
         }
 
-        public void addActiveItem(string id, float timeleft, Vector2 pos)
+        public void addActiveItem(string id, float timeleft, float tot_time, Vector2 pos)
         {
             for (int i = 0; i < activeItems.Count; i++)
             { 
                 if(id == activeItems[i].id)
                 {
-                    activeItems[i] = (id, timeleft, pos);
+                    activeItems[i] = (id, timeleft, tot_time, pos);
                     return;
                 }
             }
-            activeItems.Add((id, timeleft, pos));
+            activeItems.Add((id, timeleft, tot_time, pos));
         }
     }
 }
