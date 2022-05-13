@@ -93,7 +93,7 @@ namespace Engine
 
         public void LoadFromContent(string path, string texture)
         {
-            this.textureAssetName = texture;
+            this.textureAssetName = $"Tiled/TiledsetTexture/{texture}";
             LoadFromContent(path);
         }
 
