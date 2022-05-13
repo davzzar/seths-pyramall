@@ -100,7 +100,18 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        public bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        public bool HasSandReached
+        {
+            get
+            {
+                if(this.sandSimulation == null || !this.sandSimulation.IsAlive)
+                {
+                    this.sandSimulation = GameObject.FindComponent<SandSimulation>();
+
+                }
+                return this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+            }
+        }
         private bool HasSandReachedBefore;
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
@@ -198,7 +209,7 @@ namespace SandPerSand
                         Debug.WriteLine("Player IsAlive set to false.");
                     } else
                     {
-                        Debug.WriteLine("Could not find PlayerComponent.");
+                        throw new InvalidOperationException("Could not find Player Component");
                     }
 
 
@@ -206,15 +217,17 @@ namespace SandPerSand
 
                     playerStates.Dead = true;
 
-                    //if (playerStates != null) {
+                    //if (playerStates != null)
+                    //{
                     //    // TODO:: This is wrong. Couldn't find a way to fucking set it properly....
                     //    // Currently is properly reset at CheckAllDead where I know the proper number of players
                     //    playerStates.RoundRank = -1;
                     //    Debug.WriteLine("PlayerStates Roundrank of dead player set.");
-                    //} else
+                    //}
+                    //else
                     //{
                     //    Debug.WriteLine("Could not find PlayerStates.");
-                    //} 
+                    //}
 
                     timerBar.IsActive = false;
                     this.IsActive = false;

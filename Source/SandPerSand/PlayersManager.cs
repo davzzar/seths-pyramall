@@ -435,10 +435,11 @@ namespace SandPerSand
         public int RoundRank { get; set; }
         public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
+        public Collider Collider { get; set; }
+
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
         public GameState LastGameState{ get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
-        public Collider Collider { get; set; }
 
         public List<(string id, float timeleft, Vector2 pos)> activeItems { private set; get; }
 
@@ -502,7 +503,7 @@ namespace SandPerSand
                 if (activeItems[i].id == "position_swap")
                 {
                     Debug.Print((activeItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
+                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
                     {
                         this.Transform.Position = activeItems[i].pos;
                         time = -1f;
@@ -573,8 +574,8 @@ namespace SandPerSand
             var playerIndex = InputHandler.PlayerIndex;
             if (Prepared)
             {
-                Prepared = false;
-                Debug.Print("Player" + playerIndex + "UnPrepared.");
+                //Prepared = false;
+                //Debug.Print("Player" + playerIndex + "UnPrepared.");
             }
             else
             {

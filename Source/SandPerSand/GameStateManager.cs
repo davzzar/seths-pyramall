@@ -105,14 +105,13 @@ namespace SandPerSand
                     {
                         CurrentState = GameState.CountDown;
                         Debug.Print("GameState: InRound -> CountDown");
-                        CountDownCounter = 10.0f;
                     }
 
                     break;
                 case GameState.CountDown:
                     CountDownCounter += Time.DeltaTime;
                     Debug.Print(CountDownCounter.ToString());
-                    if (CountDownCounter >= 10f || PlayersManager.Instance.CheckDeadOrAllExit())
+                    if (CountDownCounter >= 10f || (PlayersManager.Instance.CheckDeadOrAllExit()))
                     {
                         CountDownCounter = 0f;
                         exitTrigger = false;
@@ -152,12 +151,7 @@ namespace SandPerSand
                     // after all player is moved to exit, proceed to the next round
                     if (PlayersManager.Instance.CheckAllFinishedShop())
                     {
-                        CurrentState = GameState.Prepare;
-                        Debug.Print("GameState: Shop -> Prepare");
-                        // TODO load correct scene
-                        var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                        // Load RoundScene current index = 1
-                        sceneManager.LoadAt(1);
+                        ShopToInRound();
                     }
 
                     break;
@@ -181,6 +175,10 @@ namespace SandPerSand
         {
             CurrentState = GameState.GameOver;
             InMenu = true;
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            sceneManager.LoadAt(0);
+            //var MainMenu = GameObject.FindComponent<MainMenu>();
+            //MainMenu.ShowWinScreen();
         }
         private void ShopToInRound()
         {
