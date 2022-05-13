@@ -18,6 +18,7 @@ namespace Engine
         private string entryAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
+        public float Depth { get; set; }
 
         public Animation CurrentAnime
         {
@@ -39,6 +40,7 @@ namespace Engine
         {
             base.Update();
             this.passedTime += Time.DeltaTime;
+            this.renderer.Depth = this.Depth;
             if(passedTime >= CurrentAnime.CurrentFrame.Duration)
             {
                 passedTime = 0f;
@@ -85,9 +87,9 @@ namespace Engine
             this.LoadFromContentPath();
         }
 
-        public void LoadFromContent(string path, string texture)
+        public void LoadFromContent(string path, string textureName)
         {
-            this.textureAssetName = texture;
+            this.textureAssetName = textureName;
             LoadFromContent(path);
         }
 
@@ -128,8 +130,9 @@ namespace Engine
             {
                 textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
-            var textureAssetPath = $"Tiled/TiledsetTexture/{textureAssetName}";
+            var textureAssetPath = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(textureAssetName)}";
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
+            this.renderer.Depth = 0f;
             this.renderer.LoadFromContent(textureAssetPath);
 
             // foreach tile, check if it is anime
@@ -155,7 +158,7 @@ namespace Engine
             {
                 textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
-            var textureAssetPath = $"Tiled/TiledsetTexture/{textureAssetName}";
+            var textureAssetPath = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(textureAssetName)}";
             this.renderer = this.Owner.AddComponent<SpriteRenderer>();
             this.renderer.LoadFromContent(textureAssetPath);
             var newAnim = ParseTiledAnimation(tile, tiledS);

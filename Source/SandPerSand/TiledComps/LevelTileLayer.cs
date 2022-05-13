@@ -87,7 +87,6 @@ namespace SandPerSand
                     string itemId = "";
                     foreach (TiledProperty property in tiledT.properties)
                     {
-                        Debug.Print(property.ToString());
                         if (property.name == "item_id")
                         {
                             itemId = property.value;
@@ -100,7 +99,6 @@ namespace SandPerSand
                     int size = 0;
                     foreach (TiledProperty property in tiledT.properties)
                     {
-                        Debug.Print(property.ToString());
                         if (property.name == "size")
                         {
                             size = int.Parse(property.value);

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -77,6 +78,7 @@ namespace SandPerSand
         }
         protected override void Update()
         {
+
             switch (CurrentState)
             {
                 case GameState.Prepare:
@@ -84,11 +86,21 @@ namespace SandPerSand
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
-                        currentState = GameState.InRound;
-                        Debug.Print("GameState: Prepare-> InRound");
+                        currentState = GameState.RoundStartCountdown;
+                        Debug.Print("GameState: Prepare-> RoundStartCountDown");
+                        countDowncounter = 0;
                         exitTrigger = false;
                     }
                     break;
+                case GameState.RoundStartCountdown:
+                    {
+                        countDowncounter += Time.DeltaTime;
+                        if(countDowncounter >= 3f)
+                        {
+                            currentState = GameState.InRound;
+                        }
+                        break;
+                    }
                 case GameState.InRound:
                     if (PlayersManager.Instance.CheckOneExit())
                     {
@@ -105,7 +117,6 @@ namespace SandPerSand
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
-                    Debug.Print(countDowncounter.ToString());
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
                         countDowncounter = 0f;
@@ -157,13 +168,23 @@ namespace SandPerSand
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load ShopScene current index = 3
             sceneManager.LoadAt(3);
+        }
 
+        private void ShopToInRound()
+        {
+            currentState = GameState.RoundStartCountdown;
+            Debug.Print("GameState: Shop-> InRound");
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
         }
     }
 
     public enum GameState
     {
         Prepare,
+        RoundStartCountdown,
         InRound,
         CountDown,
         RoundCheck,

@@ -14,7 +14,7 @@ namespace SandPerSand
         [Browsable(false)]
         public InputHandler InputHandler { get; set; }
 
-        private RigidBody rigidBody;
+        public RigidBody rigidBody { get; private set; }
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
         private TimerBar timerBar;
@@ -425,7 +425,8 @@ namespace SandPerSand
         /// </summary>
         private void ComputeGravityScale()
         {
-            if (IsGrounded) GravityScale = DefaultGravityMultiplier;
+            if (!this.Owner.GetComponentInChildren<PlayerStates>().gravityOn()) GravityScale = 0;
+            else if (IsGrounded) GravityScale = DefaultGravityMultiplier;
 
             else if (VerticalSpeed < JumpVelocityFalloff) GravityScale = FallGravityMultiplier;
             
