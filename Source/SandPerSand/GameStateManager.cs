@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -77,6 +78,12 @@ namespace SandPerSand
         }
         protected override void Update()
         {
+            var sandSim = GameObject.FindComponent<SandSimulation>();
+            if(sandSim != null)
+            {
+                sandSim.PauseRaisingSand = true;
+            }
+
             switch (CurrentState)
             {
                 case GameState.Prepare:
