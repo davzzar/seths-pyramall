@@ -16,13 +16,20 @@ namespace SandPerSand
                 throw new InvalidOperationException("Can't create more than one GameStateManager");
             }
 
+            Reset();
+            Rounds = 3;
+
+            Debug.Print("GameStateManager is created");
+        }
+
+        public void Reset()
+        {
             instance = this;
             CurrentState = GameState.Prepare;
             InMenu = true;
-            Rounds = 3;
             CurrentRound = 1;
-
-            Debug.Print("GameStateManager is created");
+            
+            PlayersManager.Instance.ResetAllPlayers();
         }
 
         public static GameStateManager Instance
@@ -31,13 +38,7 @@ namespace SandPerSand
             {
                 if (instance == null)
                 {
-                    instance = new GameStateManager
-                    {
-                        CurrentState = GameState.Prepare,
-                        InMenu = true,
-                        Rounds = 3,
-                        CurrentRound = 1
-                    };
+                    instance = new GameStateManager();
                 }
 
                 return instance;
@@ -167,8 +168,8 @@ namespace SandPerSand
 
         private void RoundCheckToWinScreen()
         {
-            CurrentRound = 1;
             CurrentState = GameState.GameOver;
+            InMenu = true;
 
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             sceneManager.LoadAt(0, () =>

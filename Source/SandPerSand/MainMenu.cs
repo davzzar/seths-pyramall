@@ -148,6 +148,7 @@ namespace SandPerSand
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
+                GameStateManager.Instance.Reset();
                 loadManager.LoadAt(4);
                 UI.Root = null;
             };
@@ -160,6 +161,7 @@ namespace SandPerSand
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
+                GameStateManager.Instance.Reset();
                 loadManager.LoadAt(1);
                 UI.Root = null;
             };

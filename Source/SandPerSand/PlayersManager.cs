@@ -27,6 +27,15 @@ namespace SandPerSand
         }
 
         private static Dictionary<PlayerIndex, GameObject> players;
+
+        internal void ResetAllPlayers()
+        {
+            foreach (var player in Players.Values)
+            {
+                player.GetComponent<PlayerStates>()!.Reset();
+            }
+        }
+
         public Dictionary<PlayerIndex, GameObject> Players
         {
             get => players;
@@ -431,6 +440,11 @@ namespace SandPerSand
 
         protected override void OnAwake()
         {
+            Reset();
+        }
+
+        public void Reset()
+        {
             Prepared = false;
             Paused = false;
             MinorItem = null;
@@ -439,7 +453,7 @@ namespace SandPerSand
             Exited = false;
             FnishedShop = false;
             RoundRank = -1;
-            activeItems = new List<(string id, float timeleft)> ();
+            activeItems = new List<(string id, float timeleft)>();
             Score = 0;
         }
 
