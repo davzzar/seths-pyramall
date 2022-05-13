@@ -319,9 +319,9 @@ namespace SandPerSand
 
             private Scene loadedScene;
 
-            public void LoadAt(int index)
+            public void LoadAt(int index, Action onLoad = null)
             {
-                this.RunSceneLoader(index);
+                this.RunSceneLoader(index, onLoad);
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
@@ -335,7 +335,7 @@ namespace SandPerSand
             {
                 if (this.loadedSceneIndex == -1 && this.SceneLoaderTypes.Count > 0)
                 {
-                    this.RunSceneLoader(0);
+                    this.RunSceneLoader(0, null);
                     return;
                 }
 
@@ -346,13 +346,13 @@ namespace SandPerSand
                     var key = (Keys)(Keys.D1 + i);
                     if (state.IsKeyDown(key))
                     {
-                        this.RunSceneLoader(i);
+                        this.RunSceneLoader(i, null);
                         return;
                     }
                 }
             }
 
-            private void RunSceneLoader(int index)
+            private void RunSceneLoader(int index, Action onLoad)
             {
                 if (this.loadedSceneIndex == index)
                 {
@@ -372,7 +372,7 @@ namespace SandPerSand
                 this.loadedScene = scene;
                 this.loadedSceneIndex = index;
 
-                SceneManager.LoadSceneAdditive(this.loadedScene);
+                SceneManager.LoadSceneAdditive(this.loadedScene, onLoad);
             }
         }
 

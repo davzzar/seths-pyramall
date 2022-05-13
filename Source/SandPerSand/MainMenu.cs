@@ -20,12 +20,18 @@ namespace SandPerSand
 
         private IBrush Background;
 
-        (int x, int y, string text)[] Resolutions = new (int x, int y, string text)[] {
-                (1280, 720, "1280x720 (16:9)"),
-                (1920, 1080, "1920x1080 (16:9)"),
-                (2560, 1440, "2560x1440 (16:9)"),
-                (3840, 2160, "3840x2160 (16:9)"),
-            };
+        (int x, int y, string text)[] Resolutions = new (int x, int y, string text)[]
+        {
+            (1280, 720, "1280x720 (16:9)"),
+            (1920, 1080, "1920x1080 (16:9)"),
+            (2560, 1440, "2560x1440 (16:9)"),
+            (3840, 2160, "3840x2160 (16:9)"),
+        };
+
+        private Panel settingsPanel;
+        private Panel startGamePanel;
+        private Panel rootPanel;
+        private Panel winScreenPanel;
 
         private TextButton createTextButton(string Text)
         {
@@ -36,7 +42,7 @@ namespace SandPerSand
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 ContentHorizontalAlignment = HorizontalAlignment.Center,
                 Font = _fontSystem.GetFont(32),
-                Background = new SolidBrush(new Color(155,34,38)),
+                Background = new SolidBrush(new Color(155, 34, 38)),
                 PressedTextColor = Color.White,
             };
             return button;
@@ -75,11 +81,13 @@ namespace SandPerSand
 
             // The vertical stack panel widget places the children in a vertical line with some spacing
 
-            var rootPanel = new Panel();
+            rootPanel = new Panel();
 
-            var startGamePanel = new Panel();
+            startGamePanel = new Panel();
 
-            var settingsPanel = new Panel();
+            settingsPanel = new Panel();
+
+            winScreenPanel = new Panel();
 
             var panel = new VerticalStackPanel()
             {
@@ -89,10 +97,9 @@ namespace SandPerSand
                 Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;"),
             };
 
-
             var brush = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("background"));
 
-            Background = new SolidBrush(new Color(38,12,26));
+            Background = new SolidBrush(new Color(38, 12, 26));
 
             rootPanel.Background = Background;
             startGamePanel.Background = Background;
@@ -103,24 +110,15 @@ namespace SandPerSand
             // Create a start button with green text
             var startButton = createTextButton("Play");
             // When the start button is clicked, remove the GUI by setting UI.Root to null
-            startButton.Click += (sender, e) =>
-            {
-                UI.Root = startGamePanel;
-            };
+            startButton.Click += (sender, e) => { UI.Root = startGamePanel; };
 
             // Add a settings button
             var settingsButton = createTextButton("Settings");
-            settingsButton.Click += (sender, e) =>
-            {
-                UI.Root = settingsPanel;
-            };
+            settingsButton.Click += (sender, e) => { UI.Root = settingsPanel; };
 
             // Lastly an exit button that kills the app dead
             var exitButton = createTextButton("Exit");
-            exitButton.Click += (sender, e) =>
-            {
-                GameEngine.Instance.Exit();
-            };
+            exitButton.Click += (sender, e) => { GameEngine.Instance.Exit(); };
 
             // Add the buttons in the correct order
             panel.AddChild(GameTitle);
@@ -169,10 +167,7 @@ namespace SandPerSand
             // Create Exit to Menu
             var ExitToMenu = createTextButton("Back");
 
-            ExitToMenu.Click += (sender, e) =>
-            {
-                UI.Root = rootPanel;
-            };
+            ExitToMenu.Click += (sender, e) => { UI.Root = rootPanel; };
 
             levelSelectorPanel.AddChild(titleLevelSelection);
             levelSelectorPanel.AddChild(Mode1Button);
@@ -195,8 +190,27 @@ namespace SandPerSand
                 Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/2;"),
             };
 
+            var RoundsText = createTextLabel("Rounds");
+            RoundsText.GridRow = 0;
+            RoundsText.GridColumn = 0;
+            RoundsText.HorizontalAlignment = HorizontalAlignment.Left;
+
+            var RoundsSpinner = new SpinButton()
+            {
+                Minimum = 1,
+                Maximum = 10,
+                Value = GameStateManager.Instance.Rounds,
+                Increment = 1,
+                GridRow = 0,
+                GridColumn = 1,
+                HorizontalAlignment = HorizontalAlignment.Right,
+            };
+
+            RoundsSpinner.ValueChanged += (sender, e) => { GameStateManager.Instance.Rounds = (int)RoundsSpinner.Value; };
+
+
             var VolumeSliderText = createTextLabel("Music");
-            VolumeSliderText.GridRow = 0;
+            VolumeSliderText.GridRow = 1;
             VolumeSliderText.GridColumn = 0;
             VolumeSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
@@ -205,7 +219,7 @@ namespace SandPerSand
                 Value = 50,
                 Minimum = 0,
                 Maximum = 100,
-                GridRow = 0,
+                GridRow = 1,
                 GridColumn = 1,
             };
 
@@ -215,7 +229,7 @@ namespace SandPerSand
             };
 
             var SoundSliderText = createTextLabel("Sounds");
-            SoundSliderText.GridRow = 1;
+            SoundSliderText.GridRow = 2;
             SoundSliderText.GridColumn = 0;
             SoundSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
@@ -224,7 +238,7 @@ namespace SandPerSand
                 Value = 50,
                 Minimum = 0,
                 Maximum = 100,
-                GridRow = 1,
+                GridRow = 2,
                 GridColumn = 1,
             };
 
@@ -234,22 +248,24 @@ namespace SandPerSand
             };
 
             var ResolutionSelectorText = createTextLabel("Resolution");
-            ResolutionSelectorText.GridRow = 2;
+            ResolutionSelectorText.GridRow = 3;
             ResolutionSelectorText.GridColumn = 0;
             ResolutionSelectorText.HorizontalAlignment = HorizontalAlignment.Left;
 
             var ResolutionSelector = new ComboBox()
             {
-                GridRow = 2,
+                GridRow = 3,
                 GridColumn = 1,
             };
 
             foreach (var res in Resolutions)
             {
-                if (res.x > GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width || res.y > GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height)
+                if (res.x > GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width ||
+                    res.y > GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height)
                 {
                     continue;
                 }
+
                 var item = new ListItem() { Text = res.text };
                 ResolutionSelector.Items.Add(item);
             }
@@ -266,7 +282,7 @@ namespace SandPerSand
             };
 
             var ToggleFullscreenText = createTextLabel("Fullscreen");
-            ToggleFullscreenText.GridRow = 3;
+            ToggleFullscreenText.GridRow = 4;
             ToggleFullscreenText.GridColumn = 0;
             ToggleFullscreenText.HorizontalAlignment = HorizontalAlignment.Left;
 
@@ -275,7 +291,7 @@ namespace SandPerSand
                 IsChecked = false,
                 TextPosition = ImageTextButton.TextPositionEnum.Left,
                 Font = _fontSystem.GetFont(32),
-                GridRow = 3,
+                GridRow = 4,
                 GridColumn = 1,
                 HorizontalAlignment = HorizontalAlignment.Right,
             };
@@ -290,17 +306,16 @@ namespace SandPerSand
             ExitToMenuSettings.Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;");
             ExitToMenuSettings.HorizontalAlignment = HorizontalAlignment.Center;
 
-            ExitToMenuSettings.Click += (sender, e) =>
-            {
-                UI.Root = rootPanel;
-            };
+            ExitToMenuSettings.Click += (sender, e) => { UI.Root = rootPanel; };
 
             var SettingsGrid = new Grid()
             {
                 ColumnSpacing = 2,
-                RowSpacing = 4,
+                RowSpacing = 5,
             };
 
+            SettingsGrid.AddChild(RoundsText);
+            SettingsGrid.AddChild(RoundsSpinner);
             SettingsGrid.AddChild(VolumeSliderText);
             SettingsGrid.AddChild(VolumeSlider);
             SettingsGrid.AddChild(SoundSliderText);
@@ -315,10 +330,39 @@ namespace SandPerSand
             SettingsPanel.AddChild(ExitToMenuSettings);
             settingsPanel.AddChild(SettingsPanel);
 
+            // Win Screen
+
+            var WinPanel = new VerticalStackPanel()
+            {
+                Spacing = 20,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
+                GridColumn = 0,
+                GridRow = 0,
+                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D($"this.w = W.w/4;"),
+            };
+
+            var WinTitle = createTitleLabel("You Win!");
+
+            var BackToMenu = createTextButton("Back");
+            BackToMenu.Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;");
+            BackToMenu.HorizontalAlignment = HorizontalAlignment.Center;
+
+            BackToMenu.Click += (sender, e) => { UI.Root = rootPanel; };
+
+            WinPanel.AddChild(WinTitle);
+            WinPanel.AddChild(BackToMenu);
+            
+            winScreenPanel.AddChild(WinPanel);
 
 
             UI.Root = rootPanel;
             UI.IsMouseVisible = true;
+        }
+
+        public void ShowWinScreen()
+        {
+            UI.Root = winScreenPanel;
         }
     }
 }

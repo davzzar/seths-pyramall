@@ -262,7 +262,7 @@ namespace SandPerSand
                 oldInMenu = newInMenu;
             } else if (GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
-                MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDowncounter) + " Seconds to Finish the Round";
+                MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDownCounter) + " Seconds to Finish the Round";
             }
         }
 

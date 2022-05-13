@@ -1,35 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Diagnostics;
 using Engine;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
     public class GameStateManager : Behaviour
     {
         private static GameStateManager instance;
-        private static bool exitTrigger = false;
-        private static GameState currentState;
-        public static bool inMenu;
-        public static float countDowncounter;
-
-        public bool TriggerExit()
-        {
-            Debug.Print("exit trigger script is run");
-            if(currentState== GameState.InRound||
-                currentState== GameState.CountDown)
-            {
-                if (exitTrigger == false)
-                {
-                    exitTrigger = true;
-                    return true;
-                }
-            }
-            return false;
-        }
+        private bool exitTrigger;
 
         public GameStateManager()
         {
@@ -37,7 +15,14 @@ namespace SandPerSand
             {
                 throw new InvalidOperationException("Can't create more than one GameStateManager");
             }
-            Debug.Print("gamestatemanager is created");
+
+            instance = this;
+            CurrentState = GameState.Prepare;
+            InMenu = true;
+            Rounds = 3;
+            CurrentRound = 1;
+
+            Debug.Print("GameStateManager is created");
         }
 
         public static GameStateManager Instance
@@ -46,35 +31,41 @@ namespace SandPerSand
             {
                 if (instance == null)
                 {
-                    instance = new GameStateManager();
-                    currentState = GameState.Prepare;
-                    inMenu = true;
+                    instance = new GameStateManager
+                    {
+                        CurrentState = GameState.Prepare,
+                        InMenu = true,
+                        Rounds = 3,
+                        CurrentRound = 1
+                    };
                 }
+
                 return instance;
             }
         }
 
-        public GameState CurrentState
+        public GameState CurrentState { get; private set; }
+
+        public bool InMenu { get; set; }
+
+        public float CountDownCounter { get; private set; }
+
+        public int Rounds { get; set; }
+
+        public int CurrentRound { get; private set; }
+
+        public bool TriggerExit()
         {
-            get
+            Debug.Print("exit trigger script is run");
+            if ((CurrentState != GameState.InRound && CurrentState != GameState.CountDown) || !exitTrigger)
             {
-                return currentState;
+                return false;
             }
-        }
-        
-        public bool InMenu { get
-            {
-                return inMenu;
-            }
-            set { inMenu = value; }
+
+            exitTrigger = true;
+            return true;
         }
 
-        public float CountDowncounter { 
-            get
-            {
-                return countDowncounter; 
-            } 
-        }
         protected override void Update()
         {
             switch (CurrentState)
@@ -84,50 +75,62 @@ namespace SandPerSand
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
-                        currentState = GameState.InRound;
-                        Debug.Print("GameState: Prepare-> InRound");
+                        CurrentState = GameState.InRound;
+                        Debug.Print("GameState: Prepare -> InRound");
                         exitTrigger = false;
                     }
+
                     break;
                 case GameState.InRound:
                     if (PlayersManager.Instance.CheckOneExit())
                     {
-                        currentState = GameState.CountDown;
-                        Debug.Print("GameState: InRound-> CountDown");
-                        countDowncounter = 0f;
+                        CurrentState = GameState.CountDown;
+                        Debug.Print("GameState: InRound -> CountDown");
+                        CountDownCounter = 0f;
                     }
+
                     if (PlayersManager.Instance.CheckAllDead())
                     {
-                        currentState = GameState.CountDown;
-                        Debug.Print("GameState: InRound-> CountDown");
-                        countDowncounter = 10.0f;
+                        CurrentState = GameState.CountDown;
+                        Debug.Print("GameState: InRound -> CountDown");
+                        CountDownCounter = 10.0f;
                     }
+
                     break;
                 case GameState.CountDown:
-                    countDowncounter += Time.DeltaTime;
-                    Debug.Print(countDowncounter.ToString());
-                    if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
+                    CountDownCounter += Time.DeltaTime;
+                    Debug.Print(CountDownCounter.ToString());
+                    if (CountDownCounter >= 10f || PlayersManager.Instance.CheckAllExit())
                     {
-                        countDowncounter = 0f;
+                        CountDownCounter = 0f;
                         exitTrigger = false;
                         PlayersManager.Instance.finalizeRanks();
-                        currentState = GameState.RoundCheck;
+                        CurrentState = GameState.RoundCheck;
                         // Debug
-                        Debug.Print("GameState: CountDown-> RoundCheck");
-                        foreach(var item in PlayersManager.Instance.Players)
+                        Debug.Print("GameState: CountDown -> RoundCheck");
+                        foreach (var item in PlayersManager.Instance.Players)
                         {
-                            Debug.Print("Player "+ item.Key + " : Rank " +
-                                item.Value.GetComponent<PlayerStates>().RoundRank);
+                            Debug.Print($"Player {item.Key} : Rank {item.Value.GetComponent<PlayerStates>()!.RoundRank}");
                         }
                     }
+
                     break;
                 case GameState.RoundCheck:
-                    countDowncounter += Time.DeltaTime;
-                    if (countDowncounter >= 2f)
+                    CountDownCounter += Time.DeltaTime;
+                    if (CountDownCounter >= 2f)
                     {
-                        countDowncounter = 0f;
-                        RoundCheckToShop();
+                        CountDownCounter = 0f;
+                        CurrentRound++;
+                        if (CurrentRound > Rounds)
+                        {
+                            RoundCheckToWinScreen();
+                        }
+                        else
+                        {
+                            RoundCheckToShop();
+                        }
                     }
+
                     break;
                 case GameState.Shop:
                     // disable the current player's controller after they finished shopping or after the time limit
@@ -137,27 +140,42 @@ namespace SandPerSand
                     // after all player is moved to exit, proceed to the next round
                     if (PlayersManager.Instance.CheckAllFinishedShop())
                     {
-                        currentState = GameState.Prepare;
-                        Debug.Print("GameState: Shop-> Prepare");
+                        CurrentState = GameState.Prepare;
+                        Debug.Print("GameState: Shop -> Prepare");
                         // TODO load correct scene
                         var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                         // Load RoundScene current index = 1
                         sceneManager.LoadAt(1);
                     }
+
+                    break;
+                case GameState.GameOver:
                     break;
             }
         }
 
         private void RoundCheckToShop()
         {
-            currentState = GameState.Shop;
-            Debug.Print("GameState: RoundCheck-> Shop");
+            CurrentState = GameState.Shop;
+            Debug.Print("GameState: RoundCheck -> Shop");
             // load new scene
             // FIXME correct shop scene number
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load ShopScene current index = 3
             sceneManager.LoadAt(3);
+        }
 
+        private void RoundCheckToWinScreen()
+        {
+            CurrentRound = 1;
+            CurrentState = GameState.GameOver;
+
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            sceneManager.LoadAt(0, () =>
+            {
+                var mainMenu = GameObject.FindComponent<MainMenu>();
+                mainMenu.ShowWinScreen();
+            });
         }
     }
 
@@ -168,5 +186,6 @@ namespace SandPerSand
         CountDown,
         RoundCheck,
         Shop,
+        GameOver
     }
 }

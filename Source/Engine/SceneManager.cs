@@ -23,6 +23,8 @@ namespace Engine
         [CanBeNull]
         private static Scene scopedScene;
 
+        private static event Action sceneLoaded;
+
         internal static bool IsReady { get; private set; }
 
         public static Scene ActiveScene
@@ -71,11 +73,18 @@ namespace Engine
             openScenes.Add(activeScene);
         }
 
-        public static void LoadScene(Scene scene)
+        public static void LoadScene(Scene scene, Action onLoad = null)
         {
             if (scene == null)
             {
                 throw new ArgumentNullException(nameof(scene));
+            }
+
+            sceneLoaded = null;
+
+            if (onLoad != null)
+            {
+                sceneLoaded += onLoad;
             }
 
             scenesToAdd.Clear();
@@ -85,11 +94,16 @@ namespace Engine
             scenesToRemove.AddRange(openScenes);
         }
 
-        public static void LoadSceneAdditive(Scene scene)
+        public static void LoadSceneAdditive(Scene scene, Action onLoad = null)
         {
             if (scene == null)
             {
                 throw new ArgumentNullException(nameof(scene));
+            }
+
+            if (onLoad != null)
+            {
+                sceneLoaded += onLoad;
             }
 
             if (openScenes.Contains(scene))
@@ -174,6 +188,12 @@ namespace Engine
                     scopedScene = scene;
                     scene.OnLoad();
                     scopedScene = null;
+                }
+
+                if (scenesToAdd.Count > 0)
+                {
+                    sceneLoaded?.Invoke();
+                    sceneLoaded = null;
                 }
 
                 scenesToAdd.Clear();
