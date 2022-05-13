@@ -211,6 +211,21 @@ namespace SandPerSand
                     ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
                     ItemRendererList[i].Transform.Position = this.Transform.Position + this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity / 50 - (Vector2.UnitY * 0.15f) + (facingright ? -Vector2.UnitX * .1f : Vector2.UnitX * .1f);
                 }
+                else if (activeItems[i].id == "lightning")
+                {
+                    if(activeItems[i].pos.Y < 0)
+                    {
+                        ItemRendererList[i].SetSourceRectangle(63, 32, 32);
+                    }
+                    else
+                    {
+                        //ItemRendererList[i].Transform.LocalRotation = new Quaternion(i,)
+                    }
+                }
+                else if(activeItems[i].id == "position_swap")
+                {
+                    ItemRendererList[i].SetSourceRectangle(63, 32, 32);
+                }
                 else
                 {
                     ItemRendererList[i].Depth = 0.05f;

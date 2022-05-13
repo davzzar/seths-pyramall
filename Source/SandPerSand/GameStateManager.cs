@@ -92,11 +92,6 @@ namespace SandPerSand
         }
         protected override void Update()
         {
-            var sandSim = GameObject.FindComponent<SandSimulation>();
-            if(sandSim != null)
-            {
-                sandSim.PauseRaisingSand = true;
-            }
 
             switch (CurrentState)
             {
@@ -193,10 +188,10 @@ namespace SandPerSand
     public enum GameState
     {
         Prepare,
+        RoundStartCountdown,
         InRound,
         CountDown,
         RoundCheck,
         Shop,
-        RoundStartCountdown,
     }
 }

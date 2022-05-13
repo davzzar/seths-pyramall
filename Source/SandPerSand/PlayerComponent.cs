@@ -175,6 +175,7 @@ namespace SandPerSand
 
             var playerStates = Owner.GetOrAddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
+            playerStates.Collider = playerCollider;
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.GetOrAddComponent<Animator>();
