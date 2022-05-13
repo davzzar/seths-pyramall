@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.8" tiledversion="1.8.2" name="PlayerAnimated" tilewidth="32" tileheight="32" tilecount="128" columns="8">
-    <image source="../TiledsetTexture/PlayerAnimated.png" width="256" height="512"/>
+ <image source="../TiledsetTexture/PlayerAnimated.png" width="256" height="512"/>
  <tile id="0">
   <properties>
    <property name="AnimIsEntry" type="bool" value="true"/>
@@ -154,17 +154,20 @@
   <properties>
    <property name="AnimIsEntry" type="bool" value="false"/>
    <property name="AnimIsLoop" type="bool" value="false"/>
-   <property name="AnimName" value="FoundItem"/>
+   <property name="AnimName" value="Trip"/>
   </properties>
   <animation>
-   <frame tileid="63" duration="300"/>
+   <frame tileid="112" duration="125"/>
+   <frame tileid="112" duration="125"/>
+   <frame tileid="112" duration="125"/>
+   <frame tileid="112" duration="125"/>
   </animation>
  </tile>
  <tile id="113">
   <properties>
    <property name="AnimIsEntry" type="bool" value="false"/>
    <property name="AnimIsLoop" type="bool" value="false"/>
-   <property name="AnimName" value="Trip"/>
+   <property name="AnimName" value="FoundItem"/>
   </properties>
   <animation>
    <frame tileid="41" duration="300"/>

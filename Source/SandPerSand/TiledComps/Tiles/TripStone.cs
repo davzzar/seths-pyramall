@@ -8,7 +8,9 @@ namespace SandPerSand
 {
     public class TripStone : Behaviour
     {
-        public float thresholdX = 0;
+        public float thresholdX = 0.5f;
+        public float StopDelay = 0.05f;
+        public float ResumeDelay = 0.5f;
 
         protected override void OnEnable()
         {
@@ -23,9 +25,10 @@ namespace SandPerSand
             var xSpeed = Math.Abs(playerGo.GetComponent<RigidBody>().LinearVelocity.X);
             if (xSpeed > thresholdX)
             {
+                playerGo.GetComponent<PlayerAnimatorController>().TripFlag = true;
                 PlayerUtils.ShieldPlayerControl(playerGo);
-                playerGo.AddComponent<GoTimer>().Init(0.1f, PlayerUtils.StopPlayer);
-                playerGo.AddComponent<GoTimer>().Init(1f, PlayerUtils.ResumePlayerControl);
+                playerGo.AddComponent<GoTimer>().Init(StopDelay, PlayerUtils.StopPlayer);
+                playerGo.AddComponent<GoTimer>().Init(ResumeDelay, PlayerUtils.ResumePlayerControl);
             }
         }
     }

@@ -21,12 +21,21 @@ namespace SandPerSand
         // transformation parameters
         private float xDir;
         private float yRBVelo;
+        private float xRBVelo;
         private bool isGrounded;
         private bool jumpFlag;
         private bool sandReachedFlag;
         // TODO update these flags correctly
         private bool collectFlag;
         private bool tripFlag;
+        public bool TripFlag
+        {
+            get => tripFlag;
+            set
+            {
+                tripFlag = value;
+            }
+        }
         private bool dieFlag;
 
         protected override void OnEnable()
@@ -42,7 +51,7 @@ namespace SandPerSand
         {
             var anim = animator.CurrentAnime;
             xDir = inputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
-            (_,yRBVelo) = rigidBody.LinearVelocity;
+            (xRBVelo,yRBVelo) = rigidBody.LinearVelocity;
             isGrounded = groundChecker.IsGrounded;
             //WillJump => isGrounded && JumpButtonPressed ||
             //              HasLanded && BufferedJump ||
@@ -52,7 +61,6 @@ namespace SandPerSand
             dieFlag = playerControler.DieFromDrown;
             // TODO set these flags correctly
             collectFlag = false;
-            tripFlag = false;
 
 
             switch (anim.Name)
@@ -114,6 +122,13 @@ namespace SandPerSand
                         animator.NextAnime("Jump");
                     }
                     switchToAnim("Die");
+                    break;
+                case "Trip":
+                    if (anim.IsAtEnd)
+                    {
+                        switchToAnim("Idle");
+                        switchToAnim("Move");
+                    }
                     break;
                 case "Die":
                     break;

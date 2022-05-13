@@ -28,6 +28,7 @@ namespace SandPerSand
 
         // Hard Jump
         private bool canHardJump = false;
+        public bool WillHardJump => JumpButtonPressed && canHardJump;
         private bool blockSandDetect = false;
         private bool doSandDetect => (!blockSandDetect) && rigidBody.LinearVelocity.X != 0 && !IsGrounded;
         private bool blockHControl = false;
@@ -147,6 +148,7 @@ namespace SandPerSand
             {
                 return;
             }
+            // set up sand detector vector
             var xVelo = rigidBody.LinearVelocity.X;
             var yVelo = rigidBody.LinearVelocity.Y;
             var sandDetector = new Vector2(1f, 0);
@@ -154,11 +156,21 @@ namespace SandPerSand
             {
                 sandDetector = -sandDetector;
             }
-        try { 
-            var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
-            var sandGrid = sandSimulation.SandData[index];
+            // Detect sand
+            bool sandDetected = false;
+            try { 
+                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
+                var sandGrid = sandSimulation.SandData[index];
+                sandDetected = doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable;
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.WriteLine("SandData.PointToIndex failed for position :" + (Transform.Position + sandDetector));
+                return;
+            }
+            // If detected sand
             var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
-            if (doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable)
+            if (sandDetected)
             {
                 // press A within 0.5s otherwise fall
                 // set onjump delegate
@@ -187,14 +199,13 @@ namespace SandPerSand
                     blockHControl = false;// not allowed to accelerate horizontally for 2s 
                 });
             }
-        }catch (NullReferenceException e)
-        {
-            Debug.WriteLine("SandData.PointToIndex failed for position :" + (Transform.Position + sandDetector));
-            return;
-        }
-            if (JumpButtonPressed&& canHardJump)
+            if (WillHardJump)
             {
-                // TODO Play hard jump halo animation then inactive halo animation
+                // TODO breakthroughsand effect
+                var position = Owner.Transform.Position;
+                var effectGo = new GameObject("BreakThroughSand Effect");
+
+                
                 // just copied these code to make the jump works ...
                 CoyoteEnabled = false;
                 jumpEnded = false;
