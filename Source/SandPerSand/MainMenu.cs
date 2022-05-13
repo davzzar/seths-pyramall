@@ -147,8 +147,8 @@ namespace SandPerSand
             Mode1Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                GameStateManager.Instance.InMenu = false;
                 GameStateManager.Instance.Reset();
+                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(4);
                 UI.Root = null;
             };
@@ -160,8 +160,8 @@ namespace SandPerSand
             Mode2Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                GameStateManager.Instance.InMenu = false;
                 GameStateManager.Instance.Reset();
+                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(1);
                 UI.Root = null;
             };

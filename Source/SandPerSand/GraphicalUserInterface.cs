@@ -162,19 +162,23 @@ namespace SandPerSand
                         UI.Root = rootPanel;
                         MidscreenTextPanel.Text = "Press A to Start the Game";
                     }
-                } else if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                }else if (newGameState == GameState.RoundStartCountdown)
                 {
-                    UI.Root = InventoryGrid;
+                    MidscreenTextPanel.Text = "3";
                     foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
                     {
                         InventoryGrid.RemoveChild(JoinLabelRoot[index]);
                     }
+                }
+                else if (newGameState == GameState.InRound)
+                {
+                    UI.Root = InventoryGrid;
 
-                }else if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                }else if (newGameState == GameState.CountDown)
                 {
                     UI.Root = rootPanel;
                     MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
-                }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                }else if (newGameState == GameState.RoundCheck)
                 {
                     MidscreenTextPanel.Text = "";
                     ScoreBoard = new Grid()
@@ -263,6 +267,10 @@ namespace SandPerSand
             } else if (GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
                 MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDownCounter) + " Seconds to Finish the Round";
+            }
+            else if (GameStateManager.Instance.CurrentState == GameState.RoundStartCountdown)
+            {
+                MidscreenTextPanel.Text = String.Format("{0:0}", Math.Ceiling(3f - GameStateManager.Instance.CountDownCounter));
             }
         }
 

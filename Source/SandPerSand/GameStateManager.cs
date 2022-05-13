@@ -1,6 +1,9 @@
 using System;
 using System.Diagnostics;
 using Engine;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using SandPerSand.SandSim;
 
 namespace SandPerSand
 {
@@ -69,6 +72,7 @@ namespace SandPerSand
 
         protected override void Update()
         {
+
             switch (CurrentState)
             {
                 case GameState.Prepare:
@@ -76,21 +80,28 @@ namespace SandPerSand
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
-                        CurrentState = GameState.InRound;
-                        Debug.Print("GameState: Prepare -> InRound");
+                        CurrentState = GameState.RoundStartCountdown;
+                        Debug.Print("GameState: Prepare-> RoundStartCountDown");
+                        CountDownCounter = 0;
                         exitTrigger = false;
                     }
-
                     break;
+                case GameState.RoundStartCountdown:
+                    {
+                        CountDownCounter += Time.DeltaTime;
+                        if(CountDownCounter >= 3f)
+                        {
+                            CurrentState = GameState.InRound;
+                        }
+                        break;
+                    }
                 case GameState.InRound:
                     if (PlayersManager.Instance.CheckOneExit())
                     {
                         CurrentState = GameState.CountDown;
                         Debug.Print("GameState: InRound -> CountDown");
                         CountDownCounter = 0f;
-                    }
-
-                    if (PlayersManager.Instance.CheckAllDead())
+                    } else if (PlayersManager.Instance.CheckAllDead())
                     {
                         CurrentState = GameState.CountDown;
                         Debug.Print("GameState: InRound -> CountDown");
@@ -101,7 +112,7 @@ namespace SandPerSand
                 case GameState.CountDown:
                     CountDownCounter += Time.DeltaTime;
                     Debug.Print(CountDownCounter.ToString());
-                    if (CountDownCounter >= 10f || PlayersManager.Instance.CheckAllExit())
+                    if (CountDownCounter >= 10f || PlayersManager.Instance.CheckDeadOrAllExit())
                     {
                         CountDownCounter = 0f;
                         exitTrigger = false;
@@ -170,19 +181,22 @@ namespace SandPerSand
         {
             CurrentState = GameState.GameOver;
             InMenu = true;
-
+        }
+        private void ShopToInRound()
+        {
+            CurrentState = GameState.RoundStartCountdown;
+            Debug.Print("GameState: Shop-> InRound");
+            // TODO load correct scene
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            sceneManager.LoadAt(0, () =>
-            {
-                var mainMenu = GameObject.FindComponent<MainMenu>();
-                mainMenu.ShowWinScreen();
-            });
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
         }
     }
 
     public enum GameState
     {
         Prepare,
+        RoundStartCountdown,
         InRound,
         CountDown,
         RoundCheck,

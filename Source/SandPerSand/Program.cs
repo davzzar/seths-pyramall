@@ -287,9 +287,6 @@ namespace SandPerSand
             sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-
-            sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
 
         private static void CreateSandPhysics_level_1()

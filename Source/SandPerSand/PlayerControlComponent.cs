@@ -14,7 +14,7 @@ namespace SandPerSand
         [Browsable(false)]
         public InputHandler InputHandler { get; set; }
 
-        private RigidBody rigidBody;
+        public RigidBody rigidBody { get; private set; }
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
         private TimerBar timerBar;
@@ -204,15 +204,17 @@ namespace SandPerSand
 
                     var playerStates = this.Owner.GetComponent<PlayerStates>();
 
-                    if (playerStates != null) {
-                        // TODO:: This is wrong. Couldn't find a way to fucking set it properly....
-                        // Currently is properly reset at CheckAllDead where I know the proper number of players
-                        playerStates.RoundRank = -1;
-                        Debug.WriteLine("PlayerStates Roundrank of dead player set.");
-                    } else
-                    {
-                        Debug.WriteLine("Could not find PlayerStates.");
-                    } 
+                    playerStates.Dead = true;
+
+                    //if (playerStates != null) {
+                    //    // TODO:: This is wrong. Couldn't find a way to fucking set it properly....
+                    //    // Currently is properly reset at CheckAllDead where I know the proper number of players
+                    //    playerStates.RoundRank = -1;
+                    //    Debug.WriteLine("PlayerStates Roundrank of dead player set.");
+                    //} else
+                    //{
+                    //    Debug.WriteLine("Could not find PlayerStates.");
+                    //} 
 
                     timerBar.IsActive = false;
                     this.IsActive = false;
@@ -343,7 +345,8 @@ namespace SandPerSand
         /// </summary>
         private void ComputeGravityScale()
         {
-            if (IsGrounded) GravityScale = DefaultGravityMultiplier;
+            if (!this.Owner.GetComponentInChildren<PlayerStates>().gravityOn()) GravityScale = 0;
+            else if (IsGrounded) GravityScale = DefaultGravityMultiplier;
 
             else if (VerticalSpeed < JumpVelocityFalloff) GravityScale = FallGravityMultiplier;
             
