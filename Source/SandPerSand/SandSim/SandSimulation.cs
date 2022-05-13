@@ -178,6 +178,9 @@ namespace SandPerSand.SandSim
             this.sandDrains = new List<Aabb>();
             this.dirty = true;
 
+            this.sandFrontBuffer = new SandGrid(this.resolutionX, this.resolutionY, this.min, this.size);
+            this.sandBackBuffer = new SandGrid(this.resolutionX, this.resolutionY, this.min, this.size);
+
             this.updateFrontBuffer = new List<Int2>();
             this.updateBackBuffer = new List<Int2>();
             this.updateLookup = new HashSet<Int2>();
@@ -682,6 +685,7 @@ namespace SandPerSand.SandSim
                     cell.MarkSand();
                     cell.IsSandStable = true;
                     this.MarkForUpdate(x, this.raisingSandCurrentRow);
+                    this.MarkNeighborsForUpdate(x, this.raisingSandCurrentRow);
                 }
             }
 

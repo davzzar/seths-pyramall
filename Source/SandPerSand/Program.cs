@@ -8,6 +8,13 @@ using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.Particles;
+using MonoGame.Extended.Particles.Modifiers;
+using MonoGame.Extended.Particles.Modifiers.Containers;
+using MonoGame.Extended.Particles.Modifiers.Interpolators;
+using MonoGame.Extended.Particles.Profiles;
+using MonoGame.Extended.TextureAtlases;
 using SandPerSand.SandSim;
 using AppContext = System.AppContext;
 
@@ -107,6 +114,43 @@ namespace SandPerSand
             sandSim.ResolutionY = (int)(map.Size.Y * 5);
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
+            var particleTexture = new Texture2D(GameEngine.Instance.GraphicsDevice, 1, 1);
+            particleTexture.SetData(new[] { Color.White });
+
+            var textureRegion = new TextureRegion2D(particleTexture);
+
+            var psGo = new GameObject("Particle System");
+            psGo.Transform.Position = new Vector2(10, 10);
+            var psComp = psGo.AddComponent<ParticleSystem>();
+            psComp.Effect.Emitters.Add(        new ParticleEmitter(textureRegion, 500, TimeSpan.FromSeconds(2.5),
+                Profile.BoxUniform(1,1))
+            {
+                Parameters = new ParticleReleaseParameters
+                {
+                    Speed = new Range<float>(0f, 0.3f),
+                    Quantity = 3,
+                    Rotation = new Range<float>(-1f, 1f),
+                    Scale = new Range<float>(0.1f, 0.1f)
+                },
+                Modifiers =
+                {
+                    new AgeModifier
+                    {
+                        Interpolators =
+                        {
+                            new ColorInterpolator
+                            {
+                                StartValue = new HslColor(0.33f, 0.5f, 0.5f),
+                                EndValue = new HslColor(0.5f, 0.9f, 1.0f)
+                            }
+                        }
+                    },
+                    new RotationModifier {RotationRate = -2.1f},
+                    new RectangleContainerModifier {Width = 800, Height = 480},
+                    new LinearGravityModifier {Direction = -Vector2.UnitY, Strength = 30f},
+                }
+            });
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
