@@ -15,14 +15,17 @@ namespace SandPerSand
         public InputHandler inputHandler { get; set; }
         public List<GameObject> ItemRendererGo;
         public List<SpriteRenderer> ItemRendererList;
+        public Dictionary<string, TimerBar> ItemTimerBar;
         private Dictionary<string, int> itemIDtoTiledID;
         private TiledTileset tiledS;
+        private Dictionary<string, Color> ItemBarColor;
 
         protected override void OnAwake()
         {
             base.OnAwake();
             ItemRendererGo = new List<GameObject>();
             ItemRendererList = new List<SpriteRenderer>();
+            ItemTimerBar = new Dictionary<string, TimerBar>();
 
             itemIDtoTiledID = new Dictionary<string, int>();
             tiledS = new TiledTileset($"Content/Tiled/Tiledset/TilesetItems.tsx");
@@ -43,6 +46,16 @@ namespace SandPerSand
                 }
             }
 
+            ItemBarColor = new Dictionary<string, Color>();
+
+            ItemBarColor["shield"] = Color.Blue;
+            ItemBarColor["wings"] = Color.Gray;
+            ItemBarColor["lightning"] = Color.Yellow;
+            ItemBarColor["dizzy_eyes"] = Color.Black;
+            ItemBarColor["shield"] = Color.Blue;
+            ItemBarColor["ice_block"] = Color.Blue;
+
+
         }
 
         protected override void Update()
@@ -53,7 +66,7 @@ namespace SandPerSand
 
             var playerIndex = inputHandler.PlayerIndex;
 
-            if((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
+            if ((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, true);
             }
@@ -77,10 +90,10 @@ namespace SandPerSand
                     PlayerIndex firstPlayer = playerIndex;
                     foreach (PlayerComponent p in players)
                     {
-                        if(p.Transform.Position.Y > y)
+                        if (p.Transform.Position.Y > y)
                         {
                             y = p.Transform.Position.Y;
-                            
+
                             firstPlayer = p.PlayerIndex;
                         }
                         i++;
@@ -88,8 +101,8 @@ namespace SandPerSand
                     //Vector2 postmp = players[firstPlayer].Transform.Position;
                     //players[firstPlayer].Transform.Position = this.Transform.Position;
                     //this.Transform.Position = postmp;
-                    PlayersManager.Instance.Players[firstPlayer].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, this.Transform.Position);
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, PlayersManager.Instance.Players[firstPlayer].Transform.Position);
+                    PlayersManager.Instance.Players[firstPlayer].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, PlayersManager.Instance.Players[firstPlayer].Transform.Position);
                     break;
                 case "lightning":
                     PlayerComponent[] playerslit = GameObject.FindComponents<PlayerComponent>();
@@ -107,9 +120,9 @@ namespace SandPerSand
                                 }
                                 else
                                 {
-                                    duration = (int) (dist / 3);
+                                    duration = (int)(dist / 3);
                                 }
-                                PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, duration, this.Transform.Position);
+                                PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, duration, duration, this.Transform.Position);
                             }
                         }
                     }
@@ -123,20 +136,20 @@ namespace SandPerSand
                     PlayerIndex firstPlayer2 = 0;
                     foreach (PlayerComponent p in players2)
                     {
-                        if (p.Transform.Position.Y > y2  && p.PlayerIndex != playerIndex)
+                        if (p.Transform.Position.Y > y2 && p.PlayerIndex != playerIndex)
                         {
                             y = p.Transform.Position.Y;
                             firstPlayer2 = p.PlayerIndex;
                         }
                         i2++;
                     }
-                    PlayersManager.Instance.Players[firstPlayer2].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, this.Transform.Position);
+                    PlayersManager.Instance.Players[firstPlayer2].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, 3f, this.Transform.Position);
                     break;
                 case "sunglasses":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, float.NaN, -Vector2.One);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, float.NaN, float.NaN, -Vector2.One);
                     break;
                 case "wings":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, -Vector2.One);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, 10f, -Vector2.One);
                     break;
                 case "speedup":
                     //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10);
@@ -145,14 +158,14 @@ namespace SandPerSand
                     PlayerComponent[] players3 = GameObject.FindComponents<PlayerComponent>();
                     foreach (PlayerComponent p in players3)
                     {
-                        if(p.PlayerIndex != playerIndex)
+                        if (p.PlayerIndex != playerIndex)
                         {
-                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5, this.Transform.Position);
+                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
                         }
                     }
                     break;
                 case "shield":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10, this.Transform.Position);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, 10f, this.Transform.Position);
                     break;
             }
 
@@ -161,14 +174,14 @@ namespace SandPerSand
 
             if (activeItems.Count != ItemRendererList.Count)
             {
-                for(int i = 0; i < ItemRendererList.Count; i++)
+                for (int i = 0; i < ItemRendererList.Count; i++)
                 {
                     ItemRendererList[i].Destroy();
                     ItemRendererGo[i].Destroy();
                 }
                 ItemRendererList = new List<SpriteRenderer>();
                 ItemRendererGo = new List<GameObject>();
-                for(int i = 0; i < activeItems.Count; i++)
+                for (int i = 0; i < activeItems.Count; i++)
                 {
                     ItemRendererGo.Add(new GameObject());
                     ItemRendererList.Add(ItemRendererGo[i].AddComponent<SpriteRenderer>());
@@ -176,7 +189,6 @@ namespace SandPerSand
                     int tileID = itemIDtoTiledID[id];
                     ItemRendererList[i].LoadFromContent($"Tiled/TiledsetTexture/TilesetItems");
                     ItemRendererList[i].SetSourceRectangle(tileID, 32, 32);
-
                 }
             }
 
@@ -199,7 +211,7 @@ namespace SandPerSand
                 {
                     ItemRendererList[i].Effect = Microsoft.Xna.Framework.Graphics.SpriteEffects.None;
                 }
-                if(activeItems[i].id == "wings")
+                if (activeItems[i].id == "wings")
                 {
                     ItemRendererList[i].Depth = 0.2f;
                     ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
@@ -213,7 +225,7 @@ namespace SandPerSand
                 }
                 else if (activeItems[i].id == "lightning")
                 {
-                    if(activeItems[i].pos.Y < 0)
+                    if (activeItems[i].pos.Y < 0)
                     {
                         ItemRendererList[i].SetSourceRectangle(63, 32, 32);
                     }
@@ -222,13 +234,46 @@ namespace SandPerSand
                         //ItemRendererList[i].Transform.LocalRotation = new Quaternion(i,)
                     }
                 }
-                else if(activeItems[i].id == "position_swap")
+                else if (activeItems[i].id == "position_swap")
                 {
                     ItemRendererList[i].SetSourceRectangle(63, 32, 32);
                 }
                 else
                 {
                     ItemRendererList[i].Depth = 0.05f;
+                }
+
+                if (activeItems[i].id != "position_swap")
+                {
+
+                }
+            }
+
+            var nobar = new string[] { "sunglasses", "position_swap" };
+            int barpos = 0;
+
+            for (int i = 0; i < activeItems.Count; i++)
+            {
+                if (Array.IndexOf(nobar, activeItems[i].id) == -1)
+                {
+                    if ((!ItemTimerBar.ContainsKey(activeItems[i].id) || !ItemTimerBar[activeItems[i].id].IsAlive) && activeItems[i].timeleft > 1)
+                    {
+                        ItemTimerBar[activeItems[i].id] = this.Owner.AddComponent<TimerBar>();
+                        ItemTimerBar[activeItems[i].id].ShouldSelfDestruct = true;
+                        ItemTimerBar[activeItems[i].id].SetDurationAndRefill(activeItems[i].timeleft, activeItems[i].tot_time);
+                        ItemTimerBar[activeItems[i].id].FillColor = ItemBarColor[activeItems[i].id];
+                        ItemTimerBar[activeItems[i].id].OriginOffset = -Vector2.UnitY * (-1 - barpos * 0.2f);
+                    }
+                    else
+                    {
+                        if (activeItems[i].tot_time - activeItems[i].timeleft < 0.1f)
+                        {
+                            ItemTimerBar[activeItems[i].id].SetDurationAndRefill(activeItems[i].timeleft);
+                            ItemTimerBar[activeItems[i].id].OriginOffset = Vector2.UnitY * (-1 - barpos * 0.2f);
+                        }
+                    }
+                    barpos++;
+
                 }
             }
 
