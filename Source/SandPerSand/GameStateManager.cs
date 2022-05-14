@@ -83,6 +83,7 @@ namespace SandPerSand
             {
                 case GameState.Prepare:
                     // at prepare state, PlayersManager keep checking for new gamepad
+                    
                     PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
@@ -90,6 +91,11 @@ namespace SandPerSand
                         Debug.Print("GameState: Prepare-> RoundStartCountDown");
                         countDowncounter = 0;
                         exitTrigger = false;
+                        PlayersManager.Instance.SetAllPlayerControls(true);
+                    }
+                    else
+                    {
+                        PlayersManager.Instance.SetAllPlayerControls(false);
                     }
                     break;
                 case GameState.RoundStartCountdown:

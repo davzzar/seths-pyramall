@@ -426,6 +426,14 @@ namespace SandPerSand
 
             return result;
         }
+
+        public void SetAllPlayerControls(bool enabled)
+        {
+            foreach (var player in players.Values)
+            {
+                player.GetComponent<PlayerControlComponent>()!.IsActive = enabled;
+            }
+        }
     }
 
     public class PlayerStates : Behaviour
