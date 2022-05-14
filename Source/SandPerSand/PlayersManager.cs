@@ -19,14 +19,12 @@ namespace SandPerSand
                 if (instance == null)
                 {
                     instance = new PlayersManager();
-                    players = new Dictionary<PlayerIndex, GameObject>();
-                    initialPositions = new List<Vector2>();
                 }
                 return instance;
             }
         }
 
-        private static Dictionary<PlayerIndex, GameObject> players;
+        private Dictionary<PlayerIndex, GameObject> players;
         public Dictionary<PlayerIndex, GameObject> Players
         {
             get => players;
@@ -51,15 +49,18 @@ namespace SandPerSand
 
         public PlayersManager()
         {
+            instance = this;
+            players = new Dictionary<PlayerIndex, GameObject>();
+            initialPositions = new List<Vector2>();
             Debug.Print("player manager created");
         }
 
         public GameState LastGameState { get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         // TODO hard coded shopTime
-        private float shopTime = 10f;
-        private float shopTimeCounter = 0;
-        private int curRank;
+        public float shopTime { get; private set; } = 30f;
+        public float shopTimeCounter { get; private set; } = 0;
+        public int curRank { get; private set; }
         private PlayerIndex[] rankList;
 
         protected override void Update()
@@ -151,7 +152,7 @@ namespace SandPerSand
                     curRank = 0;
                 }
                 shopTimeCounter += Time.DeltaTime;
-                if (shopTimeCounter >= shopTime)
+                if (shopTimeCounter >= shopTime || Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop)
                 {
                     // Reset the shop coutner
                     shopTimeCounter = 0;

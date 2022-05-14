@@ -165,6 +165,7 @@ namespace SandPerSand
                 }else if (newGameState == GameState.RoundStartCountdown)
                 {
                     MidscreenTextPanel.Text = "3";
+                    MidscreenTextPanel.TextColor = Color.White;
                     foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
                     {
                         InventoryGrid.RemoveChild(JoinLabelRoot[index]);
@@ -262,6 +263,11 @@ namespace SandPerSand
                 {
                     rootPanel.RemoveChild(ScoreBoard);
                 }
+                if (newGameState == GameState.Shop)
+                {
+                    UI.Root = rootPanel;
+                    MidscreenTextPanel.Text = "Welcome to the Shop";
+                }
 
                 
 
@@ -274,6 +280,24 @@ namespace SandPerSand
             else if (GameStateManager.Instance.CurrentState == GameState.RoundStartCountdown)
             {
                 MidscreenTextPanel.Text = String.Format("{0:0}", Math.Ceiling(3f - GameStateManager.Instance.CountDowncounter));
+            }else if (GameStateManager.Instance.CurrentState == GameState.Shop)
+            {
+                List<(int score, PlayerIndex index)> scores = new List<(int rank, PlayerIndex index)>();
+                foreach (var item in PlayersManager.Instance.Players)
+                {
+                    scores.Add((item.Value.GetComponent<PlayerStates>().RoundRank, item.Key));
+                }
+                scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+                scores.Reverse();
+                try
+                {
+                    MidscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.curRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.shopTime - PlayersManager.Instance.shopTimeCounter)) + " seconds left";
+                    MidscreenTextPanel.TextColor = PlayerIndexToColor[scores[PlayersManager.Instance.curRank - 1].index];
+                }
+                catch
+                {
+                    MidscreenTextPanel.TextColor = Color.White;
+                }
             }
         }
 
