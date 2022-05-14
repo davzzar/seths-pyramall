@@ -114,7 +114,19 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        public bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        public bool HasSandReached
+        {
+            get
+            {
+                if (this.sandSimulation == null || !this.sandSimulation.IsAlive)
+                {
+                    this.sandSimulation = GameObject.FindComponent<SandSimulation>();
+
+                }
+                return this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+            }
+        }
+
         private bool HasSandReachedBefore;
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
