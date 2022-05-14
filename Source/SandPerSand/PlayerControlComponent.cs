@@ -35,10 +35,10 @@ namespace SandPerSand
         
         // Hard Jump parameters
         private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
-        private float decelerationForBlockHControl = 0.6f * MaxDeceleration;
-        private float hardJumpSpan = 0.5f;
-        private float blockFallSandSpan = 0.7f;
-        private float blockHControlSpan = 0.7f;
+        private float decelerationForBlockHControl = 0.7f * MaxDeceleration;
+        private float hardJumpSpan = 0.4f;
+        private float blockFallSandSpan = 0.4f;
+        private float blockHControlSpan = 0.4f;
 
         // State
         public bool IsGrounded { get; private set; }
