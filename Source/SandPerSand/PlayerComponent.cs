@@ -179,15 +179,16 @@ namespace SandPerSand
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.GetOrAddComponent<Animator>();
-            playerAnimator.Depth = 0.1f;
+            playerAnimator.Depth = Conf.Depth.Player;
             SetPlayerAnimationSprite();
 
-            // Add hardjump halo go
+            // Add hardjump haloGo
             var haloGo = new GameObject();
             haloGo.Transform.Parent = Transform;
             haloGo.Transform.LocalPosition = new Vector2(0, -.1f);
             var playerEffectAnimator = haloGo.AddComponent<Animator>();
             playerEffectAnimator.LoadFromContent("PlayerEffectAnimated");
+            playerEffectAnimator.Depth = Conf.Depth.PlayerBack;
             haloGo.AddComponent<EffectAnimatorController>();
             haloGo.IsEnabled = false;
 
