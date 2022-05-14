@@ -1,11 +1,10 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Resources;
-using Engine;
+﻿using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace SandPerSand
 {
@@ -22,9 +21,9 @@ namespace SandPerSand
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
-        private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
-        private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
+        private bool JumpButtonPressed => TakesInput && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
+        private bool JumpButtonUp => TakesInput && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
+        private float HorizontalDirection => TakesInput ? InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement() : 0.0f;
 
         // Hard Jump
         private bool canHardJump = false;
@@ -131,6 +130,7 @@ namespace SandPerSand
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
         private bool wasFacingRight = true;
+        public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
 
         protected override void OnEnable()
         {

@@ -431,7 +431,7 @@ namespace SandPerSand
         {
             foreach (var player in players.Values)
             {
-                player.GetComponent<PlayerControlComponent>()!.IsActive = enabled;
+                player.GetComponent<PlayerControlComponent>()!.TakesInput = enabled;
             }
         }
     }
