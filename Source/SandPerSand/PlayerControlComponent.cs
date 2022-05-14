@@ -130,6 +130,7 @@ namespace SandPerSand
         private bool HasSandReachedBefore;
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
+        private bool wasFacingRight = true;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
 
         protected override void OnEnable()
@@ -391,6 +392,12 @@ namespace SandPerSand
             // (since now we only move up while jumping, will need to explicitly model a jump later)
             if (!isSandEscapeJump && JumpButtonUp && !IsGrounded && !jumpEnded && VerticalSpeed > 0) jumpEnded = true;
 
+            if (HorizontalDirection > 0 && !wasFacingRight || HorizontalDirection < 0 && wasFacingRight)
+            {
+                wasFacingRight = HorizontalDirection > 0;
+                Owner.GetComponent<SpriteRenderer>()!.FlipHorizontal();
+            }
+            
             // Apply computed velocity
             ApplyVelocity();
             
