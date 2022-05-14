@@ -35,10 +35,10 @@ namespace SandPerSand
         
         // Hard Jump parameters
         private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
-        private float decelerationForBlockHControl = 0.6f * MaxDeceleration;
-        private float hardJumpSpan = 0.5f;
-        private float blockFallSandSpan = 0.7f;
-        private float blockHControlSpan = 0.7f;
+        private float decelerationForBlockHControl = 0.7f * MaxDeceleration;
+        private float hardJumpSpan = 0.4f;
+        private float blockFallSandSpan = 0.4f;
+        private float blockHControlSpan = 0.4f;
 
         // State
         public bool IsGrounded { get; private set; }
@@ -131,7 +131,7 @@ namespace SandPerSand
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
-
+        
         protected override void OnEnable()
         {
             // add needed components
