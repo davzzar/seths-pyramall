@@ -14,8 +14,6 @@ namespace SandPerSand
     
     public class LevelTileLayer : TileLayer
     {
-        public float Depth { get; set; }
-
         public LevelTileLayer() 
         {
             Depth = 0f;
@@ -28,7 +26,6 @@ namespace SandPerSand
                 throw new InvalidOperationException("Can't parse properties" +
                     "before TiledLayer is ready");
             }
-            this.Depth = 0f;
             foreach (TiledProperty p in TiledLayer.properties)
             {
                 if (p.name == "depth")

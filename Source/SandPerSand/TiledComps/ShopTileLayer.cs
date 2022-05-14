@@ -15,7 +15,7 @@ namespace SandPerSand
     {
         public ShopTileLayer() : base()
         {
-            Depth = 0f;
+            Depth = 0.5f;
         }
 
         public override void ParseLayerProperties()
