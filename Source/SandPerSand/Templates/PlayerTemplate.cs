@@ -20,6 +20,20 @@ namespace SandPerSand
 
             playerGo.Transform.LocalPosition = position;
 
+            var jumpSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
+            jumpSoundComp.LoadFromContent("Sounds/player_land");
+            jumpSoundComp.Trigger = () =>
+            {
+                var pcc = playerGo.GetComponent<PlayerControlComponent>();
+
+                if (pcc.WillJump)
+                {
+                    return true;
+                }
+
+                return false;
+            };
+
             return playerGo;
         }
     }
