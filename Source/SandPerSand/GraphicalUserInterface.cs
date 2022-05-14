@@ -362,6 +362,7 @@ namespace SandPerSand
             InventoryRoot[playerIndex].AddChild(MinorItems[playerIndex]);
             InventoryRoot[playerIndex].AddChild(MajorItems[playerIndex]);
             InventoryRoot[playerIndex].AddChild(coin);
+            InventoryRoot[playerIndex].Background = new SolidBrush(new Color(96, 23, 33));
 
             InventoryGrid.AddChild(InventoryRoot[playerIndex]);
 
