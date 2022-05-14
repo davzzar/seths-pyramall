@@ -131,7 +131,7 @@ namespace SandPerSand
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
-
+        
         protected override void OnEnable()
         {
             // add needed components

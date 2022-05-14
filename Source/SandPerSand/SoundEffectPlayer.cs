@@ -8,6 +8,8 @@ namespace SandPerSand
     {
         private string loadFromContentPath;
 
+        private float playStart = float.NegativeInfinity;
+
         public Func<bool> Trigger { get; set; }
 
         public SoundEffect Sound { get; set; }
@@ -37,9 +39,10 @@ namespace SandPerSand
                 return;
             }
 
-            if (this.Trigger.Invoke())
+            if (this.playStart + this.Sound.Duration.TotalSeconds < Time.GameTime && this.Trigger.Invoke())
             {
                 this.Sound.Play(this.Volume, this.Pitch, this.Pan);
+                this.playStart = Time.GameTime;
             }
         }
 

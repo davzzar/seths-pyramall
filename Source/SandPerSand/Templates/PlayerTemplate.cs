@@ -22,16 +22,20 @@ namespace SandPerSand
 
             var jumpSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
             jumpSoundComp.LoadFromContent("Sounds/player_land");
+            jumpSoundComp.Volume = 0.6f;
             jumpSoundComp.Trigger = () =>
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
+                return pcc.WillJump;
+            };
 
-                if (pcc.WillJump)
-                {
-                    return true;
-                }
-
-                return false;
+            var diggingSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
+            diggingSoundComp.LoadFromContent("Sounds/player_sand_dig");
+            diggingSoundComp.Volume = 0.2f;
+            diggingSoundComp.Trigger = () =>
+            {
+                var pcc = playerGo.GetComponent<PlayerControlComponent>();
+                return pcc.HasSandReached;
             };
 
             return playerGo;
