@@ -191,14 +191,17 @@ namespace SandPerSand
                     };
                     //display ranks on screen
 
-                    (int score, PlayerIndex index)[] scores = new (int, PlayerIndex)[PlayersManager.Instance.Players.Count];
-                    int j = 0;
+                    List<(int score, PlayerIndex index)> scores = new List<(int score, PlayerIndex index)> ();
                     foreach (var item in PlayersManager.Instance.Players)
                     {
-                        scores[j] = (item.Value.GetComponent<PlayerStates>().Score, item.Key);
+                        scores.Add((item.Value.GetComponent<PlayerStates>().Score, item.Key));
                     }
-                    Array.Sort(scores);
-                    Array.Reverse(scores);
+                    scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+
+                    foreach (var score in scores)
+                    {
+                        Debug.Print(score.ToString());
+                    }
 
                     for (int i = 0; i < PlayersManager.Instance.Players.Count; i++)
                     {

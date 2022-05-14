@@ -117,7 +117,8 @@ namespace SandPerSand
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
-                    if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllExit())
+                    PlayersManager.Instance.CheckAllDead();
+                    if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
                     {
                         countDowncounter = 0f;
                         exitTrigger = false;

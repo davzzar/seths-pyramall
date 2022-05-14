@@ -358,7 +358,7 @@ namespace SandPerSand
             return true;
         }
 
-        public Boolean CheckAllExit()
+        public Boolean CheckAllDeadOrExit()
         {
             if (players.Count == 0)
             {
@@ -367,7 +367,7 @@ namespace SandPerSand
             var allExitedFlag = true;
             foreach (var player in players.Values)
             {
-                if (!player.GetComponent<PlayerStates>().Exited)
+                if (!player.GetComponent<PlayerStates>().Exited && player.GetComponent<PlayerComponent>().IsAlive)
                 {
                     allExitedFlag = false;
                 }
