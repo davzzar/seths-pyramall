@@ -11,7 +11,7 @@ for a duration.</property>
 Everyone's small!</property>
    <property name="item_id" value="lightning"/>
    <property name="item_name" value="Blitz!"/>
-   <property name="item_price" type="int" value="10"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
    <property name="item_usage_icon" value="usage_blitz"/>
   </properties>
@@ -72,7 +72,7 @@ purely cosmetic)</property>
    <property name="item_flavour" value="Deal with it."/>
    <property name="item_id" value="sunglasses"/>
    <property name="item_name" value="Sunglasses"/>
-   <property name="item_price" type="int" value="20"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
    <property name="item_usage_icon" value="usage_glasses"/>
   </properties>
@@ -91,7 +91,7 @@ upon use.</property>
 You're there now!</property>
    <property name="item_id" value="position_swap"/>
    <property name="item_name" value="Position-Swap"/>
-   <property name="item_price" type="int" value="15"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="major"/>
    <property name="item_usage_icon" value="usage_posswap"/>
   </properties>
@@ -138,7 +138,7 @@ include dizziness,
  and vomitting...</property>
    <property name="item_id" value="dizzy_eyes"/>
    <property name="item_name" value="Every-Stun!"/>
-   <property name="item_price" type="int" value="10"/>
+   <property name="item_price" type="int" value="0"/>
    <property name="item_type" value="minor"/>
    <property name="item_usage_icon" value="usage_dizzy"/>
   </properties>
