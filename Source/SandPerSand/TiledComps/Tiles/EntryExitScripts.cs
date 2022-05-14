@@ -29,7 +29,8 @@ namespace SandPerSand
         {
             base.Update();
             var currentGameState = GameStateManager.Instance.CurrentState;
-            if (currentGameState  != GameState.InRound &&
+            if (currentGameState != GameState.RoundStartCountdown &&
+                currentGameState  != GameState.InRound &&
                 currentGameState != GameState.CountDown &&
                 currentGameState != GameState.Shop)
             {
