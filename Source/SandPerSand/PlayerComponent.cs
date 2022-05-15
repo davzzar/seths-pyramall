@@ -108,16 +108,27 @@ namespace SandPerSand
                 
                 Color color;
 
-                if (this.isAlive)
+                if (this.isAlive)// dead -> alive
                 {
                     color = Color.White;
                     var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
                     ccp.Margin = new Border(5, 10, 5, 5);
+                    // enable collision
+                    Owner.GetComponentInChildren<Collider>().IsActive = true;
+                    // show sprite
+                    Owner.GetComponent<SpriteRenderer>().IsActive = true;
                 }
-                else
+                else// alive -> dead
                 {
                     color = Color.DarkGray * 0.8f;
                     Owner.GetComponent<CameraControlPoint>()?.Destroy();
+                    // disable colision
+                    Owner.GetComponentInChildren<Collider>().IsActive = false;
+                    // hide sprite after 10s( or at RoundCheck)
+                    Owner.AddComponent<GoTimer>().Init(10f,() =>
+                    {
+                        Owner.GetComponent<SpriteRenderer>().IsActive = false;
+                    });
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();
