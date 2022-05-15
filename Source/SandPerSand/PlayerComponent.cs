@@ -181,8 +181,8 @@ namespace SandPerSand
             timerBar.DepletionSpeed = 0.2f;
             timerBar.IsActive = false;
 
-            var controlComp = Owner.GetOrAddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = InputHandler;
+            var playerController = Owner.GetOrAddComponent<PlayerControlComponent>();
+            playerController.InputHandler = InputHandler;
 
             var playerStates = Owner.GetOrAddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
@@ -210,6 +210,11 @@ namespace SandPerSand
             itemsManager.inputHandler = InputHandler;
 
             this.IsAlive = true;
+
+            // Subscribe to events
+            // disable the timerBar when it fills up so it is not shown.
+            // TODO add recharge sound cue here
+            timerBar.OnFilled += () => timerBar.IsActive = false;
         }
 
         private void SetPlayerAnimationSprite()

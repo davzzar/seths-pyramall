@@ -1,4 +1,6 @@
-﻿using Engine;
+﻿using System;
+using Engine;
+using JetBrains.Annotations;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Vector2 = Microsoft.Xna.Framework.Vector2;
@@ -7,13 +9,16 @@ namespace SandPerSand
 {
     public class TimerBar : Renderer
     {
-        public bool IsDepleting = true;
+        public bool IsRunning = true;
         public const float Capacity = 1.0f;
         public const float EmptyLevel = 0.0f;
         public float DepletionSpeed { get; set; } = 0.05f;
         public float FillLevel { get; set; } = 1.0f;
         public bool ShouldSelfDestruct = false;
 
+        // Events
+        public event Action OnEmpty;
+        public event Action OnFilled;
 
         // Drawing
         public float Width { get; set; } = 1.0f;
@@ -36,7 +41,7 @@ namespace SandPerSand
 
         protected override void Update()
         {
-            if (!IsDepleting) return;
+            if (!IsRunning) return;
             FillLevel = MathUtils.MoveTowards(FillLevel, EmptyLevel, DepletionSpeed * Time.DeltaTime);
 
             if (ShouldSelfDestruct && FillLevel <= EmptyLevel)
@@ -45,6 +50,15 @@ namespace SandPerSand
             }
             
             FillLevel = MathHelper.Clamp(FillLevel, EmptyLevel, Capacity);
+
+            if (Math.Abs(FillLevel - EmptyLevel) < 1e-05)
+            {
+                OnEmpty?.Invoke(); 
+            } 
+            else if (Math.Abs(FillLevel - Capacity) < 1e-05)
+            {
+                OnFilled?.Invoke();
+            }
         }
 
         public override void Draw()
@@ -89,6 +103,18 @@ namespace SandPerSand
         {
             this.RefillBar(level);
             this.SetDuration(duration);
+        }
+
+        public void SetRechargingAt(in float rechargeSpeed)
+        {
+            DepletionSpeed = -rechargeSpeed;
+            IsRunning = true;
+        }
+
+        public void SetDepletingAt(in float depletionSpeed)
+        {
+            DepletionSpeed = depletionSpeed;
+            IsRunning = true;
         }
 
         protected override void OnEnable()
