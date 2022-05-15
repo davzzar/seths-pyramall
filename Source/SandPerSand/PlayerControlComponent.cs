@@ -55,11 +55,11 @@ namespace SandPerSand
 
         public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
 
-        public const float MaxArialAcceleration = 30f;
+        public const float MaxArialAcceleration = 50f;
 
         public const float MaxDeceleration = 60f;
 
-        public const float MaxHorizontalSpeed = 13f;
+        public const float MaxHorizontalSpeed = 7f;
 
         // Movement on Slopes
         public float SlopeClimbVerticalSpeed { get; private set; }
@@ -69,13 +69,13 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public float JumpHeight => 8f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        public float JumpHeight => 7f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
         //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
 
         // Player Gravity and Variable Jump Height
-        public const float JumpVelocityFalloff = 3f;
+        public const float JumpVelocityFalloff = 1f;
 
         public const float Gravity = -9.8f; // a la Unity
 
