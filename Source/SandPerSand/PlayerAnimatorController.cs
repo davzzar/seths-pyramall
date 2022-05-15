@@ -14,6 +14,7 @@ namespace SandPerSand
         private Animator animator;
         private InputHandler inputHandler;
         private PlayerControlComponent playerControler;
+        private PlayerComponent playerComp;
         private GroundCheckComponent groundChecker;
         private RigidBody rigidBody;
 
@@ -43,6 +44,7 @@ namespace SandPerSand
             animator = Owner.GetComponent<Animator>();
             inputHandler = Owner.GetComponent<PlayerControlComponent>().InputHandler;
             playerControler = Owner.GetComponent<PlayerControlComponent>();
+            playerComp = Owner.GetComponent<PlayerComponent>();
             groundChecker = this.Owner.GetOrAddComponent<GroundCheckComponent>();
             rigidBody = this.Owner.GetOrAddComponent<RigidBody>();
         }
@@ -58,7 +60,7 @@ namespace SandPerSand
             //              !isGrounded && JumpButtonPressed && CanUseCoyote
             jumpFlag = playerControler.WillJump;
             sandReachedFlag = playerControler.HasSandReached;
-            dieFlag = playerControler.DieFromDrown;
+            dieFlag = !playerComp.IsAlive;
             // TODO set these flags correctly
             collectFlag = false;
 

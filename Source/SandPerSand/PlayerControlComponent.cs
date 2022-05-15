@@ -131,8 +131,7 @@ namespace SandPerSand
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
         private bool wasFacingRight = true;
-        public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
-        
+
         protected override void OnEnable()
         {
             // add needed components
@@ -145,6 +144,11 @@ namespace SandPerSand
             timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
             Owner.Layer = 1;
+        }
+
+        protected override void OnDisable()
+        {
+            // unsubscribe from events
         }
 
         protected override void Update()
@@ -244,13 +248,13 @@ namespace SandPerSand
             }
 
             // Sand Interaction
-            HardJumpThroughFallingSand();
+            //HardJumpThroughFallingSand();
 
             if (HasSandReached && !HasSandReachedBefore)
             {
                 // enable mashing bar
                 timerBar.IsActive = true;
-                timerBar.FillLevel = 1f;
+                timerBar.SetDepletingAt(0.3f);
 
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
@@ -277,7 +281,8 @@ namespace SandPerSand
                 if (!HasSandReached)
                 {
                     // Exit trapped state and perform jump
-                    timerBar.IsActive = false;
+                    // Switch to recharging
+                    timerBar.SetRechargingAt(0.15f);
                     HasSandReachedBefore = false;
 
                     // Do jump

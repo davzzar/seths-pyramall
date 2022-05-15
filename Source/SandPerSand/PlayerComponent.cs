@@ -108,16 +108,27 @@ namespace SandPerSand
                 
                 Color color;
 
-                if (this.isAlive)
+                if (this.isAlive)// dead -> alive
                 {
                     color = Color.White;
                     var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
                     ccp.Margin = new Border(5, 10, 5, 5);
+                    // enable collision
+                    Owner.GetComponentInChildren<Collider>().IsActive = true;
+                    // show sprite
+                    Owner.GetComponent<SpriteRenderer>().IsActive = true;
                 }
-                else
+                else// alive -> dead
                 {
                     color = Color.DarkGray * 0.8f;
                     Owner.GetComponent<CameraControlPoint>()?.Destroy();
+                    // disable colision
+                    Owner.GetComponentInChildren<Collider>().IsActive = false;
+                    // hide sprite after 10s( or at RoundCheck)
+                    Owner.AddComponent<GoTimer>().Init(10f,() =>
+                    {
+                        Owner.GetComponent<SpriteRenderer>().IsActive = false;
+                    });
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();
@@ -167,11 +178,12 @@ namespace SandPerSand
 
             // To show when player is trapped in sand
             var timerBar = Owner.GetOrAddComponent<TimerBar>();
+            timerBar.FillColor = Color.Red;
             timerBar.DepletionSpeed = 0.2f;
             timerBar.IsActive = false;
 
-            var controlComp = Owner.GetOrAddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = InputHandler;
+            var playerController = Owner.GetOrAddComponent<PlayerControlComponent>();
+            playerController.InputHandler = InputHandler;
 
             var playerStates = Owner.GetOrAddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
@@ -199,6 +211,11 @@ namespace SandPerSand
             itemsManager.inputHandler = InputHandler;
 
             this.IsAlive = true;
+
+            // Subscribe to events
+            // disable the timerBar when it fills up so it is not shown.
+            // TODO add recharge sound cue here
+            timerBar.OnFilled += () => timerBar.IsActive = false;
         }
 
         private void SetPlayerAnimationSprite()
