@@ -37,6 +37,30 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/Item_slot.png
 
+#begin GUI/left_bumper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=True
+/processorParam:MakeSquare=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/left_bumper.png
+
+#begin GUI/right_bumper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=True
+/processorParam:MakeSquare=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/right_bumper.png
+
 #begin playerfour.png
 /importer:TextureImporter
 /processor:TextureProcessor
