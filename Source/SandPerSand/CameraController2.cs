@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Text;
 using Engine;
 using JetBrains.Annotations;
@@ -18,6 +19,8 @@ namespace SandPerSand
         public Vector2 MinCameraSize { get; set; } = Vector2.One * 5;
 
         public Aabb Bounds { get; set; } = new Aabb(0f, 0f, float.PositiveInfinity, float.PositiveInfinity);
+
+        public Border CameraBorder { get; set; } = new Border(0, 0, 0, 150);
 
         public float ZoomSpeed { get; set; } = 6f;
 
@@ -106,9 +109,14 @@ namespace SandPerSand
             }
 
             // Calculate the resulting camera rectangle with respect to the aspect ratio
+            var screenSize = this.camera.ScreenSize;
+            screenSize.X -= this.CameraBorder.Left + this.CameraBorder.Right;
+            screenSize.Y -= this.CameraBorder.Top + this.CameraBorder.Bottom;
+            var aspectRatio = screenSize.Y / screenSize.X;
+
             var center = (min + max) / 2f;
             var size = Vector2.Max(max - min, this.MinCameraSize);
-            size.Y = MathF.Max(size.Y, size.X * this.camera.AspectRatio);
+            size.Y = MathF.Max(size.Y, size.X * aspectRatio);
 
             // Clamp the edges of the rectangles to the bounds
             if (center.Y + size.Y / 2f > this.Bounds.Max.Y)
@@ -122,8 +130,14 @@ namespace SandPerSand
             }
 
             // Update the camera 
-            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center, 4 * Time.DeltaTime);
             this.camera.Height = MathHelper.Lerp(this.camera.Height, size.Y, 4 * Time.DeltaTime);
+            
+            var unitPerPixel = size.Y / this.camera.ScreenSize.Y;
+            var offset = new Vector2(this.CameraBorder.Left - this.CameraBorder.Right, this.CameraBorder.Bottom - this.CameraBorder.Top) * unitPerPixel / 2f;
+
+            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center - offset, 4 * Time.DeltaTime);
+
+            Gizmos.DrawRect(center - offset, size * 0.99f, Color.Black, 2f);
         }
     }
 }
