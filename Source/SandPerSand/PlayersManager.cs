@@ -411,6 +411,21 @@ namespace SandPerSand
                 }
             }
         }
+
+        public List<GameObject> InGamePlayerGo()
+        {
+            List<GameObject> result = new List<GameObject>();
+
+            foreach(GameObject player in players.Values)
+            {
+                if (!player.GetComponent<PlayerStates>().Exited && player.GetComponent<PlayerComponent>().IsAlive)
+                {
+                    result.Add(player);
+                }
+            }
+
+            return result;
+        }
     }
 
     public class PlayerStates : Behaviour
@@ -486,7 +501,7 @@ namespace SandPerSand
                 if (activeItems[i].id == "position_swap")
                 {
                     Debug.Print((activeItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
+                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
                     {
                         this.Transform.Position = activeItems[i].pos;
                         time = -1f;

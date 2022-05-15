@@ -66,15 +66,17 @@ namespace SandPerSand
 
             var playerIndex = inputHandler.PlayerIndex;
 
-            if ((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
+            if ((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && (GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown))
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, true);
             }
 
-            if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound)
+            if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
                 itemId = PlayersManager.Instance.useItem(playerIndex, false);
             }
+
+            var players = PlayersManager.Instance.InGamePlayerGo();
 
             switch (itemId)
             {
@@ -84,33 +86,30 @@ namespace SandPerSand
                     sandSim.AddSandSource(new Aabb(pos.X, pos.Y, 32 / 64f, 32 / 64f));
                     break;
                 case "position_swap":
-                    PlayerComponent[] players = GameObject.FindComponents<PlayerComponent>();
                     float y = 0;
                     int i = 0;
-                    PlayerIndex firstPlayer = playerIndex;
-                    foreach (PlayerComponent p in players)
+                    GameObject firstPlayer = null;
+                    foreach (GameObject p in players)
                     {
-                        if (p.Transform.Position.Y > y)
+                        if (p.Transform.Position.Y > y && p != this.Owner)
                         {
                             y = p.Transform.Position.Y;
-
-                            firstPlayer = p.PlayerIndex;
+                            firstPlayer = p;
                         }
                         i++;
                     }
-                    //Vector2 postmp = players[firstPlayer].Transform.Position;
-                    //players[firstPlayer].Transform.Position = this.Transform.Position;
-                    //this.Transform.Position = postmp;
-                    PlayersManager.Instance.Players[firstPlayer].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, PlayersManager.Instance.Players[firstPlayer].Transform.Position);
+                    if(firstPlayer!= null)
+                    {
+                        firstPlayer.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
+                        this.Owner.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, firstPlayer.Transform.Position);
+                    }
                     break;
                 case "lightning":
-                    PlayerComponent[] playerslit = GameObject.FindComponents<PlayerComponent>();
-                    foreach (PlayerComponent p in playerslit)
+                    foreach (GameObject p in players)
                     {
                         if (p.Transform.Position.Y > this.Transform.Position.Y)
                         {
-                            if (p.PlayerIndex != playerIndex && p.Transform.Position.Y > this.Transform.Position.Y)
+                            if (p != this.Owner && p.Transform.Position.Y > this.Transform.Position.Y)
                             {
                                 int duration = 0;
                                 float dist = p.Transform.Position.Y - this.Transform.Position.Y;
@@ -122,7 +121,7 @@ namespace SandPerSand
                                 {
                                     duration = (int)(dist / 3);
                                 }
-                                PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, duration, duration, this.Transform.Position);
+                                p.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, duration, duration, this.Transform.Position);
                             }
                         }
                     }
@@ -130,20 +129,22 @@ namespace SandPerSand
                 case "magnet":
                     break;
                 case "ice_block":
-                    PlayerComponent[] players2 = GameObject.FindComponents<PlayerComponent>();
                     float y2 = 0;
                     int i2 = 0;
-                    PlayerIndex firstPlayer2 = 0;
-                    foreach (PlayerComponent p in players2)
+                    GameObject firstPlayer2 = null;
+                    foreach (GameObject p in players)
                     {
-                        if (p.Transform.Position.Y > y2 && p.PlayerIndex != playerIndex)
+                        if (p.Transform.Position.Y > y2 && p != this.Owner)
                         {
                             y = p.Transform.Position.Y;
-                            firstPlayer2 = p.PlayerIndex;
+                            firstPlayer2 = p;
                         }
                         i2++;
                     }
-                    PlayersManager.Instance.Players[firstPlayer2].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, 3f, this.Transform.Position);
+                    if(firstPlayer2 != null)
+                    {
+                        firstPlayer2.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, 3f, this.Transform.Position);
+                    }
                     break;
                 case "sunglasses":
                     PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, float.NaN, float.NaN, -Vector2.One);
@@ -155,12 +156,11 @@ namespace SandPerSand
                     //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10);
                     break;
                 case "dizzy_eyes":
-                    PlayerComponent[] players3 = GameObject.FindComponents<PlayerComponent>();
-                    foreach (PlayerComponent p in players3)
+                    foreach (GameObject p in players)
                     {
-                        if (p.PlayerIndex != playerIndex)
+                        if (p != this.Owner)
                         {
-                            PlayersManager.Instance.Players[p.PlayerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
+                            p.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
                         }
                     }
                     break;
@@ -177,13 +177,22 @@ namespace SandPerSand
                 for (int i = 0; i < ItemRendererList.Count; i++)
                 {
                     ItemRendererList[i].Destroy();
-                    ItemRendererGo[i].Destroy();
+                    if(ItemRendererGo[i] != null)
+                    {
+                        ItemRendererGo[i].Destroy();
+                    }
                 }
                 ItemRendererList = new List<SpriteRenderer>();
                 ItemRendererGo = new List<GameObject>();
+
+
                 for (int i = 0; i < activeItems.Count; i++)
                 {
                     ItemRendererGo.Add(new GameObject());
+                    if (activeItems[i].pos.Y < 0)
+                    {
+                        ItemRendererGo[i].Transform.Parent = this.Owner.Transform;
+                    }
                     ItemRendererList.Add(ItemRendererGo[i].AddComponent<SpriteRenderer>());
                     string id = activeItems[i].id;
                     int tileID = itemIDtoTiledID[id];
@@ -194,12 +203,7 @@ namespace SandPerSand
 
             for (int i = 0; i < activeItems.Count; i++)
             {
-                if (activeItems[i].pos.Y < 0)
-                {
-                    ItemRendererList[i].Transform.Position = this.Transform.Position;
-
-                }
-                else
+                if (activeItems[i].pos.Y > 0)
                 {
                     ItemRendererList[i].Transform.Position = activeItems[i].pos;
                 }
@@ -215,13 +219,13 @@ namespace SandPerSand
                 {
                     ItemRendererList[i].Depth = 0.2f;
                     ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
-                    ItemRendererList[i].Transform.Position = this.Transform.Position + (facingright ? -Vector2.UnitX * .2f : Vector2.UnitX * .2f);
+                    ItemRendererList[i].Transform.LocalPosition = -(Vector2.UnitY * 0.1f) + (facingright ? -Vector2.UnitX * .4f : Vector2.UnitX * .4f);
                 }
                 else if (activeItems[i].id == "sunglasses")
                 {
                     ItemRendererList[i].Depth = 0.05f;
-                    ItemRendererList[i].Transform.LossyScale = 0.6f * Vector2.One;
-                    ItemRendererList[i].Transform.Position = this.Transform.Position + this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity / 50 - (Vector2.UnitY * 0.15f) + (facingright ? -Vector2.UnitX * .1f : Vector2.UnitX * .1f);
+                    ItemRendererList[i].Transform.LossyScale = 0.5f * Vector2.One;
+                    ItemRendererList[i].Transform.LocalPosition = -(Vector2.UnitY * 0.125f) + (facingright ? -Vector2.UnitX * .1f : Vector2.UnitX * .1f);
                 }
                 //else if (activeItems[i].id == "lightning")
                 //{
