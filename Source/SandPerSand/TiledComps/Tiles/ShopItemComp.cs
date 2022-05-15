@@ -68,7 +68,7 @@ namespace SandPerSand
             infoGo.Transform.Parent = this.Transform;
             var infoComp = infoGo.AddComponent<ShopItemInfoComp>();
             price = item.Price;
-            infoComp.FillInForm(ItemId, item.Price, stock, item.ImageName, item.Description);
+            infoComp.FillInForm(item, stock);
             infoGo.IsEnabled = false;
         }
 
