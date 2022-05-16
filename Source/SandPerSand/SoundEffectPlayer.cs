@@ -43,17 +43,29 @@ namespace SandPerSand
         /// <inheritdoc />
         protected override void Update()
         {
-            if (this.Trigger == null || this.Sounds.Count == 0)
+            Play(ignoreTrigger: false);
+        }
+
+        /// <summary>
+        /// Force the SoundEffectPlayer to play its sound effect. This method does not respect the Tigger property.
+        /// </summary>
+        public void Play(bool ignoreTrigger = true)
+        {
+            if ((this.Trigger == null && !ignoreTrigger) || this.Sounds.Count == 0)
             {
                 return;
             }
 
-            if (this.lockTime <= Time.GameTime && this.Trigger.Invoke())
+            if (!(this.lockTime <= Time.GameTime)) return;
+            if (!ignoreTrigger)
             {
-                var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
-                sound.Play(this.Volume, this.Pitch, this.Pan);
-                this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
+                // check trigger 
+                if (!this.Trigger.Invoke()) return;
             }
+
+            var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
+            sound.Play(this.Volume, this.Pitch, this.Pan);
+            this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
         }
 
         /// <inheritdoc />
