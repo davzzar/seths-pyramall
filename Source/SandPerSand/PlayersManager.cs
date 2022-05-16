@@ -63,6 +63,17 @@ namespace SandPerSand
         public int curRank { get; private set; }
         private PlayerIndex[] rankList;
 
+        private SoundEffectPlayer itemBuySoundEffect; 
+        protected override void OnEnable()
+        {
+            // add components to the manager owner
+            itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
+            itemBuySoundEffect.LoadFromContent("Sounds/item_use01",
+                "Sounds/item_use02",
+                "Sounds/item_use03",
+                "Sounds/item_use04");
+        }
+
         protected override void Update()
         {
             if (CurrentGameState == GameState.RoundStartCountdown)
@@ -243,6 +254,7 @@ namespace SandPerSand
 
         public string useItem(PlayerIndex player, Boolean Major)
         {
+            itemBuySoundEffect?.Play();
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             GraphicalUserInterface.Instance.removeItem(player, Major);
             return state.useItem(Major);
