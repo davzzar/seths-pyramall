@@ -25,6 +25,7 @@ namespace SandPerSand.SandSim
         public int StableSandColourRange = 1000;
 
         public Color FlowingSandColor { get; set; } = new Color(196, 88, 47);
+        public uint FlowingSandOffset = 0;
 
         public int MaxLayer { get; set; } = 1;
 
@@ -43,6 +44,8 @@ namespace SandPerSand.SandSim
         /// <inheritdoc />
         public override void Draw()
         {
+            FlowingSandOffset++;
+
             if (this.SandGrid == null)
             {
                 return;
@@ -105,7 +108,13 @@ namespace SandPerSand.SandSim
                         }
                         else
                         {
-                            color = Color.Lerp(this.StableSandColor, this.FlowingSandColor, (cell.Layer + 1) / (float)this.MaxLayer);
+                            // color = this.FlowingSandColor;
+                            double RandomValueFromPosition = (double)(StableSandColorOffset[x, (y + (this.FlowingSandOffset)) % this.SandGrid.ResolutionY]);
+                            RandomValueFromPosition = 1.0 + ((RandomValueFromPosition - 50) / (1000000)) * this.StableSandColourRange;
+                            int Red = (int)(this.FlowingSandColor.R * RandomValueFromPosition) % 256;
+                            int Green = (int)(this.FlowingSandColor.G * RandomValueFromPosition) % 256;
+                            int Blue = (int)(this.FlowingSandColor.B * RandomValueFromPosition) % 256;
+                            color = new Color(Red, Green, Blue);
                         }
                     }
                     else if (cell.HasObstacle && y < this.SandGrid.ResolutionY - 1 && this.SandGrid[x, y+1].HasSand)
