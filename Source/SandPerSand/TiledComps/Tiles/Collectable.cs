@@ -53,6 +53,10 @@ namespace SandPerSand
                     this.destroy = PlayersManager.Instance.addItemToInventory(playerIndex, CollectableID, false);
                     if (this.destroy)
                     {
+                        // play sound effect
+                        var soundEffect = Owner.GetComponent<SoundEffectPlayer>();
+                        soundEffect?.Play();
+
                         Debug.Print("Item " + CollectableID + " was collected by player " + playerIndex.ToString());
                     }
                     return;
@@ -62,6 +66,9 @@ namespace SandPerSand
 
         private void CoinCollision(object sender, Collider e)
         {
+            var soundEffect = Owner.GetComponent<SoundEffectPlayer>();
+            soundEffect?.Play();
+
             foreach (var item in PlayersManager.Instance.Players)
             {
                 var playerIndex = item.Key;
