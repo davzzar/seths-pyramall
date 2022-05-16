@@ -20,7 +20,7 @@
                 {
                     return;
                 }
-
+                
                 var wasActive = this.IsActiveInHierarchy;
                 this.isActive = value;
 

@@ -91,10 +91,21 @@ namespace SandPerSand
                         Debug.Print("GameState: Prepare-> RoundStartCountDown");
                         countDowncounter = 0;
                         exitTrigger = false;
+                        // unhide all players
+                        foreach (var player in PlayersManager.Instance.Players.Values)
+                        {
+                            PlayerUtils.UnhidePlayer(player);
+                            player.GetComponent<PlayerComponent>()!.IsAlive = true;
+                        }
                     }
                     break;
                 case GameState.RoundStartCountdown:
                     {
+                        foreach (var player in PlayersManager.Instance.Players.Values)
+                        {
+                            PlayerUtils.UnhidePlayer(player);
+                            player.GetComponent<PlayerComponent>()!.IsAlive = true;                            
+                        }
                         countDowncounter += Time.DeltaTime;
                         if(countDowncounter >= 3f)
                         {
@@ -155,6 +166,7 @@ namespace SandPerSand
                         foreach (var player in PlayersManager.Instance.Players.Values)
                         {
                             PlayerUtils.UnhidePlayer(player);
+                            player.GetComponent<PlayerComponent>()!.IsAlive = true;
                         }
                         // TODO load correct scene
                         var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
