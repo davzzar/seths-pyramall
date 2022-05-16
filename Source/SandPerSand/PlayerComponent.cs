@@ -126,7 +126,10 @@ namespace SandPerSand
                     // hide sprite after 10s( or at RoundCheck)
                     Owner.AddComponent<GoTimer>().Init(10f,() =>
                     {
-                        Owner.GetComponent<SpriteRenderer>().IsActive = false;
+                        if (!Owner.GetComponent<PlayerStates>()!.IsAlive)
+                        {
+                            Owner.GetComponent<SpriteRenderer>()!.IsActive = false;
+                        }
                     });
                     RemoveCameraControlPoint();
                 }
@@ -157,13 +160,6 @@ namespace SandPerSand
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnEnable();
-
-            if (initialized)
-            {
-                return;
-            }
-
-            initialized = true;
 
 #if DEBUG
             //FOR DEBUG (updated in the PlayerControlComponent)
@@ -228,8 +224,6 @@ namespace SandPerSand
             var itemsManager = Owner.GetOrAddComponent<ItemManager>();
             itemsManager.inputHandler = InputHandler;
 
-            this.IsAlive = true;
-
             // Subscribe to events
             // disable the timerBar when it fills up so it is not shown.
             // TODO add recharge sound cue here
@@ -262,6 +256,8 @@ namespace SandPerSand
 
             base.Update();
             var newState = state.Update();
+
+            InputHandler.UpdateState();
 
             if (newState == null) return;
             state.OnExit();

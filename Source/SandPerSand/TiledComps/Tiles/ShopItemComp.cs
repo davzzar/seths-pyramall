@@ -98,12 +98,12 @@ namespace SandPerSand
             {
                 // TODO deduct players' coins check enough amount
                 var currentShopperIndex = currentShopperInput.PlayerIndex;
-                if (PlayersManager.Instance.spendCoins(currentShopperIndex, this.price))
+                if (PlayersManager.Instance.SpendCoins(currentShopperIndex, this.price))
                 {
                     stock--;
                     // TODO add item to player
                     // FIXME major boolean is hard coded
-                    PlayersManager.Instance.addItemToInventory(currentShopperIndex, this.ItemId, true);
+                    PlayersManager.Instance.AddItemToInventory(currentShopperIndex, this.ItemId, true);
                     Debug.Print("Shop item "+ItemId+"("+price+" coins): player" + currentShopperIndex + " bought me");
                 }
                 else

@@ -125,7 +125,7 @@ namespace SandPerSand.SandSim
         public float RaisingSandSpeed
         {
             get => this.raisingSandSpeed;
-            set => this.raisingSandSpeed = MathF.Max(value, 0f);
+            set => this.raisingSandSpeed = MathF.Max(value, 0.0f);
         }
 
         /// <summary>

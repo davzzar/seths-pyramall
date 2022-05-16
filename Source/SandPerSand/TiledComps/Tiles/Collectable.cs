@@ -50,7 +50,7 @@ namespace SandPerSand
 
                 if(collider == e)
                 {
-                    this.destroy = PlayersManager.Instance.addItemToInventory(playerIndex, CollectableID, false);
+                    this.destroy = PlayersManager.Instance.AddItemToInventory(playerIndex, CollectableID, false);
                     if (this.destroy)
                     {
                         // play sound effect
@@ -77,7 +77,7 @@ namespace SandPerSand
 
                 if (collider == e)
                 {
-                    PlayersManager.Instance.addCoins(playerIndex, 1);
+                    PlayersManager.Instance.AddCoins(playerIndex, 1);
                     this.destroy = true;
                     Debug.Print("Coin was collected by player" + playerIndex.ToString());
                 }
