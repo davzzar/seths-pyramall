@@ -46,6 +46,7 @@ namespace SandPerSand
         public bool HasLaunched => WasGrounded && !IsGrounded;
         public bool HasLanded => !WasGrounded && IsGrounded;
         public bool IsOnSlope => groundChecker.IsOnSlope;
+        public bool HasLandedInSand = false;
 
 
         // Horizontal movement
@@ -251,6 +252,8 @@ namespace SandPerSand
                 return;
             }
 
+            HasLandedInSand = false;
+
             // Sand Interaction
             HardJumpThroughFallingSand();
 
@@ -259,6 +262,7 @@ namespace SandPerSand
                 // enable mashing bar
                 timerBar.IsActive = true;
                 timerBar.SetDepletingAt(0.3f);
+                HasLandedInSand = true;
 
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
@@ -562,6 +566,7 @@ namespace SandPerSand
                       $"V. Vel.: {VerticalSpeed:F3}\n" +
                       $"S. Vel.: {SlopeClimbVerticalSpeed:F3}\n\n" +
                       $"H. Accel: {CurrentAcceleration}, Gravity Scale: {GravityScale}\n" +
+                      $"HasLandedInSand: {HasLandedInSand}\n" +
                       $"isGrounded: {IsGrounded}\n" +
                       $"jumpEnded: {jumpEnded}\n" +
                       $"CanUseCoyote: {CanUseCoyote}\n" +
