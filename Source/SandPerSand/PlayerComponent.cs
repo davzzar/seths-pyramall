@@ -204,7 +204,6 @@ namespace SandPerSand
             playerController.InputHandler = InputHandler;
 
             var playerStates = Owner.GetOrAddComponent<PlayerStates>();
-            InputHandler = new InputHandler(PlayerIndex);
             playerStates.InputHandler = InputHandler;
             playerStates.Collider = playerCollider;
 
@@ -263,6 +262,8 @@ namespace SandPerSand
 
             base.Update();
             var newState = state.Update();
+
+            InputHandler.UpdateState();
 
             if (newState == null) return;
             state.OnExit();

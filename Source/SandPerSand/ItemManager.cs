@@ -69,12 +69,12 @@ namespace SandPerSand
 
             if ((inputHandler.getButtonState(Buttons.RightShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.RightTrigger) == ButtonState.Pressed) && (GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown))
             {
-                itemId = PlayersManager.Instance.useItem(playerIndex, true);
+                itemId = PlayersManager.Instance.UseItem(playerIndex, true);
             }
 
             if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
-                itemId = PlayersManager.Instance.useItem(playerIndex, false);
+                itemId = PlayersManager.Instance.UseItem(playerIndex, false);
             }
 
             var players = PlayersManager.Instance.InGamePlayerGo();
@@ -101,8 +101,8 @@ namespace SandPerSand
                     }
                     if(firstPlayer!= null)
                     {
-                        firstPlayer.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
-                        this.Owner.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, firstPlayer.Transform.Position);
+                        firstPlayer.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 5f, 5f, this.Transform.Position);
+                        this.Owner.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 5f, 5f, firstPlayer.Transform.Position);
                     }
                     break;
                 case "lightning":
@@ -122,7 +122,7 @@ namespace SandPerSand
                                 {
                                     duration = (int)(dist / 3);
                                 }
-                                p.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, duration, duration, this.Transform.Position);
+                                p.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, duration, duration, this.Transform.Position);
                             }
                         }
                     }
@@ -144,14 +144,14 @@ namespace SandPerSand
                     }
                     if(firstPlayer2 != null)
                     {
-                        firstPlayer2.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 3f, 3f, this.Transform.Position);
+                        firstPlayer2.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 3f, 3f, this.Transform.Position);
                     }
                     break;
                 case "sunglasses":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, float.NaN, float.NaN, -Vector2.One);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, float.NaN, float.NaN, -Vector2.One);
                     break;
                 case "wings":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, 10f, -Vector2.One);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 10f, 10f, -Vector2.One);
                     break;
                 case "speedup":
                     //PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10);
@@ -161,16 +161,16 @@ namespace SandPerSand
                     {
                         if (p != this.Owner)
                         {
-                            p.GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 5f, 5f, this.Transform.Position);
+                            p.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 5f, 5f, this.Transform.Position);
                         }
                     }
                     break;
                 case "shield":
-                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().addActiveItem(itemId, 10f, 10f, this.Transform.Position);
+                    PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, 10f, 10f, this.Transform.Position);
                     break;
             }
 
-            var activeItems = PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems;
+            var activeItems = PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().ActiveItems;
 
             double xVel = this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity.X;
 

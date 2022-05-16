@@ -21,9 +21,9 @@ namespace SandPerSand
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
-        private bool JumpButtonPressed => TakesInput && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
-        private bool JumpButtonUp => TakesInput && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => TakesInput ? InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement() : 0.0f;
+        private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
+        private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
+        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement();
 
         // Hard Jump
         private bool canHardJump = false;
@@ -52,7 +52,7 @@ namespace SandPerSand
 
         public float CurrentAcceleration { get; private set; }
 
-        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
+        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().GetAccellerationFactor(); //change these vals for changing vertical speed
 
         public const float MaxArialAcceleration = 50f;
 
@@ -68,7 +68,7 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public float JumpHeight => 7f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        public float JumpHeight => 7f * this.Owner.GetComponentInChildren<PlayerStates>().GetJumpFactor(); // explicit jump height
         //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
@@ -156,8 +156,6 @@ namespace SandPerSand
         protected override void Update()
         {
             ControlUpdate();
-            // Update the input handler's state after every control update
-            InputHandler.UpdateState();
         }
 
         private void HardJumpThroughFallingSand()

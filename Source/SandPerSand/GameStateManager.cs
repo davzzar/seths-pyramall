@@ -91,11 +91,6 @@ namespace SandPerSand
                         Debug.Print("GameState: Prepare-> RoundStartCountDown");
                         countDowncounter = 0;
                         exitTrigger = false;
-                        PlayersManager.Instance.SetAllPlayerControls(true);
-                    }
-                    else
-                    {
-                        PlayersManager.Instance.SetAllPlayerControls(false);
                     }
                     break;
                 case GameState.RoundStartCountdown:
@@ -128,7 +123,7 @@ namespace SandPerSand
                     {
                         countDowncounter = 0f;
                         exitTrigger = false;
-                        PlayersManager.Instance.finalizeRanks();
+                        PlayersManager.Instance.FinalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
                         Debug.Print("GameState: CountDown-> RoundCheck");
