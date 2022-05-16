@@ -19,6 +19,7 @@ namespace SandPerSand
         private Dictionary<string, int> itemIDtoTiledID;
         private TiledTileset tiledS;
         private Dictionary<string, Color> ItemBarColor;
+        private bool wasfacingright = true;
 
         protected override void OnAwake()
         {
@@ -170,7 +171,17 @@ namespace SandPerSand
             }
 
             var activeItems = PlayersManager.Instance.Players[playerIndex].GetComponentInChildren<PlayerStates>().activeItems;
-            bool facingright = this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity.X >= 0;
+
+            double xVel = this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity.X;
+
+            bool facingright = xVel >= 0;
+
+            if (Math.Abs(xVel) < 0.001)
+            {
+                facingright = wasfacingright;
+            }
+            wasfacingright = facingright;
+
 
             if (activeItems.Count != ItemRendererList.Count)
             {
