@@ -48,8 +48,8 @@ namespace SandPerSand
                 if (instance == null)
                 {
                     instance = new GameStateManager();
-                    currentState = GameState.InRound;
-                    inMenu = false;
+                    currentState = GameState.Prepare;
+                    inMenu = true;
                 }
                 return instance;
             }
@@ -114,7 +114,6 @@ namespace SandPerSand
                         break;
                     }
                 case GameState.InRound:
-                    break;
                     if (PlayersManager.Instance.CheckOneExit())
                     {
                         currentState = GameState.CountDown;
