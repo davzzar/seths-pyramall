@@ -123,7 +123,7 @@ namespace SandPerSand
                     this.sandSimulation = GameObject.FindComponent<SandSimulation>();
 
                 }
-                return this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+                return GameStateManager.Instance.CurrentState != GameState.Shop && this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
             }
         }
 
@@ -238,6 +238,8 @@ namespace SandPerSand
 
         private void ControlUpdate()
         {
+            Debug.WriteLine($"Position of game object {Owner.Name}: {Owner.Transform.Position}");
+            
             #if DEBUG
             ShowDebug();
             #endif
