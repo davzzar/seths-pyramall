@@ -323,7 +323,7 @@ namespace SandPerSand
                 GridRow = 0,
                 GridColumnSpan = 3,
                 GridRowSpan = 3,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + playerIndex.ToString())),
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + playerIndex.ToString())),
             };
 
             MajorItems[playerIndex] = new Panel()

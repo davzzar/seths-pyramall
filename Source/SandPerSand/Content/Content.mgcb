@@ -71,7 +71,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerfour.png
+/build:GUI/playerfour.png
 
 #begin playerone.png
 /importer:TextureImporter
@@ -83,7 +83,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerone.png
+/build:GUI/playerone.png
 
 #begin playerthree.png
 /importer:TextureImporter
@@ -95,7 +95,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerthree.png
+/build:GUI/playerthree.png
 
 #begin playertwo.png
 /importer:TextureImporter
@@ -107,7 +107,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playertwo.png
+/build:GUI/playertwo.png
 
 #begin ProtoPlayer.png
 /importer:TextureImporter
