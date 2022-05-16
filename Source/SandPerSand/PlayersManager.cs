@@ -181,6 +181,13 @@ namespace SandPerSand
                     CurRank = 0;
                 }
                 ShopTimeCounter += Time.DeltaTime;
+
+                // TODO HOY fix for out of bounds exception on line 191
+                if (CurRank - 1 >= rankList.Length || CurRank <= 0)
+                {
+                    CurRank = 0;
+                }
+
                 if (ShopTimeCounter >= ShopTime || Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop)
                 {
                     // Reset the shop coutner
