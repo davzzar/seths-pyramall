@@ -72,6 +72,7 @@ namespace SandPerSand
             player.GetComponent<SpriteRenderer>()!.IsActive = true;
             player.GetComponent<PlayerControlComponent>()!.IsActive = true;
             player.GetComponent<RigidBody>()!.IsKinematic = false;
+            player.GetComponent<Animator>()!.Entry();
             //player.GetComponent<PlayerComponent>()!.IsAlive = true;
         }
     }
