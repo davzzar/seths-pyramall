@@ -162,7 +162,7 @@ namespace Engine
                 }
 
                 // Draw Gizmos if needed, don't sort draw calls
-                #if DEBUG
+#if DEBUG
 
                 this.InvokeOnDrawGizmos();
 
@@ -178,7 +178,7 @@ namespace Engine
                 // Draw gui elements
                 if (this.guiRenderers.Count > 0)
                 {
-                    Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend);
+                    Graphics.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
 
                     foreach (var renderer in this.guiRenderers)
                     {
@@ -190,8 +190,6 @@ namespace Engine
 
                 Graphics.EndRender();
             }
-
-            
 
             // Draw Myra UI
             UI.Draw();
