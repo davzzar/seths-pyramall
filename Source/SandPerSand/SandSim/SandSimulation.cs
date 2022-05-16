@@ -34,7 +34,7 @@ namespace SandPerSand.SandSim
 
         private readonly SandGridReader sandGridReader;
 
-        private float raisingSandSpeed = 0.6f;
+        private float raisingSandSpeed = 0.6f; // was 0.6f
         private float raisingSandDelay = 4f;
         private float raisingSandCurrentTime = 0f;
         private int raisingSandCurrentRow = -1;
