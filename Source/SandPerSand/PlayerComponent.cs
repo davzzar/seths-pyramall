@@ -73,6 +73,7 @@ namespace SandPerSand
 
         private IPlayerControlState state = new InControlState();
         private bool isAlive = true;
+        private bool initialized = false;
 
         public PlayerIndex PlayerIndex
         {
@@ -111,17 +112,15 @@ namespace SandPerSand
                 if (this.isAlive)// dead -> alive
                 {
                     color = Color.White;
-                    var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
-                    ccp.Margin = new Border(5, 10, 5, 5);
                     // enable collision
                     Owner.GetComponentInChildren<Collider>().IsActive = true;
                     // show sprite
                     Owner.GetComponent<SpriteRenderer>().IsActive = true;
+                    AddCameraControlPoint();
                 }
                 else// alive -> dead
                 {
                     color = Color.DarkGray * 0.8f;
-                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
                     // disable colision
                     Owner.GetComponentInChildren<Collider>().IsActive = false;
                     // hide sprite after 10s( or at RoundCheck)
@@ -129,6 +128,7 @@ namespace SandPerSand
                     {
                         Owner.GetComponent<SpriteRenderer>().IsActive = false;
                     });
+                    RemoveCameraControlPoint();
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();
@@ -140,12 +140,30 @@ namespace SandPerSand
             }
         }
 
+        public void RemoveCameraControlPoint()
+        {
+            Owner.GetComponent<CameraControlPoint>()?.Destroy();
+        }
+
+        public void AddCameraControlPoint()
+        {
+            var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
+            ccp.Margin = new Border(5, 10, 5, 5);
+        }
+
         public InputHandler InputHandler { get; set; }
 
         protected override void OnEnable()
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnEnable();
+
+            if (initialized)
+            {
+                return;
+            }
+
+            initialized = true;
 
 #if DEBUG
             //FOR DEBUG (updated in the PlayerControlComponent)
