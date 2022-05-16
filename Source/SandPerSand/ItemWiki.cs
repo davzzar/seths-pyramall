@@ -56,6 +56,7 @@ namespace SandPerSand
             private Item ParseTiledItem(TiledTile tile, TiledTileset tiledS)
         {
             Item item = new Item();
+            item.TileID = tile.id;
             foreach (TiledProperty p in tile.properties)
             {
                 // TODO hard code
