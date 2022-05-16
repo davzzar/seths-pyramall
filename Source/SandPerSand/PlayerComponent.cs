@@ -1,8 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Design;
 using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
@@ -194,7 +196,21 @@ namespace SandPerSand
             var timerBar = Owner.GetOrAddComponent<TimerBar>();
             timerBar.FillColor = Color.Red;
             timerBar.DepletionSpeed = 0.2f;
+            timerBar.OriginOffset = new Vector2(1f, 0.8f);
             timerBar.IsActive = false;
+
+            //onscreen controls GO
+            var onScreenControlsGO = new GameObject("On screen controls");
+            onScreenControlsGO.IsEnabled = false;
+            onScreenControlsGO.Transform.Parent = Transform;
+            onScreenControlsGO.Transform.LocalPosition = new Vector2(0f,0.8f);
+            onScreenControlsGO.Transform.LossyScale = Vector2.One * 0.6f;
+            
+            onScreenControlsGO.AddComponent<SpriteRenderer>();
+            var onScreenControlsController = onScreenControlsGO.AddComponent<OnScreenControlController>();
+            onScreenControlsController.Button = Buttons.A;
+            onScreenControlsController.ShouldAnimate = true;
+            onScreenControlsController.AnimationSpeed = 10f;
 
             var playerController = Owner.GetOrAddComponent<PlayerControlComponent>();
             playerController.InputHandler = InputHandler;
