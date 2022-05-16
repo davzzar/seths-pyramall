@@ -144,6 +144,8 @@ namespace SandPerSand
             timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
             Owner.Layer = 1;
+
+            this.HasSandReachedBefore = false;
         }
 
         protected override void OnDisable()
