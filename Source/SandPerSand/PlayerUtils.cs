@@ -55,5 +55,24 @@ namespace SandPerSand
             var controlComp = playerGo.GetComponent<PlayerControlComponent>();
             controlComp.IsActive = true;
         }
+
+        public static void HidePlayer(GameObject player)
+        {
+            player.GetComponent<PlayerComponent>()!.RemoveCameraControlPoint();
+            player.GetComponent<SpriteRenderer>()!.IsActive = false;
+            player.GetComponent<PlayerControlComponent>()!.IsActive = false;
+            player.GetComponent<RigidBody>()!.IsKinematic = true;
+            player.GetComponent<RigidBody>()!.LinearVelocity = Vector2.Zero;
+            player.Transform.Position = new Vector2(0, 10000);
+        }
+
+        public static void UnhidePlayer(GameObject player)
+        {
+            player.GetComponent<PlayerComponent>()!.AddCameraControlPoint();
+            player.GetComponent<SpriteRenderer>()!.IsActive = true;
+            player.GetComponent<PlayerControlComponent>()!.IsActive = true;
+            player.GetComponent<RigidBody>()!.IsKinematic = false;
+            player.Transform.Position = new Vector2(0, 0);
+        }
     }
 }
