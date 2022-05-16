@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Engine;
 using Microsoft.Xna.Framework.Audio;
 
@@ -6,13 +8,15 @@ namespace SandPerSand
 {
     public sealed class SoundEffectPlayer : Behaviour
     {
-        private string loadFromContentPath;
+        private string[] loadFromContentPaths;
 
-        private float playStart = float.NegativeInfinity;
+        private float lockTime = float.NegativeInfinity;
+
+        private Random random = new Random();
 
         public Func<bool> Trigger { get; set; }
 
-        public SoundEffect Sound { get; set; }
+        public List<SoundEffect> Sounds { get; } = new List<SoundEffect>();
 
         public float Volume { get; set; } = 1f;
 
@@ -20,29 +24,35 @@ namespace SandPerSand
 
         public float Pan { get; set; } = 0f;
 
-        public void LoadFromContent(string path)
+        public void LoadFromContent(params string[] paths)
         {
-            if (string.IsNullOrWhiteSpace(path))
+            if (paths == null || paths.Length == 0)
             {
-                throw new ArgumentNullException(nameof(path));
+                throw new ArgumentNullException(nameof(paths));
             }
 
-            this.loadFromContentPath = path;
+            if (paths.Any(p => string.IsNullOrWhiteSpace(p)))
+            {
+                throw new ArgumentException("All paths must be valid.");
+            }
+
+            this.loadFromContentPaths = paths;
             this.LoadFromContentPath();
         }
 
         /// <inheritdoc />
         protected override void Update()
         {
-            if (this.Trigger == null || this.Sound == null)
+            if (this.Trigger == null || this.Sounds.Count == 0)
             {
                 return;
             }
 
-            if (this.playStart + this.Sound.Duration.TotalSeconds < Time.GameTime && this.Trigger.Invoke())
+            if (this.lockTime <= Time.GameTime && this.Trigger.Invoke())
             {
-                this.Sound.Play(this.Volume, this.Pitch, this.Pan);
-                this.playStart = Time.GameTime;
+                var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
+                sound.Play(this.Volume, this.Pitch, this.Pan);
+                this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
             }
         }
 
@@ -55,11 +65,20 @@ namespace SandPerSand
 
         private void LoadFromContentPath()
         {
-            if (this.loadFromContentPath != null && this.Owner.Scene.IsLoaded && this.IsActiveInHierarchy)
+            if (this.loadFromContentPaths == null || !this.Owner.Scene.IsLoaded || !this.IsActiveInHierarchy)
             {
-                this.Sound = GameEngine.Instance.Content.Load<SoundEffect>(this.loadFromContentPath);
-                this.loadFromContentPath = null;
+                return;
             }
+
+            this.Sounds.Clear();
+
+            foreach (var path in this.loadFromContentPaths)
+            {
+                var sound = GameEngine.Instance.Content.Load<SoundEffect>(path);
+                this.Sounds.Add(sound);
+            }
+
+            this.loadFromContentPaths = null;
         }
     }
 }

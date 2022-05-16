@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Engine;
 using Microsoft.Xna.Framework;
 
@@ -36,6 +37,20 @@ namespace SandPerSand
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
                 return pcc.HasSandReached;
+            };
+
+            var stepSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
+            stepSoundComp.LoadFromContent("Sounds/player_step01", 
+                "Sounds/player_step02", 
+                "Sounds/player_step03",
+                "Sounds/player_step04", 
+                "Sounds/player_step05");
+            stepSoundComp.Volume = 0.2f;
+            stepSoundComp.Trigger = () =>
+            {
+                var pcc = playerGo.GetComponent<PlayerControlComponent>();
+                var rb = playerGo.GetComponent<RigidBody>();
+                return pcc.IsGrounded && MathF.Abs(rb.LinearVelocity.X) > 0.3f;
             };
 
             return playerGo;
