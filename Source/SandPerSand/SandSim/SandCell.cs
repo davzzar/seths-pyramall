@@ -7,6 +7,8 @@ namespace SandPerSand.SandSim
     [StructLayout(LayoutKind.Sequential, Pack = sizeof(uint), Size = sizeof(uint))]
     public struct SandCell
     {
+        internal static SandCell NoCell = new SandCell { data = uint.MaxValue };
+
         private const uint HasSandMask = 0b0000_0000_0000_0000_0000_0000_0000_0001;
 
         private const uint HasObstacleMask = 0b0000_0000_0000_0000_0000_0000_0000_0010;
