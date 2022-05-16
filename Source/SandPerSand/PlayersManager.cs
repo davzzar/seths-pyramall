@@ -557,8 +557,8 @@ namespace SandPerSand
             var playerIndex = InputHandler.PlayerIndex;
             if (Prepared)
             {
-                Prepared = false;
-                Debug.Print("Player" + playerIndex + "UnPrepared.");
+                //Prepared = false;
+                //Debug.Print("Player" + playerIndex + "UnPrepared.");
             }
             else
             {
