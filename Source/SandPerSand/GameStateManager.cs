@@ -151,6 +151,10 @@ namespace SandPerSand
                     {
                         currentState = GameState.Prepare;
                         Debug.Print("GameState: Shop-> Prepare");
+                        foreach (var player in PlayersManager.Instance.Players.Values)
+                        {
+                            PlayerUtils.UnhidePlayer(player);
+                        }
                         // TODO load correct scene
                         var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                         // Load RoundScene current index = 1
@@ -164,6 +168,10 @@ namespace SandPerSand
         {
             currentState = GameState.Shop;
             Debug.Print("GameState: RoundCheck-> Shop");
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                PlayerUtils.UnhidePlayer(player);
+            }
             // load new scene
             // FIXME correct shop scene number
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();

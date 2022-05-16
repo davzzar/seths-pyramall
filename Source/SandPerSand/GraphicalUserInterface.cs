@@ -222,7 +222,7 @@ namespace SandPerSand
                                 {
                                     GridColumn = 1,
                                     GridRow = i,
-                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + scores[i].index.ToString())),
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("sprite_player_" + scores[i].index.ToString().ToLowerInvariant())),
                                     Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     VerticalAlignment = VerticalAlignment.Center,
@@ -312,7 +312,7 @@ namespace SandPerSand
                 RowSpacing = 3,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w*" + InvSize.ToString() + ";this.h = W.w*1/2*" + InvSize.ToString() + ";"),
+                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w*" + InvSize.ToString() + ";this.h = W.w*3/5*" + InvSize.ToString() + ";"),
             };
 
             Debug.Print(InvSize.ToString());
@@ -323,7 +323,7 @@ namespace SandPerSand
                 GridRow = 0,
                 GridColumnSpan = 3,
                 GridRowSpan = 3,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + playerIndex.ToString())),
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + playerIndex.ToString())),
             };
 
             MajorItems[playerIndex] = new Panel()
@@ -331,6 +331,7 @@ namespace SandPerSand
                 GridColumn = 4,
                 GridRow = 1,
                 Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
+
             };
 
             var leftBumper = new Panel()
@@ -338,6 +339,7 @@ namespace SandPerSand
                 GridColumn = 3,
                 GridRow = 0,
                 Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/left_bumper")),
+                BorderThickness = new Thickness((int)(20*InvSize)),
             };
 
             MinorItems[playerIndex] = new Panel()
@@ -352,6 +354,7 @@ namespace SandPerSand
                 GridColumn = 4,
                 GridRow = 0,
                 Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/right_bumper")),
+                BorderThickness = new Thickness((int)(20 * InvSize)),
             };
 
             CoinNumber[playerIndex] = new Label()
@@ -380,6 +383,9 @@ namespace SandPerSand
             InventoryRoot[playerIndex].AddChild(rightBumper);
             InventoryRoot[playerIndex].AddChild(coin);
             InventoryRoot[playerIndex].Background = new SolidBrush(new Color(96, 23, 33));
+
+            InventoryRoot[playerIndex].BorderThickness = new Thickness((int)(InvSize * 50));
+            InventoryRoot[playerIndex].Border = new SolidBrush(new Color(151, 59, 41));
 
             InventoryGrid.AddChild(InventoryRoot[playerIndex]);
 
