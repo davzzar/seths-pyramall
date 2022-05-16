@@ -200,14 +200,15 @@ namespace SandPerSand
             var timerBar = Owner.GetOrAddComponent<TimerBar>();
             timerBar.FillColor = Color.Red;
             timerBar.DepletionSpeed = 0.2f;
+            timerBar.OriginOffset = new Vector2(1f, 0.8f);
             timerBar.IsActive = false;
 
             //onscreen controls GO
             var onScreenControlsGO = new GameObject("On screen controls");
             onScreenControlsGO.IsEnabled = false;
             onScreenControlsGO.Transform.Parent = Transform;
-            onScreenControlsGO.Transform.LocalPosition = new Vector2(1,1);
-            onScreenControlsGO.Transform.LossyScale = Vector2.One * 0.5f;
+            onScreenControlsGO.Transform.LocalPosition = new Vector2(0f,0.8f);
+            onScreenControlsGO.Transform.LossyScale = Vector2.One * 0.6f;
             
             onScreenControlsGO.AddComponent<SpriteRenderer>();
             var onScreenControlsController = onScreenControlsGO.AddComponent<OnScreenControlController>();

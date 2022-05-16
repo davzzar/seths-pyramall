@@ -18,6 +18,7 @@ namespace SandPerSand
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
         private TimerBar timerBar;
+        private OnScreenControlController onScreenControls;
 
         // Input
         private const Buttons JumpButton = Buttons.A;
@@ -145,6 +146,8 @@ namespace SandPerSand
             sandSimulation = GameObject.FindComponent<SandSimulation>();
             Owner.Layer = 1;
 
+            onScreenControls = Owner.GetComponentInChildren<OnScreenControlController>();
+
             this.HasSandReachedBefore = false;
         }
 
@@ -260,6 +263,9 @@ namespace SandPerSand
                 timerBar.IsActive = true;
                 timerBar.SetDepletingAt(0.3f);
 
+                // show spam controls
+                onScreenControls.Owner.IsEnabled = true;
+
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
                 HorizontalSpeed = VerticalSpeed = 0.0f;
@@ -288,6 +294,7 @@ namespace SandPerSand
                     // Switch to recharging
                     timerBar.SetRechargingAt(0.15f);
                     HasSandReachedBefore = false;
+                    onScreenControls.Owner.IsEnabled = false;
 
                     // Do jump
                     CoyoteEnabled = false;
