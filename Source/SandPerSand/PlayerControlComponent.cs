@@ -252,7 +252,7 @@ namespace SandPerSand
             }
 
             // Sand Interaction
-            //HardJumpThroughFallingSand();
+            HardJumpThroughFallingSand();
 
             if (HasSandReached && !HasSandReachedBefore)
             {
