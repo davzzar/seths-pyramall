@@ -63,15 +63,19 @@ namespace SandPerSand
         public int curRank { get; private set; }
         private PlayerIndex[] rankList;
 
-        private SoundEffectPlayer itemBuySoundEffect; 
+        private SoundEffectPlayer itemPickupSoundEffect;
+        private SoundEffectPlayer itemBuySoundEffect;
         protected override void OnEnable()
         {
             // add components to the manager owner
-            itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
-            itemBuySoundEffect.LoadFromContent("Sounds/item_use01",
+            itemPickupSoundEffect = Owner.AddComponent<SoundEffectPlayer>();
+            itemPickupSoundEffect.LoadFromContent("Sounds/item_use01",
                 "Sounds/item_use02",
                 "Sounds/item_use03",
                 "Sounds/item_use04");
+
+            itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
+            itemBuySoundEffect.LoadFromContent("Sounds/shop_payment");
         }
 
         protected override void Update()
@@ -254,7 +258,7 @@ namespace SandPerSand
 
         public string useItem(PlayerIndex player, Boolean Major)
         {
-            itemBuySoundEffect?.Play();
+            itemPickupSoundEffect?.Play();
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             GraphicalUserInterface.Instance.removeItem(player, Major);
             return state.useItem(Major);
@@ -270,6 +274,11 @@ namespace SandPerSand
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             (Boolean, int) tmp = state.spendCoins(coins);
+            if (tmp.Item1)
+            {
+                // play sfx
+                itemBuySoundEffect?.Play();
+            }
             GraphicalUserInterface.Instance.renderCoins(player, tmp.Item2);
             return tmp.Item1;
         }
