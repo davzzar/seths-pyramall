@@ -434,8 +434,13 @@ namespace SandPerSand.SandSim
             {
                 var cell = this.sandFrontBuffer[in index];
 
+                if (cell.data == SandCell.NoCell.data)
+                {
+                    continue;
+                }
+
                 //if (cell.IsEmpty)
-                if(cell.IsEmpty)
+                if (cell.IsEmpty)
                 {
                     var newLayer = this.GetSandLayer(cell, index.X, index.Y);
 

@@ -403,10 +403,11 @@ namespace SandPerSand.SandSim
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ref SandCell GetInternal(in Int2 index)
         {
-            Debug.Assert(index.X >= 0);
-            Debug.Assert(index.X < this.resX);
-            Debug.Assert(index.Y >= 0);
-            Debug.Assert(index.Y < this.resY);
+            // return no cell if out of bounds
+            if (index.X < 0 || index.X >= this.resX || index.Y < 0 || index.Y >= this.resY)
+            {
+                return ref SandCell.NoCell;
+            }
 
             return ref this.data[index.X + index.Y * this.resX];
         }
