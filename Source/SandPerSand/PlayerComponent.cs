@@ -1,8 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Design;
 using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
@@ -73,6 +75,7 @@ namespace SandPerSand
 
         private IPlayerControlState state = new InControlState();
         private bool isAlive = true;
+        private bool initialized = false;
 
         public PlayerIndex PlayerIndex
         {
@@ -108,16 +111,29 @@ namespace SandPerSand
                 
                 Color color;
 
-                if (this.isAlive)
+                if (this.isAlive)// dead -> alive
                 {
                     color = Color.White;
-                    var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
-                    ccp.Margin = new Border(5, 10, 5, 5);
+                    // enable collision
+                    Owner.GetComponentInChildren<Collider>().IsActive = true;
+                    // show sprite
+                    Owner.GetComponent<SpriteRenderer>().IsActive = true;
+                    AddCameraControlPoint();
                 }
-                else
+                else// alive -> dead
                 {
                     color = Color.DarkGray * 0.8f;
-                    Owner.GetComponent<CameraControlPoint>()?.Destroy();
+                    // disable colision
+                    Owner.GetComponentInChildren<Collider>().IsActive = false;
+                    // hide sprite after 10s( or at RoundCheck)
+                    Owner.AddComponent<GoTimer>().Init(10f,() =>
+                    {
+                        if (!Owner.GetComponent<PlayerStates>()!.IsAlive)
+                        {
+                            Owner.GetComponent<SpriteRenderer>()!.IsActive = false;
+                        }
+                    });
+                    RemoveCameraControlPoint();
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();
@@ -127,6 +143,17 @@ namespace SandPerSand
                     renderer.Color = color;
                 }
             }
+        }
+
+        public void RemoveCameraControlPoint()
+        {
+            Owner.GetComponent<CameraControlPoint>()?.Destroy();
+        }
+
+        public void AddCameraControlPoint()
+        {
+            var ccp = Owner.GetOrAddComponent<CameraControlPoint>();
+            ccp.Margin = new Border(5, 10, 5, 5);
         }
 
         public InputHandler InputHandler { get; set; }
@@ -167,18 +194,45 @@ namespace SandPerSand
 
             // To show when player is trapped in sand
             var timerBar = Owner.GetOrAddComponent<TimerBar>();
+            timerBar.FillColor = Color.Red;
             timerBar.DepletionSpeed = 0.2f;
+            timerBar.OriginOffset = new Vector2(1f, 0.8f);
             timerBar.IsActive = false;
 
-            var controlComp = Owner.GetOrAddComponent<PlayerControlComponent>();
-            controlComp.InputHandler = InputHandler;
+            //onscreen controls GO
+            var onScreenControlsGO = new GameObject("On screen controls");
+            onScreenControlsGO.IsEnabled = false;
+            onScreenControlsGO.Transform.Parent = Transform;
+            onScreenControlsGO.Transform.LocalPosition = new Vector2(0f,0.8f);
+            onScreenControlsGO.Transform.LossyScale = Vector2.One * 0.6f;
+            
+            onScreenControlsGO.AddComponent<SpriteRenderer>();
+            var onScreenControlsController = onScreenControlsGO.AddComponent<OnScreenControlController>();
+            onScreenControlsController.Button = Buttons.A;
+            onScreenControlsController.ShouldAnimate = true;
+            onScreenControlsController.AnimationSpeed = 10f;
+
+            var playerController = Owner.GetOrAddComponent<PlayerControlComponent>();
+            playerController.InputHandler = InputHandler;
 
             var playerStates = Owner.GetOrAddComponent<PlayerStates>();
             playerStates.InputHandler = InputHandler;
+            playerStates.Collider = playerCollider;
 
             // animator need to be created after controlComp and input handler
             var playerAnimator = Owner.GetOrAddComponent<Animator>();
+            playerAnimator.Depth = Conf.Depth.Player;
             SetPlayerAnimationSprite();
+
+            // Add hardjump haloGo
+            var haloGo = new GameObject();
+            haloGo.Transform.Parent = Transform;
+            haloGo.Transform.LocalPosition = new Vector2(0, -.1f);
+            var playerEffectAnimator = haloGo.AddComponent<Animator>();
+            playerEffectAnimator.LoadFromContent("PlayerEffectAnimated");
+            playerEffectAnimator.Depth = Conf.Depth.PlayerBack;
+            haloGo.AddComponent<EffectAnimatorController>();
+            haloGo.IsEnabled = false;
 
             var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
@@ -186,7 +240,10 @@ namespace SandPerSand
             var itemsManager = Owner.GetOrAddComponent<ItemManager>();
             itemsManager.inputHandler = InputHandler;
 
-            this.IsAlive = true;
+            // Subscribe to events
+            // disable the timerBar when it fills up so it is not shown.
+            // TODO add recharge sound cue here
+            timerBar.OnFilled += () => timerBar.IsActive = false;
         }
 
         private void SetPlayerAnimationSprite()
@@ -203,7 +260,7 @@ namespace SandPerSand
             };
 
             playerAnimator.LoadFromContent("PlayerAnimated", animationTexture);
-            Owner.AddComponent<MyAnimatorController>();
+            Owner.AddComponent<PlayerAnimatorController>();
         }
 
         protected override void Update()
@@ -215,6 +272,8 @@ namespace SandPerSand
 
             base.Update();
             var newState = state.Update();
+
+            InputHandler.UpdateState();
 
             if (newState == null) return;
             state.OnExit();

@@ -34,7 +34,7 @@ namespace SandPerSand.SandSim
 
         private readonly SandGridReader sandGridReader;
 
-        private float raisingSandSpeed = 0.6f;
+        private float raisingSandSpeed = 0.6f; // was 0.6f
         private float raisingSandDelay = 4f;
         private float raisingSandCurrentTime = 0f;
         private int raisingSandCurrentRow = -1;
@@ -125,7 +125,7 @@ namespace SandPerSand.SandSim
         public float RaisingSandSpeed
         {
             get => this.raisingSandSpeed;
-            set => this.raisingSandSpeed = MathF.Max(value, 0f);
+            set => this.raisingSandSpeed = MathF.Max(value, 0.0f);
         }
 
         /// <summary>
@@ -434,8 +434,13 @@ namespace SandPerSand.SandSim
             {
                 var cell = this.sandFrontBuffer[in index];
 
+                if (cell.data == SandCell.NoCell.data)
+                {
+                    continue;
+                }
+
                 //if (cell.IsEmpty)
-                if(cell.IsEmpty)
+                if (cell.IsEmpty)
                 {
                     var newLayer = this.GetSandLayer(cell, index.X, index.Y);
 

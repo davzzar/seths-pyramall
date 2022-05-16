@@ -1,11 +1,10 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Resources;
-using Engine;
+﻿using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
 
 namespace SandPerSand
 {
@@ -14,17 +13,32 @@ namespace SandPerSand
         [Browsable(false)]
         public InputHandler InputHandler { get; set; }
 
-        private RigidBody rigidBody;
+        public RigidBody rigidBody { get; private set; }
         private GroundCheckComponent groundChecker;
         private GuiTextRenderer textRenderer;
         private TimerBar timerBar;
+        private OnScreenControlController onScreenControls;
 
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
         private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
         private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().getInvertedMovement();
+        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement();
+
+        // Hard Jump
+        private bool canHardJump = false;
+        public bool WillHardJump => JumpButtonPressed && canHardJump;
+        private bool blockSandDetect = false;
+        private bool doSandDetect => (!blockSandDetect) && rigidBody.LinearVelocity.X != 0 && !IsGrounded;
+        private bool blockHControl = false;
+        
+        // Hard Jump parameters
+        private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
+        private float decelerationForBlockHControl = 0.7f * MaxDeceleration;
+        private float hardJumpSpan = 0.4f;
+        private float blockFallSandSpan = 0.4f;
+        private float blockHControlSpan = 0.4f;
 
         // State
         public bool IsGrounded { get; private set; }
@@ -32,6 +46,7 @@ namespace SandPerSand
         public bool HasLaunched => WasGrounded && !IsGrounded;
         public bool HasLanded => !WasGrounded && IsGrounded;
         public bool IsOnSlope => groundChecker.IsOnSlope;
+        public bool HasLandedInSand = false;
 
 
         // Horizontal movement
@@ -39,13 +54,13 @@ namespace SandPerSand
 
         public float CurrentAcceleration { get; private set; }
 
-        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
+        public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().GetAccellerationFactor(); //change these vals for changing vertical speed
 
-        public const float MaxArialAcceleration = 30f;
+        public const float MaxArialAcceleration = 50f;
 
         public const float MaxDeceleration = 60f;
 
-        public const float MaxHorizontalSpeed = 13f;
+        public const float MaxHorizontalSpeed = 7f;
 
         // Movement on Slopes
         public float SlopeClimbVerticalSpeed { get; private set; }
@@ -55,13 +70,13 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public float JumpHeight => 8f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        public float JumpHeight => 7f * this.Owner.GetComponentInChildren<PlayerStates>().GetJumpFactor(); // explicit jump height
         //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
 
         // Player Gravity and Variable Jump Height
-        public const float JumpVelocityFalloff = 3f;
+        public const float JumpVelocityFalloff = 1f;
 
         public const float Gravity = -9.8f; // a la Unity
 
@@ -100,10 +115,23 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
-        public bool HasSandReached => this.sandSimulation!= null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+        public bool HasSandReached
+        {
+            get
+            {
+                if (this.sandSimulation == null || !this.sandSimulation.IsAlive)
+                {
+                    this.sandSimulation = GameObject.FindComponent<SandSimulation>();
+
+                }
+                return GameStateManager.Instance.CurrentState != GameState.Shop && this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+            }
+        }
+
         private bool HasSandReachedBefore;
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
+        private bool wasFacingRight = true;
         public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
 
         protected override void OnEnable()
@@ -117,19 +145,105 @@ namespace SandPerSand
 
             timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
-
             Owner.Layer = 1;
+
+            onScreenControls = Owner.GetComponentInChildren<OnScreenControlController>();
+
+            this.HasSandReachedBefore = false;
+        }
+
+        protected override void OnDisable()
+        {
+            // unsubscribe from events
         }
 
         protected override void Update()
         {
             ControlUpdate();
-            // Update the input handler's state after every control update
-            InputHandler.UpdateState();
+        }
+
+        private void HardJumpThroughFallingSand()
+        {
+            if (GameStateManager.Instance.CurrentState != GameState.InRound
+                || sandSimulation == null)
+            {
+                return;
+            }
+            // set up sand detector vector
+            var xVelo = rigidBody.LinearVelocity.X;
+            var yVelo = rigidBody.LinearVelocity.Y;
+            var sandDetector = new Vector2(1f, 0);
+            if (xVelo < 0)
+            {
+                sandDetector = -sandDetector;
+            }
+            // Detect sand
+            bool sandDetected = false;
+            try { 
+                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
+                var sandGrid = sandSimulation.SandData[index];
+                sandDetected = doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable;
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.WriteLine("SandData.PointToIndex failed for position :" + (Transform.Position + sandDetector));
+                return;
+            }
+            // If detected sand
+            var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
+            if (sandDetected)
+            {
+                // press A within 0.5s otherwise fall
+                // set onjump delegate
+                canHardJump = true;
+                blockSandDetect = true;
+                blockHControl = true;
+                // calculate immediate influence
+                xVelo = MathHelper.Clamp(xVelo, -maxHSpeedAfterSand, maxHSpeedAfterSand);
+                yVelo = 0f;
+                // apply immediate influence
+                rigidBody.LinearVelocity = new Vector2(xVelo, yVelo);
+                // TODO activate Halo Animation
+                haloGo.IsEnabled = true;
+                // set timers
+                Owner.AddComponent<GoTimer>().Init(hardJumpSpan, ()=> {
+                    canHardJump = false; // only able to hardjump within 0.5s
+                    // TODO not exactly what I want
+                    Owner.AddComponent<GoTimer>().Init(0.2f, () => {
+                        haloGo.IsEnabled = false;
+                    });
+                });
+                Owner.AddComponent<GoTimer>().Init(blockFallSandSpan, () => {
+                    blockSandDetect = false;// stop detect falling sand for 1s
+                });
+                Owner.AddComponent<GoTimer>().Init(blockHControlSpan, () => {
+                    blockHControl = false;// not allowed to accelerate horizontally for 2s 
+                });
+            }
+            if (WillHardJump)
+            {
+                // TODO breakthroughsand effect
+                var position = Owner.Transform.Position;
+                var effectGo = new GameObject("BreakThroughSand Effect");
+
+                
+                // just copied these code to make the jump works ...
+                CoyoteEnabled = false;
+                jumpEnded = false;
+                timeOfLeavingGround = float.MinValue;
+                isSandEscapeJump = true;
+                PerformJump();
+                ApplyVelocity();
+                // reset control timers in advance if hard jump is performed
+                canHardJump = false;
+                blockHControl = false;
+            }
         }
 
         private void ControlUpdate()
         {
+            Debug.WriteLine($"Position of game object {Owner.Name}: {Owner.Transform.Position}");
+            
             #if DEBUG
             ShowDebug();
             #endif
@@ -138,13 +252,21 @@ namespace SandPerSand
             {
                 return;
             }
-            
+
+            HasLandedInSand = false;
+
             // Sand Interaction
+            HardJumpThroughFallingSand();
+
             if (HasSandReached && !HasSandReachedBefore)
             {
                 // enable mashing bar
                 timerBar.IsActive = true;
-                timerBar.FillLevel = 1f;
+                timerBar.SetDepletingAt(0.3f);
+                HasLandedInSand = true;
+
+                // show spam controls
+                onScreenControls.Owner.IsEnabled = true;
 
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
@@ -171,8 +293,10 @@ namespace SandPerSand
                 if (!HasSandReached)
                 {
                     // Exit trapped state and perform jump
-                    timerBar.IsActive = false;
+                    // Switch to recharging
+                    timerBar.SetRechargingAt(0.15f);
                     HasSandReachedBefore = false;
+                    onScreenControls.Owner.IsEnabled = false;
 
                     // Do jump
                     CoyoteEnabled = false;
@@ -195,7 +319,24 @@ namespace SandPerSand
                     if (player != null)
                     {
                         player.IsAlive = false;
+                        Debug.WriteLine("Player IsAlive set to false.");
+                    } else
+                    {
+                        Debug.WriteLine("Could not find PlayerComponent.");
                     }
+
+
+                    var playerStates = this.Owner.GetComponent<PlayerStates>();
+
+                    if (playerStates != null) {
+                        // TODO:: This is wrong. Couldn't find a way to fucking set it properly....
+                        // Currently is properly reset at CheckAllDead where I know the proper number of players
+                        playerStates.RoundRank = -1;
+                        Debug.WriteLine("PlayerStates Roundrank of dead player set.");
+                    } else
+                    {
+                        Debug.WriteLine("Could not find PlayerStates.");
+                    } 
 
                     timerBar.IsActive = false;
                     this.IsActive = false;
@@ -269,6 +410,12 @@ namespace SandPerSand
             // (since now we only move up while jumping, will need to explicitly model a jump later)
             if (!isSandEscapeJump && JumpButtonUp && !IsGrounded && !jumpEnded && VerticalSpeed > 0) jumpEnded = true;
 
+            if (HorizontalDirection > 0 && !wasFacingRight || HorizontalDirection < 0 && wasFacingRight)
+            {
+                wasFacingRight = HorizontalDirection > 0;
+                Owner.GetComponent<SpriteRenderer>()!.FlipHorizontal();
+            }
+            
             // Apply computed velocity
             ApplyVelocity();
             
@@ -326,7 +473,8 @@ namespace SandPerSand
         /// </summary>
         private void ComputeGravityScale()
         {
-            if (IsGrounded) GravityScale = DefaultGravityMultiplier;
+            if (!this.Owner.GetComponentInChildren<PlayerStates>().gravityOn()) GravityScale = 0;
+            else if (IsGrounded) GravityScale = DefaultGravityMultiplier;
 
             else if (VerticalSpeed < JumpVelocityFalloff) GravityScale = FallGravityMultiplier;
             
@@ -341,8 +489,13 @@ namespace SandPerSand
 
         private void ComputeHorizontalSpeed()
         {
+            if (blockHControl)
+            {
+                HorizontalSpeed = MathUtils.MoveTowards(HorizontalSpeed, 0, decelerationForBlockHControl * Time.DeltaTime);
+                return;
+            }
             // NOTE: Check assumes there is a dead zone on the stick input.
-            if (HorizontalDirection != 0)
+            if (HorizontalDirection != 0) //
             {
                 // use the appropriate acceleration
                 CurrentAcceleration = IsGrounded ? MaxAcceleration : MaxArialAcceleration;
@@ -378,6 +531,7 @@ namespace SandPerSand
         /// </summary>
         private void PerformJump()
         {
+
             // reset vertical speed so we don't get shitty "half-jumps" or velocity negated jumps
             VerticalSpeed = 0;
 
@@ -417,6 +571,7 @@ namespace SandPerSand
                       $"V. Vel.: {VerticalSpeed:F3}\n" +
                       $"S. Vel.: {SlopeClimbVerticalSpeed:F3}\n\n" +
                       $"H. Accel: {CurrentAcceleration}, Gravity Scale: {GravityScale}\n" +
+                      $"HasLandedInSand: {HasLandedInSand}\n" +
                       $"isGrounded: {IsGrounded}\n" +
                       $"jumpEnded: {jumpEnded}\n" +
                       $"CanUseCoyote: {CanUseCoyote}\n" +

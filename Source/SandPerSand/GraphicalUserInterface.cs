@@ -77,7 +77,7 @@ namespace SandPerSand
 
 
             itemIDtoTiledID = new Dictionary<string, int>();
-            tiledS = new TiledTileset($"Content/tiles/TilesetItems.tsx");
+            tiledS = new TiledTileset($"Content/Tiled/Tiledset/TilesetItems.tsx");
 
             if (tiledS == null)
             {
@@ -162,19 +162,24 @@ namespace SandPerSand
                         UI.Root = rootPanel;
                         MidscreenTextPanel.Text = "Press A to Start the Game";
                     }
-                } else if (newGameState == GameState.InRound && oldGameState == GameState.Prepare)
+                }else if (newGameState == GameState.RoundStartCountdown)
                 {
-                    UI.Root = InventoryGrid;
+                    MidscreenTextPanel.Text = "3";
+                    MidscreenTextPanel.TextColor = Color.White;
                     foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
                     {
                         InventoryGrid.RemoveChild(JoinLabelRoot[index]);
                     }
+                }
+                else if (newGameState == GameState.InRound)
+                {
+                    UI.Root = InventoryGrid;
 
-                }else if (newGameState == GameState.CountDown && oldGameState == GameState.InRound)
+                }else if (newGameState == GameState.CountDown)
                 {
                     UI.Root = rootPanel;
                     MidscreenTextPanel.Text = "10 Seconds to Finish the Round";
-                }else if (newGameState == GameState.RoundCheck && oldGameState == GameState.CountDown)
+                }else if (newGameState == GameState.RoundCheck)
                 {
                     MidscreenTextPanel.Text = "";
                     ScoreBoard = new Grid()
@@ -187,14 +192,17 @@ namespace SandPerSand
                     };
                     //display ranks on screen
 
-                    (int score, PlayerIndex index)[] scores = new (int, PlayerIndex)[PlayersManager.Instance.Players.Count];
-                    int j = 0;
+                    List<(int score, PlayerIndex index)> scores = new List<(int score, PlayerIndex index)> ();
                     foreach (var item in PlayersManager.Instance.Players)
                     {
-                        scores[j] = (item.Value.GetComponent<PlayerStates>().Score, item.Key);
+                        scores.Add((item.Value.GetComponent<PlayerStates>().Score, item.Key));
                     }
-                    Array.Sort(scores);
-                    Array.Reverse(scores);
+                    scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+
+                    foreach (var score in scores)
+                    {
+                        Debug.Print(score.ToString());
+                    }
 
                     for (int i = 0; i < PlayersManager.Instance.Players.Count; i++)
                     {
@@ -214,7 +222,7 @@ namespace SandPerSand
                                 {
                                     GridColumn = 1,
                                     GridRow = i,
-                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + scores[i].index.ToString())),
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + scores[i].index.ToString())),
                                     Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     VerticalAlignment = VerticalAlignment.Center,
@@ -255,6 +263,11 @@ namespace SandPerSand
                 {
                     rootPanel.RemoveChild(ScoreBoard);
                 }
+                if (newGameState == GameState.Shop)
+                {
+                    UI.Root = rootPanel;
+                    MidscreenTextPanel.Text = "Welcome to the Shop";
+                }
 
                 
 
@@ -263,6 +276,28 @@ namespace SandPerSand
             } else if (GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
                 MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDowncounter) + " Seconds to Finish the Round";
+            }
+            else if (GameStateManager.Instance.CurrentState == GameState.RoundStartCountdown)
+            {
+                MidscreenTextPanel.Text = String.Format("{0:0}", Math.Ceiling(3f - GameStateManager.Instance.CountDowncounter));
+            }else if (GameStateManager.Instance.CurrentState == GameState.Shop)
+            {
+                List<(int score, PlayerIndex index)> scores = new List<(int rank, PlayerIndex index)>();
+                foreach (var item in PlayersManager.Instance.Players)
+                {
+                    scores.Add((item.Value.GetComponent<PlayerStates>().RoundRank, item.Key));
+                }
+                scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+                scores.Reverse();
+                try
+                {
+                    MidscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.CurRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.ShopTime - PlayersManager.Instance.ShopTimeCounter)) + " seconds left";
+                    MidscreenTextPanel.TextColor = PlayerIndexToColor[scores[PlayersManager.Instance.CurRank - 1].index];
+                }
+                catch
+                {
+                    MidscreenTextPanel.TextColor = Color.White;
+                }
             }
         }
 
@@ -274,10 +309,10 @@ namespace SandPerSand
             {
                 GridColumn = PlayerIndexToInt[playerIndex],
                 ColumnSpacing = 4,
-                RowSpacing = 2,
+                RowSpacing = 3,
                 VerticalAlignment = VerticalAlignment.Bottom,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w*"+ InvSize.ToString() +";this.h = W.w/2*" + InvSize.ToString() + ";"),
+                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w*" + InvSize.ToString() + ";this.h = W.w*3/5*" + InvSize.ToString() + ";"),
             };
 
             Debug.Print(InvSize.ToString());
@@ -285,39 +320,57 @@ namespace SandPerSand
             Characters[playerIndex] = new Panel()
             {
                 GridColumn = 0,
-                GridColumnSpan = 2,
-                GridRowSpan = 2,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + playerIndex.ToString())),
+                GridRow = 0,
+                GridColumnSpan = 3,
+                GridRowSpan = 3,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + playerIndex.ToString())),
             };
 
             MajorItems[playerIndex] = new Panel()
+            {
+                GridColumn = 4,
+                GridRow = 1,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
+
+            };
+
+            var leftBumper = new Panel()
+            {
+                GridColumn = 3,
+                GridRow = 0,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/left_bumper")),
+                BorderThickness = new Thickness((int)(20*InvSize)),
+            };
+
+            MinorItems[playerIndex] = new Panel()
             {
                 GridColumn = 3,
                 GridRow = 1,
                 Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
             };
 
-            MinorItems[playerIndex] = new Panel()
+            var rightBumper = new Panel()
             {
-                GridColumn = 2,
-                GridRow = 1,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/Item_slot")),
+                GridColumn = 4,
+                GridRow = 0,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/right_bumper")),
+                BorderThickness = new Thickness((int)(20 * InvSize)),
             };
 
             CoinNumber[playerIndex] = new Label()
             {
-                GridColumn = 2,
-                GridRow = 0,
+                GridColumn = 3,
+                GridRow = 2,
                 Text = "00x",
-                Font = _fontSystem.GetFont((int) (4 * InvSize * FontSize)),
+                Font = _fontSystem.GetFont((int)(3.5f * InvSize * FontSize)),
                 VerticalAlignment = VerticalAlignment.Center,
             };
 
             Panel coin = new Panel()
             {
-                GridColumn = 3,
-                GridRow = 0,
-                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetCoins"), new Rectangle(0,0,32,32)),
+                GridColumn = 4,
+                GridRow = 2,
+                Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetCoins"), new Rectangle(0, 0, 32, 32)),
             };
 
 
@@ -325,8 +378,14 @@ namespace SandPerSand
             InventoryRoot[playerIndex].AddChild(Characters[playerIndex]);
             InventoryRoot[playerIndex].AddChild(CoinNumber[playerIndex]);
             InventoryRoot[playerIndex].AddChild(MinorItems[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(leftBumper);
             InventoryRoot[playerIndex].AddChild(MajorItems[playerIndex]);
+            InventoryRoot[playerIndex].AddChild(rightBumper);
             InventoryRoot[playerIndex].AddChild(coin);
+            InventoryRoot[playerIndex].Background = new SolidBrush(new Color(96, 23, 33));
+
+            InventoryRoot[playerIndex].BorderThickness = new Thickness((int)(InvSize * 50));
+            InventoryRoot[playerIndex].Border = new SolidBrush(new Color(151, 59, 41));
 
             InventoryGrid.AddChild(InventoryRoot[playerIndex]);
 
@@ -347,11 +406,11 @@ namespace SandPerSand
             int y = (id / 8) * 32;
             if (Major)
             {
-                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
+                MajorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetItems"), new Rectangle(x, y, 32, 32));
             }
             else
             {
-                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("TilesetItems"), new Rectangle(x, y, 32, 32));
+                MinorItems[playerIndex].Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("Tiled/TiledsetTexture/TilesetItems"), new Rectangle(x, y, 32, 32));
             }
         }
 

@@ -96,11 +96,11 @@ namespace SandPerSand
             var sandSim = sandGo.AddComponent<SandSimulation>();
 
             var tileMapGo = new GameObject();
-            var tileMapComp = tileMapGo.AddComponent<TileMap<MyLayer>>();
+            var tileMapComp = tileMapGo.AddComponent<TileMap<LevelTileLayer>>();
             tileMapComp.LoadFromContent(mapName);
 
             sandSim.Min = new Vector2(-.5f, -.5f);
-            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            var map = GameObject.FindComponent<TileMap<LevelTileLayer>>();
             sandSim.Size = map.Size;
             Debug.Print(map.Size.ToString());
             sandSim.ResolutionX = (int)(map.Size.X * 5);
@@ -280,16 +280,13 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            var map = GameObject.FindComponent<TileMap<LevelTileLayer>>();
             sandSim.Size = map.Size;
             sandSim.ResolutionX = 200;
             sandSim.ResolutionY = 200;
             sandSim.SimulationStepTime = 1f / 40;
             sandSim.MaxLayer = 4;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
-
-            sandSim.AddSandSource(new Aabb(12f, 18f, 0.5f, 0.5f));
-            sandSim.AddSandSource(new Aabb(5f, 16f, 0.5f, 0.5f));
         }
 
         private static void CreateSandPhysics_level_1()
@@ -297,7 +294,7 @@ namespace SandPerSand
             var sandGo = new GameObject("Sand");
             var sandSim = sandGo.AddComponent<SandSimulation>();
             sandSim.Min = new Vector2(-.5f, -.5f);
-            var map = GameObject.FindComponent<TileMap<MyLayer>>();
+            var map = GameObject.FindComponent<TileMap<LevelTileLayer>>();
             sandSim.Size = map.Size;
             sandSim.ResolutionX = 300;
             sandSim.ResolutionY = 300;

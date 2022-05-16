@@ -18,6 +18,7 @@ namespace Engine
         private string entryAnimeKey = null;
         private float passedTime = 0f;
         private SpriteRenderer renderer;
+        public float Depth { get; set; }
 
         public Animation CurrentAnime
         {
@@ -30,17 +31,16 @@ namespace Engine
                 return animes[currentAnimeKey];
             }
         }
-        protected override void OnEnable()
+        protected override void OnAwake()
         {
             animes = new Dictionary<string, Animation>();
-            this.LoadFromContentPath();
-
         }
 
         protected override void Update()
         {
             base.Update();
             this.passedTime += Time.DeltaTime;
+            this.renderer.Depth = this.Depth;
             if(passedTime >= CurrentAnime.CurrentFrame.Duration)
             {
                 passedTime = 0f;
@@ -87,9 +87,9 @@ namespace Engine
             this.LoadFromContentPath();
         }
 
-        public void LoadFromContent(string path, string texture)
+        public void LoadFromContent(string path, string textureName)
         {
-            this.textureAssetName = texture;
+            this.textureAssetName = textureName;
             LoadFromContent(path);
         }
 
@@ -118,7 +118,7 @@ namespace Engine
 
             // load .tsx file
             //FIXME hard code path
-            var tiledS = new TiledTileset($"Content/tiles/{loadFromContentPath}.tsx");
+            var tiledS = new TiledTileset($"Content/Tiled/Tiledset/{loadFromContentPath}.tsx");
             if (tiledS == null)
             {
                 throw new NullReferenceException("Load tiledS Failed");
@@ -130,9 +130,10 @@ namespace Engine
             {
                 textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
-            var texture = GameEngine.Instance.Content.Load<Texture2D>(textureAssetName);
+            var textureAssetPath = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(textureAssetName)}";
             this.renderer =  this.Owner.AddComponent<SpriteRenderer>();
-            this.renderer.LoadFromContent(textureAssetName);
+            this.renderer.Depth = 0f;
+            this.renderer.LoadFromContent(textureAssetPath);
 
             // foreach tile, check if it is anime
             foreach (TiledTile tile in tiledS.Tiles)
@@ -157,8 +158,9 @@ namespace Engine
             {
                 textureAssetName = Path.GetFileNameWithoutExtension(tiledS.Image.source);
             }
+            var textureAssetPath = $"Tiled/TiledsetTexture/{Path.GetFileNameWithoutExtension(textureAssetName)}";
             this.renderer = this.Owner.AddComponent<SpriteRenderer>();
-            this.renderer.LoadFromContent(textureAssetName);
+            this.renderer.LoadFromContent(textureAssetPath);
             var newAnim = ParseTiledAnimation(tile, tiledS);
             if (newAnim != null)
             {

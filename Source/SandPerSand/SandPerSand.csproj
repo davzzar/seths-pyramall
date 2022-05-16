@@ -17,64 +17,28 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="TiledComps\" />
+    <None Remove="TiledComps\Shop\" />
+    <None Remove="TiledComps\Tiles\" />
+  </ItemGroup>
+  <ItemGroup>
     <None Update="Content\Content.mgcb">
       <Generator>mgcb</Generator>
       <CustomToolNamespace>MonoGame.Content.Builder.Task</CustomToolNamespace>
     </None>
-        <None Update="Content\shop_map.tmx">
+        <None Update="Content\Tiled\Tiledmap\*.tmx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="Content\test_map.tmx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\sandpersand.tsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\sandpersand2.tsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-	<None Update="Content\tiles\sandpersand_brown.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</None>
-    <None Update="Content\debug_map.tmx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\SmileyAnimated.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\PlayerAnimated.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\PlayerAnimated2.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>    
-    <None Update="Content\tiles\PlayerAnimated3.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>    
-    <None Update="Content\tiles\PlayerAnimated4.tsx">
-		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\test_map.tmx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-	<None Update="Content\controller_testing_map.tmx">
-	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	</None>
-    <None Update="Content\test_level_1.tmx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\TilesetItems.tsx">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Content\tiles\TilesetCoins.tsx">
+    <None Update="Content\Tiled\Tiledset\*.tsx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 	<None Update="Content\Fonts\Retro_Gaming.ttf">
 		<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
-  <None Update="Content\level_2.tmx">
-    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-  </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="TiledComps\" />
+    <Folder Include="TiledComps\Tiles\" />
+  </ItemGroup>
 </Project>

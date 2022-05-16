@@ -29,14 +29,14 @@ namespace Engine
             set;
         }
 
-        public void LoadFromContent(string mapPath)
+        public void LoadFromContent(string contentName)
         {
-            if (string.IsNullOrWhiteSpace(mapPath))
+            if (string.IsNullOrWhiteSpace(contentName))
             {
-                throw new ArgumentNullException(nameof(mapPath));
+                throw new ArgumentNullException(nameof(contentName));
             }
 
-            this.loadFromContentMapPath = mapPath;
+            this.loadFromContentMapPath = $"Content/Tiled/Tiledmap/{contentName}.tmx";
             this.LoadFromContentPath();
         }
 
@@ -53,7 +53,7 @@ namespace Engine
                 return;
             }
             // Load tmx file
-            var tiledMap = new TiledMap($"Content/{this.loadFromContentMapPath}.tmx");
+            var tiledMap = new TiledMap(loadFromContentMapPath);
             this.sourceMap = tiledMap;
 
             // Load tsx file
@@ -83,7 +83,8 @@ namespace Engine
             foreach (TiledMapTileset tiledMS in sourceTilesets)
             {
                 string tiledsetPath = Path.GetFileNameWithoutExtension(tiledMS.source);
-                var tiledS = new TiledTileset($"Content/tiles/{tiledsetPath}.tsx");
+                var tiledS = new TiledTileset(Path.Join(
+                    Path.GetDirectoryName(loadFromContentMapPath), tiledMS.source));
                 if (tiledS == null)
                 {
                     throw new NullReferenceException("Load tiledS Failed");
