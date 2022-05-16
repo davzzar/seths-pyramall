@@ -222,7 +222,7 @@ namespace SandPerSand
                                 {
                                     GridColumn = 1,
                                     GridRow = i,
-                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("player" + scores[i].index.ToString())),
+                                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("sprite_player_" + scores[i].index.ToString().ToLowerInvariant())),
                                     Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
                                     HorizontalAlignment = HorizontalAlignment.Center,
                                     VerticalAlignment = VerticalAlignment.Center,
