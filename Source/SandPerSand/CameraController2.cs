@@ -135,7 +135,7 @@ namespace SandPerSand
             var unitPerPixel = size.Y / this.camera.ScreenSize.Y;
             var offset = new Vector2(this.CameraBorder.Left - this.CameraBorder.Right, this.CameraBorder.Bottom - this.CameraBorder.Top) * unitPerPixel / 2f;
 
-            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center - offset, 4 * Time.DeltaTime);
+            this.camera.Transform.Position = Vector2.Lerp(this.camera.Transform.Position, center - offset, 8 * Time.DeltaTime);
 
             Gizmos.DrawRect(center - offset, size * 0.99f, Color.Black, 2f);
         }
