@@ -116,10 +116,10 @@ namespace SandPerSand
             {
                 if(LastGameState != GameState.RoundStartCountdown)
                 {
-                    // Enter from shop
-                    if (LastGameState == GameState.Shop)
+                    // Enter from Shop or RoundCheck
+                    if (LastGameState == GameState.Shop || LastGameState == GameState.RoundCheck)
                     {
-                        if (EnterRoundStartCountdownFromShop())
+                        if (EnterRoundStartCountdownFromShopOrRoundCheck())
                         {
                             LastGameState = GameState.RoundStartCountdown;
                         }
@@ -152,6 +152,10 @@ namespace SandPerSand
                 }
                 
             }
+            else
+            {
+                LastGameState = CurrentGameState;
+            }
         }
 
         private void DuringShop()
@@ -181,16 +185,7 @@ namespace SandPerSand
 
         private bool EnterShop()
         {
-            if (CheckAllDead())
-            {
-                Debug.WriteLine("No players were alive. No shop.");
-                foreach (var player in Players)
-                {
-                    player.Value.GetComponentInChildren<PlayerStates>().FnishedShop = true;
-                }
-                return true;
-            }
-            // FIXME wait for shop map
+            // wait for shop map
             if (ShopEntryPosition.X < 4)
             {
                 Debug.Print("Cannot respawn Player in the shop, " +
@@ -237,7 +232,7 @@ namespace SandPerSand
             return true;
         }
 
-        private bool EnterRoundStartCountdownFromShop()
+        private bool EnterRoundStartCountdownFromShopOrRoundCheck()
         {
             // this holds because we clear initial positions each time we exit a round
             // initial positions are round specific

@@ -150,7 +150,15 @@ namespace SandPerSand
                     if (countDowncounter >= 2f)
                     {
                         countDowncounter = 0f;
-                        RoundCheckToShop();
+                        if (PlayersManager.Instance.CheckAllDead())
+                        {
+                            Debug.WriteLine("No players were alive. No shop.");
+                            RoundCheckToRoundStartCountDown();
+                        }
+                        else
+                        {
+                            RoundCheckToShop();
+                        }
                     }
                     break;
                 case GameState.Shop:
@@ -186,6 +194,16 @@ namespace SandPerSand
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load ShopScene current index = 3
             sceneManager.LoadAt(3);
+        }
+        private void RoundCheckToRoundStartCountDown()
+        {
+            currentState = GameState.RoundStartCountdown;
+            Debug.Print("GameState: RoundCheck-> RoundStartCountDown");
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.Reload();
+
         }
 
         private void ShopToRoundStartCountdown()
