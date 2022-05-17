@@ -37,6 +37,30 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/Item_slot.png
 
+#begin GUI/left_bumper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=True
+/processorParam:MakeSquare=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/left_bumper.png
+
+#begin GUI/right_bumper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=True
+/processorParam:MakeSquare=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/right_bumper.png
+
 #begin playerfour.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -47,7 +71,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerfour.png
+/build:GUI/playerfour.png
 
 #begin playerone.png
 /importer:TextureImporter
@@ -59,7 +83,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerone.png
+/build:GUI/playerone.png
 
 #begin playerthree.png
 /importer:TextureImporter
@@ -71,7 +95,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playerthree.png
+/build:GUI/playerthree.png
 
 #begin playertwo.png
 /importer:TextureImporter
@@ -83,7 +107,7 @@
 /processorParam:ResizeToPowerOfTwo=True
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
-/build:playertwo.png
+/build:GUI/playertwo.png
 
 #begin ProtoPlayer.png
 /importer:TextureImporter
@@ -151,6 +175,114 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:shop/sold.png
+
+#begin shop/UsageIcons/usage_blitz.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_blitz.png
+
+#begin shop/UsageIcons/usage_dizzy.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_dizzy.png
+
+#begin shop/UsageIcons/usage_freeze.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_freeze.png
+
+#begin shop/UsageIcons/usage_glasses.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_glasses.png
+
+#begin shop/UsageIcons/usage_posswap.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_posswap.png
+
+#begin shop/UsageIcons/usage_sandsource.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_sandsource.png
+
+#begin shop/UsageIcons/usage_sheild.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_sheild.png
+
+#begin shop/UsageIcons/usage_speedup.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_speedup.png
+
+#begin shop/UsageIcons/usage_wings.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:shop/UsageIcons/usage_wings.png
 
 #begin Smiley.png
 /importer:TextureImporter

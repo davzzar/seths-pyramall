@@ -28,7 +28,8 @@ namespace SandPerSand
         {
             //PlayersManager.Instance.Players
             Vector2 distance = this.Transform.Position - playerGo.Transform.Position;
-            if (distance.Length() <= Radius)
+            Collider collider = playerGo.GetComponentInChildren<Collider>();
+            if (distance.Length() <= Radius && collider!=null && collider.IsActive)
             {
                 return true;
             }

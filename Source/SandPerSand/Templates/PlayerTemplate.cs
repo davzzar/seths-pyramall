@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
@@ -21,13 +22,22 @@ namespace SandPerSand
 
             playerGo.Transform.LocalPosition = position;
 
-            var jumpSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
-            jumpSoundComp.LoadFromContent("Sounds/player_land");
-            jumpSoundComp.Volume = 0.6f;
-            jumpSoundComp.Trigger = () =>
+            var landSoundComponent = playerGo.AddComponent<SoundEffectPlayer>();
+            landSoundComponent.LoadFromContent("Sounds/player_land");
+            landSoundComponent.Volume = 0.6f;
+            landSoundComponent.Trigger = () =>
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
-                return pcc.WillJump;
+                return pcc.HasLanded;
+            };
+
+            var sandLandSoundComponent = playerGo.AddComponent<SoundEffectPlayer>();
+            sandLandSoundComponent.LoadFromContent("Sounds/player_land_sand");
+            sandLandSoundComponent.Volume = 0.6f;
+            sandLandSoundComponent.Trigger = () =>
+            {
+                var pcc = playerGo.GetComponent<PlayerControlComponent>();
+                return pcc.HasLandedInSand;
             };
 
             var diggingSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
@@ -36,7 +46,7 @@ namespace SandPerSand
             diggingSoundComp.Trigger = () =>
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
-                return pcc.HasSandReached;
+                return pcc.HasSandReached && pcc.InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
             };
 
             var stepSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
@@ -50,7 +60,7 @@ namespace SandPerSand
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
                 var rb = playerGo.GetComponent<RigidBody>();
-                return pcc.IsGrounded && MathF.Abs(rb.LinearVelocity.X) > 0.3f;
+                return pcc.IsGrounded && MathF.Abs(rb.LinearVelocity.X) > 0.3f && pcc.HorizontalSpeed != 0f;
             };
 
             return playerGo;

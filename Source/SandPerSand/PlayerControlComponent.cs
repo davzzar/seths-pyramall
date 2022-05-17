@@ -46,6 +46,7 @@ namespace SandPerSand
         public bool HasLaunched => WasGrounded && !IsGrounded;
         public bool HasLanded => !WasGrounded && IsGrounded;
         public bool IsOnSlope => groundChecker.IsOnSlope;
+        public bool HasLandedInSand = false;
 
 
         // Horizontal movement
@@ -55,11 +56,11 @@ namespace SandPerSand
 
         public float MaxAcceleration => 110f * this.Owner.GetComponentInChildren<PlayerStates>().getAccellerationFactor(); //change these vals for changing vertical speed
 
-        public const float MaxArialAcceleration = 30f;
+        public const float MaxArialAcceleration = 50f;
 
         public const float MaxDeceleration = 60f;
 
-        public const float MaxHorizontalSpeed = 13f;
+        public const float MaxHorizontalSpeed = 7f;
 
         // Movement on Slopes
         public float SlopeClimbVerticalSpeed { get; private set; }
@@ -69,13 +70,13 @@ namespace SandPerSand
         // Vertical movement
         public float VerticalSpeed { get; private set; }
 
-        public float JumpHeight => 8f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
+        public float JumpHeight => 7f * this.Owner.GetComponentInChildren<PlayerStates>().getJumpFactor(); // explicit jump height
         //increase jump hight here
 
         public const float MaxFallingSpeed = -20f;
 
         // Player Gravity and Variable Jump Height
-        public const float JumpVelocityFalloff = 3f;
+        public const float JumpVelocityFalloff = 1f;
 
         public const float Gravity = -9.8f; // a la Unity
 
@@ -123,15 +124,15 @@ namespace SandPerSand
                     this.sandSimulation = GameObject.FindComponent<SandSimulation>();
 
                 }
-                return this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+                return GameStateManager.Instance.CurrentState != GameState.Shop && this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
             }
         }
 
         private bool HasSandReachedBefore;
         private const float SandResistancePush = 16f;
         private bool isSandEscapeJump;
-        public bool DieFromDrown => timerBar.FillLevel <= TimerBar.EmptyLevel + 1e-05f;
-        
+        private bool wasFacingRight = true;
+
         protected override void OnEnable()
         {
             // add needed components
@@ -144,6 +145,13 @@ namespace SandPerSand
             timerBar = Owner.GetComponent<TimerBar>();
             sandSimulation = GameObject.FindComponent<SandSimulation>();
             Owner.Layer = 1;
+
+            this.HasSandReachedBefore = false;
+        }
+
+        protected override void OnDisable()
+        {
+            // unsubscribe from events
         }
 
         protected override void Update()
@@ -233,6 +241,8 @@ namespace SandPerSand
 
         private void ControlUpdate()
         {
+            Debug.WriteLine($"Position of game object {Owner.Name}: {Owner.Transform.Position}");
+            
             #if DEBUG
             ShowDebug();
             #endif
@@ -242,14 +252,17 @@ namespace SandPerSand
                 return;
             }
 
+            HasLandedInSand = false;
+
             // Sand Interaction
-            HardJumpThroughFallingSand();
+            //HardJumpThroughFallingSand();
 
             if (HasSandReached && !HasSandReachedBefore)
             {
                 // enable mashing bar
                 timerBar.IsActive = true;
-                timerBar.FillLevel = 1f;
+                timerBar.SetDepletingAt(0.3f);
+                HasLandedInSand = true;
 
                 // reset velocities
                 rigidBody.LinearVelocity = Vector2.Zero;
@@ -276,7 +289,8 @@ namespace SandPerSand
                 if (!HasSandReached)
                 {
                     // Exit trapped state and perform jump
-                    timerBar.IsActive = false;
+                    // Switch to recharging
+                    timerBar.SetRechargingAt(0.15f);
                     HasSandReachedBefore = false;
 
                     // Do jump
@@ -391,6 +405,12 @@ namespace SandPerSand
             // (since now we only move up while jumping, will need to explicitly model a jump later)
             if (!isSandEscapeJump && JumpButtonUp && !IsGrounded && !jumpEnded && VerticalSpeed > 0) jumpEnded = true;
 
+            if (HorizontalDirection > 0 && !wasFacingRight || HorizontalDirection < 0 && wasFacingRight)
+            {
+                wasFacingRight = HorizontalDirection > 0;
+                Owner.GetComponent<SpriteRenderer>()!.FlipHorizontal();
+            }
+            
             // Apply computed velocity
             ApplyVelocity();
             
@@ -546,6 +566,7 @@ namespace SandPerSand
                       $"V. Vel.: {VerticalSpeed:F3}\n" +
                       $"S. Vel.: {SlopeClimbVerticalSpeed:F3}\n\n" +
                       $"H. Accel: {CurrentAcceleration}, Gravity Scale: {GravityScale}\n" +
+                      $"HasLandedInSand: {HasLandedInSand}\n" +
                       $"isGrounded: {IsGrounded}\n" +
                       $"jumpEnded: {jumpEnded}\n" +
                       $"CanUseCoyote: {CanUseCoyote}\n" +

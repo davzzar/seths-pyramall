@@ -143,19 +143,19 @@ namespace SandPerSand
             var titleLevelSelection = createTitleLabel("Play");
 
             // Create Mode 1 Button
-            var Mode1Button = createTextButton("Mode 1");
+            var Mode1Button = createTextButton("Shop (Debug)");
 
             // When the start button is clicked, remove the GUI by setting UI.Root to null
             Mode1Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
-                loadManager.LoadAt(4);
+                loadManager.LoadAt(3);
                 UI.Root = null;
             };
 
             // Create Mode 2 Button
-            var Mode2Button = createTextButton("Mode 2");
+            var Mode2Button = createTextButton("Round Game");
 
             // When the start button is clicked, remove the GUI by setting UI.Root to null
             Mode2Button.Click += (sender, e) =>

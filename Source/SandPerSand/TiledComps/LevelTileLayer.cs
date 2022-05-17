@@ -73,6 +73,14 @@ namespace SandPerSand
                     _ = AddTileRenderer(newTileGo, tile);
                     var itemCollectable = newTileGo.AddComponent<Collectable>();
                     itemCollectable.init(CollectableType.coin, "Coin", outline);
+                    // add coin pickup sound effect
+                    var coinSoundEffectPlayer = newTileGo.AddComponent<SoundEffectPlayer>();
+                    coinSoundEffectPlayer.LoadFromContent("Sounds/coin01", 
+                        "Sounds/coin02",
+                        "Sounds/coin03",
+                        "Sounds/coin04",
+                        "Sounds/coin05");
+
                     break;
                 case "Stone":
                     _ = AddTileRenderer(newTileGo, tile);
@@ -90,6 +98,13 @@ namespace SandPerSand
                         }
                     }
                     coinCollectable.init(CollectableType.item, itemId, outline);
+                    // add item pick up sound effect
+                    var itemSoundEffectPlayer = newTileGo.AddComponent<SoundEffectPlayer>();
+                    itemSoundEffectPlayer.LoadFromContent("Sounds/item01",
+                        "Sounds/item02",
+                        "Sounds/item03",
+                        "Sounds/item04",
+                        "Sounds/item05");
                     break;
                 case "SandSource":
                     SandSimulation sandSim = GameObject.FindComponent<SandSimulation>();

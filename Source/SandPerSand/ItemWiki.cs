@@ -48,8 +48,8 @@ namespace SandPerSand
             foreach (TiledTile tile in ItemTiledS.Tiles)
             {
                 Item item = ParseTiledItem(tile, ItemTiledS);
-                if (item.Name != null)
-                    ItemNametoItem.Add(item.Name, item);
+                if (item.Id != null)
+                    ItemNametoItem.Add(item.Id, item);
             }
         }
 
@@ -62,17 +62,23 @@ namespace SandPerSand
                 switch (p.name)
                 {
                     case "item_id":
-                        item.Name = p.value;
+                        item.Id = p.value;
                         break;
                     case "item_type":
                         item.Type = p.value;
                         break;
+                    case "item_name":
+                        item.DisplayName = p.value;
+                        break;
                     case "item_description":
                         item.Description = p.value;
                         break;
-                    case "item_image_path":
+                    case "item_flavour":
+                        item.FlavourText = p.value;
+                        break;
+                    case "item_usage_icon":
                         // FIXME hard code
-                        item.ImageName = $"shop/{Path.GetFileNameWithoutExtension(p.value)}";
+                        item.UsageIconPath = $"shop/UsageIcons/{p.value}";
                         break;
                     case "item_price":
                         item.Price = int.Parse(p.value);
@@ -86,10 +92,12 @@ namespace SandPerSand
     public class Item
     {
         public int TileID;
-        public string Name;
+        public string Id;
         public string Type;
         public string Description;
-        public string ImageName;
+        public string UsageIconPath;
         public int Price;
+        public string FlavourText { get; set; }
+        public string DisplayName { get; set; }
     }
 }

@@ -10,8 +10,7 @@ namespace SandPerSand
     {
 
         // player referrences
-        private PlayerIndex playerIndex;
-        private InputHandler playerInput;
+        private InputHandler currentShopperInput;
 
         private bool wasOnCollision;
         private GameObject infoGo;
@@ -34,8 +33,8 @@ namespace SandPerSand
         {
             get
             {
-                if (playerInput == null) return false;
-                return playerInput.getButtonState(Buttons.X) == ButtonState.Pressed;
+                if (currentShopperInput == null) return false;
+                return currentShopperInput.getButtonState(Buttons.X) == ButtonState.Pressed;
             }
         }
 
@@ -43,7 +42,7 @@ namespace SandPerSand
         {
             base.OnEnable();
             wasOnCollision = false;
-            playerInput = null;
+            currentShopperInput = null;
             if (ItemId != null)
             {
                 InitShopItem();
@@ -69,7 +68,7 @@ namespace SandPerSand
             infoGo.Transform.Parent = this.Transform;
             var infoComp = infoGo.AddComponent<ShopItemInfoComp>();
             price = item.Price;
-            infoComp.FillInForm(ItemId, item.Price, stock, item.ImageName, item.Description);
+            infoComp.FillInForm(item, stock);
             infoGo.IsEnabled = false;
         }
 
@@ -83,13 +82,13 @@ namespace SandPerSand
 
         private void OnCollisionEnter(object sender, GameObject playerGo)
         {
-            playerInput = playerGo.GetComponent<PlayerStates>().InputHandler;
+            currentShopperInput = playerGo.GetComponent<PlayerStates>().InputHandler;
             infoGo.IsEnabled = true;
         }
 
         private void OnCollisionExit(object sender, GameObject playerGo)
         {
-            playerInput = null;
+            currentShopperInput = null;
             infoGo.IsEnabled = false;
         }
 
@@ -98,17 +97,18 @@ namespace SandPerSand
             if (stock > 0)
             {
                 // TODO deduct players' coins check enough amount
-                if(PlayersManager.Instance.spendCoins(this.playerIndex, this.price))
+                var currentShopperIndex = currentShopperInput.PlayerIndex;
+                if (PlayersManager.Instance.spendCoins(currentShopperIndex, this.price))
                 {
                     stock--;
                     // TODO add item to player
                     // FIXME major boolean is hard coded
-                    PlayersManager.Instance.addItemToInventory(this.playerIndex, this.ItemId, true);
-                    Debug.Print("Shop item "+ItemId+"("+price+" coins): player" + playerIndex + " bought me");
+                    PlayersManager.Instance.addItemToInventory(currentShopperIndex, this.ItemId, true);
+                    Debug.Print("Shop item "+ItemId+"("+price+" coins): player" + currentShopperIndex + " bought me");
                 }
                 else
                 {
-                    Debug.Print("Shop item " + ItemId + "(" + price + " coins): player" + playerIndex + " bought me but failed");
+                    Debug.Print("Shop item " + ItemId + "(" + price + " coins): player" + currentShopperIndex + " bought me but failed");
                 }
                 UpdateInfo();
             }

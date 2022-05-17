@@ -1,4 +1,5 @@
-﻿using Engine;
+﻿using System;
+using Engine;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -11,6 +12,12 @@ namespace SandPerSand
             base.OnEnable();
             var playersManager = PlayersManager.Instance;
             PlayersManager.Instance.InitialPositions.Add(this.Owner.Transform.Position);
+            
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                player.GetComponent<SpriteRenderer>()!.IsActive = true;
+            }
+            
             this.Owner.Destroy();
         }
     }
@@ -53,6 +60,8 @@ namespace SandPerSand
                         playerState.Exited = true;
                         playerState.RoundRank = rankingCounter++;
                         playerState.Score += PlayersManager.Instance.Players.Count + 2 - rankingCounter;
+
+                        PlayerUtils.HidePlayer(player);
                     }
                 }
             }
@@ -62,6 +71,7 @@ namespace SandPerSand
 
     public class ShopEntryScript : Behaviour
     {
+        
         protected override void OnEnable()
         {
             base.OnEnable();
@@ -102,6 +112,8 @@ namespace SandPerSand
                         //TODO record round ranking and other information somewhere
                         Debug.Print("Player " + playerIndex + " triggered Exit.");
                         playerState.FnishedShop = true;
+
+                        PlayerUtils.HidePlayer(player);
                     }
                 }
             }
