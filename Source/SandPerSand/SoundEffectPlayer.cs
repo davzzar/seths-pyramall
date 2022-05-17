@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Engine;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 
 namespace SandPerSand
@@ -13,16 +14,33 @@ namespace SandPerSand
         private float lockTime = float.NegativeInfinity;
 
         private Random random = new Random();
+        private float volume = 1f;
+        private float pitch = 0f;
+        private float pan = 0f;
 
         public Func<bool> Trigger { get; set; }
 
         public List<SoundEffect> Sounds { get; } = new List<SoundEffect>();
 
-        public float Volume { get; set; } = 1f;
+        public float Volume
+        {
+            get => this.volume;
+            set => this.volume = MathHelper.Clamp(value, 0f, 1f);
+        }
 
-        public float Pitch { get; set; } = 0f;
+        public float Pitch
+        {
+            get => this.pitch;
+            set => this.pitch = MathHelper.Clamp(value, 0f, 1f);
+        }
 
-        public float Pan { get; set; } = 0f;
+        public float Pan
+        {
+            get => this.pan;
+            set => this.pan = MathHelper.Clamp(value, -1f, 1f);
+        }
+
+        public bool AllowOverlappingPlays { get; set; }
 
         public void LoadFromContent(params string[] paths)
         {
@@ -43,17 +61,38 @@ namespace SandPerSand
         /// <inheritdoc />
         protected override void Update()
         {
-            if (this.Trigger == null || this.Sounds.Count == 0)
+            if ((this.Trigger == null) || this.Sounds.Count == 0)
             {
                 return;
             }
 
-            if (this.lockTime <= Time.GameTime && this.Trigger.Invoke())
+            // check trigger 
+            if (!this.Trigger.Invoke())
             {
-                var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
-                sound.Play(this.Volume, this.Pitch, this.Pan);
-                this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
+                return;
             }
+
+            this.Play();
+        }
+
+        /// <summary>
+        /// Force the SoundEffectPlayer to play its sound effect. This method does not respect the Tigger property.
+        /// </summary>
+        public void Play()
+        {
+            if (this.Sounds.Count == 0)
+            {
+                return;
+            }
+
+            if (!this.AllowOverlappingPlays && Time.GameTime <= this.lockTime)
+            {
+                return;
+            }
+
+            var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
+            sound.Play(this.Volume, this.Pitch, this.Pan);
+            this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
         }
 
         /// <inheritdoc />
