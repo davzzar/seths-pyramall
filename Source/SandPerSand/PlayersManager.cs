@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -25,7 +25,7 @@ namespace SandPerSand
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> players;
+        private static Dictionary<PlayerIndex, GameObject> players;
         public Dictionary<PlayerIndex, GameObject> Players
         {
             get => players;
@@ -99,19 +99,6 @@ namespace SandPerSand
                     //During
                 }
             }
-            else if (CurrentGameState == GameState.RoundStartCountdown)
-            {
-                if(LastGameState != GameState.RoundStartCountdown)
-                {
-                    //Enter
-                    SetAllPlayerControls(false);
-                    LastGameState = GameState.RoundStartCountdown;
-                }
-                else
-                {
-                    //During
-                }
-            }
             else if (CurrentGameState == GameState.Prepare)
             {
                 if (LastGameState != GameState.Prepare)
@@ -129,7 +116,7 @@ namespace SandPerSand
             {
                 if(LastGameState != GameState.RoundStartCountdown)
                 {
-                    //Enter
+                    // Enter from shop
                     if (LastGameState == GameState.Shop)
                     {
                         if (EnterRoundStartCountdownFromShop())
@@ -137,8 +124,10 @@ namespace SandPerSand
                             LastGameState = GameState.RoundStartCountdown;
                         }
                     }
+                    // Enter from other states (= Prepare)
                     else
                     {
+                        SetAllPlayerControls(false);
                         LastGameState = GameState.RoundStartCountdown;
                     }
                 }
@@ -262,6 +251,7 @@ namespace SandPerSand
             {
                 RespawnPlayer(playerIndex, GetRandomInitialPos());
             }
+            SetAllPlayerControls(false);
             return true;
         }
 
