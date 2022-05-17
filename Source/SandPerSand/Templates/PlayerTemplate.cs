@@ -43,6 +43,7 @@ namespace SandPerSand
             var diggingSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
             diggingSoundComp.LoadFromContent("Sounds/player_sand_dig");
             diggingSoundComp.Volume = 0.2f;
+            diggingSoundComp.AllowOverlappingPlays = true;
             diggingSoundComp.Trigger = () =>
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
