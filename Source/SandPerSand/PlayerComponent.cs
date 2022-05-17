@@ -1,8 +1,10 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Text;
 using Engine;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Design;
 using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
@@ -126,7 +128,10 @@ namespace SandPerSand
                     // hide sprite after 10s( or at RoundCheck)
                     Owner.AddComponent<GoTimer>().Init(10f,() =>
                     {
-                        Owner.GetComponent<SpriteRenderer>().IsActive = false;
+                        if (!Owner.GetComponent<PlayerStates>()!.IsAlive)
+                        {
+                            Owner.GetComponent<SpriteRenderer>()!.IsActive = false;
+                        }
                     });
                     RemoveCameraControlPoint();
                 }
@@ -157,13 +162,6 @@ namespace SandPerSand
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnEnable();
-
-            if (initialized)
-            {
-                return;
-            }
-
-            initialized = true;
 
 #if DEBUG
             //FOR DEBUG (updated in the PlayerControlComponent)
@@ -198,7 +196,21 @@ namespace SandPerSand
             var timerBar = Owner.GetOrAddComponent<TimerBar>();
             timerBar.FillColor = Color.Red;
             timerBar.DepletionSpeed = 0.2f;
+            timerBar.OriginOffset = new Vector2(1f, 0.8f);
             timerBar.IsActive = false;
+
+            //onscreen controls GO
+            var onScreenControlsGO = new GameObject("On screen controls");
+            onScreenControlsGO.IsEnabled = false;
+            onScreenControlsGO.Transform.Parent = Transform;
+            onScreenControlsGO.Transform.LocalPosition = new Vector2(0f,0.8f);
+            onScreenControlsGO.Transform.LossyScale = Vector2.One * 0.6f;
+            
+            onScreenControlsGO.AddComponent<SpriteRenderer>();
+            var onScreenControlsController = onScreenControlsGO.AddComponent<OnScreenControlController>();
+            onScreenControlsController.Button = Buttons.A;
+            onScreenControlsController.ShouldAnimate = true;
+            onScreenControlsController.AnimationSpeed = 10f;
 
             var playerController = Owner.GetOrAddComponent<PlayerControlComponent>();
             playerController.InputHandler = InputHandler;
@@ -227,8 +239,6 @@ namespace SandPerSand
 
             var itemsManager = Owner.GetOrAddComponent<ItemManager>();
             itemsManager.inputHandler = InputHandler;
-
-            this.IsAlive = true;
 
             // Subscribe to events
             // disable the timerBar when it fills up so it is not shown.
@@ -262,6 +272,8 @@ namespace SandPerSand
 
             base.Update();
             var newState = state.Update();
+
+            InputHandler.UpdateState();
 
             if (newState == null) return;
             state.OnExit();

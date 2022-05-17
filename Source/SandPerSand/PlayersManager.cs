@@ -6,6 +6,7 @@ using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.Diagnostics;
+using System.Linq;
 
 namespace SandPerSand
 {
@@ -55,17 +56,45 @@ namespace SandPerSand
             Debug.Print("player manager created");
         }
 
-        public GameState LastGameState { get; set; }
+        public GameState? LastGameState { get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         // TODO hard coded shopTime
-        public float shopTime { get; private set; } = 30f;
-        public float shopTimeCounter { get; private set; } = 0;
-        public int curRank { get; private set; }
+        public float ShopTime { get; private set; } = 30f;
+        public float ShopTimeCounter { get; private set; } = 0;
+        public int CurRank { get; private set; }
         private PlayerIndex[] rankList;
+
+        private SoundEffectPlayer itemPickupSoundEffect;
+        private SoundEffectPlayer itemBuySoundEffect;
+        protected override void OnEnable()
+        {
+            // add components to the manager owner
+            itemPickupSoundEffect = Owner.AddComponent<SoundEffectPlayer>();
+            itemPickupSoundEffect.LoadFromContent("Sounds/item_use01",
+                "Sounds/item_use02",
+                "Sounds/item_use03",
+                "Sounds/item_use04");
+
+            itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
+            itemBuySoundEffect.LoadFromContent("Sounds/shop_payment");
+        }
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+            LastGameState = null;
+        }
 
         protected override void Update()
         {
-            if (CurrentGameState == GameState.RoundStartCountdown)
+            if (CurrentGameState == GameState.InRound && LastGameState != GameState.InRound)
+            {
+                SetAllPlayerControls(true);
+            }
+            else if ((CurrentGameState == GameState.RoundStartCountdown || CurrentGameState == GameState.Prepare) && LastGameState != CurrentGameState)
+            {
+                SetAllPlayerControls(false);
+            }
+            else if (CurrentGameState == GameState.RoundStartCountdown)
             {
                 if (LastGameState == GameState.Shop)
                 {
@@ -78,7 +107,7 @@ namespace SandPerSand
                         return;
                     }
                     LastGameState = GameState.InRound;
-                    foreach (PlayerIndex playerIndex in Players.Keys)
+                    foreach (var playerIndex in Players.Keys)
                     {
                         RespawnPlayer(playerIndex, GetRandomInitialPos());
                     }
@@ -86,7 +115,7 @@ namespace SandPerSand
             }
             else if (CurrentGameState == GameState.Shop)
             {
-                bool atLeastOneAlive = false;
+                var atLeastOneAlive = false;
                 foreach (var player in Players)
                 {
                     if (player.Value.GetComponentInChildren<PlayerComponent>().IsAlive == true)
@@ -121,7 +150,7 @@ namespace SandPerSand
                     rankList = new PlayerIndex[Players.Count];
                     foreach (var player in Players)
                     {
-                        int rank = player.Value.GetComponent<PlayerStates>().RoundRank;
+                        var rank = player.Value.GetComponent<PlayerStates>().RoundRank;
                         if (rank <= 0)
                         {
                             throw new Exception("Invalid rank at end");
@@ -148,26 +177,33 @@ namespace SandPerSand
                     // loaded next time ... then drop
                     ShopEntryPosition = Vector2.Zero;
                     LastGameState = GameState.Shop;
-                    shopTimeCounter = shopTime;
-                    curRank = 0;
+                    ShopTimeCounter = ShopTime;
+                    CurRank = 0;
                 }
-                shopTimeCounter += Time.DeltaTime;
-                if (shopTimeCounter >= shopTime || Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop)
+                ShopTimeCounter += Time.DeltaTime;
+
+                // TODO HOY fix for out of bounds exception on line 191
+                if (CurRank - 1 >= rankList.Length || CurRank <= 0)
+                {
+                    CurRank = 0;
+                }
+
+                if (ShopTimeCounter >= ShopTime || Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop)
                 {
                     // Reset the shop coutner
-                    shopTimeCounter = 0;
+                    ShopTimeCounter = 0;
 
                     // If this was not the first player, set the one before to be finished with the shop
-                    if(curRank>0)
+                    if(CurRank>0)
                     {
-                        Players[rankList[curRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
+                        Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
                         //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
                     }
 
                     // Activate the controller of the next player
-                    if(curRank < rankList.Length) 
-                        PlayerUtils.ResumePlayerControl(Players[rankList[curRank]]);
-                    curRank++;
+                    if(CurRank < rankList.Length) 
+                        PlayerUtils.ResumePlayerControl(Players[rankList[CurRank]]);
+                    CurRank++;
                 }
 
             }
@@ -181,17 +217,16 @@ namespace SandPerSand
 
         public bool DestroyPlayer(PlayerIndex index)
         {
-            if (players.ContainsKey(index))
-            {
-                GraphicalUserInterface.Instance.destroyPlayerInfo(index);
-                players[index].Destroy();
-                players.Remove(index);
-                return true;
-            }
-            else
+            if (!players.ContainsKey(index))
             {
                 return false;
             }
+            
+            GraphicalUserInterface.Instance.destroyPlayerInfo(index);
+            players[index].Destroy();
+            players.Remove(index);
+            return true;
+
         }
 
         public void CreatePlayer(PlayerIndex playerIndex, Vector2 position)
@@ -229,48 +264,56 @@ namespace SandPerSand
 
         }
 
-        public Boolean addItemToInventory(PlayerIndex player, string item, Boolean Major)
+        public bool AddItemToInventory(PlayerIndex player, string item, bool major)
             //returns true if item was added. False if it is already full
         {
-            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
-            Boolean success = state.addItemToInventory(item, Major);
+            var state = players[player].GetComponentInChildren<PlayerStates>();
+            var success = state.AddItemToInventory(item, major);
             if (success)
             {
-                GraphicalUserInterface.Instance.renderItem(player, item, Major);
+                GraphicalUserInterface.Instance.renderItem(player, item, major);
             }
             return success;
         }
 
-        public string useItem(PlayerIndex player, Boolean Major)
+        public string UseItem(PlayerIndex player, bool Major)
         {
+            itemPickupSoundEffect?.Play();
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
             GraphicalUserInterface.Instance.removeItem(player, Major);
-            return state.useItem(Major);
+            return state.UseItem(Major);
         }
 
-        public void addCoins(PlayerIndex player, int coins)
+        public void AddCoins(PlayerIndex player, int coins)
         {
-            PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
-            int tot_coins = state.addCoins(coins);
-            GraphicalUserInterface.Instance.renderCoins(player, tot_coins);
+            var state = players[player].GetComponentInChildren<PlayerStates>();
+            var totCoins = state.AddCoins(coins);
+            GraphicalUserInterface.Instance.renderCoins(player, totCoins);
         }
-        public Boolean spendCoins(PlayerIndex player, int coins)
+        public bool SpendCoins(PlayerIndex player, int coins)
         {
             PlayerStates state = players[player].GetComponentInChildren<PlayerStates>();
-            (Boolean, int) tmp = state.spendCoins(coins);
+            (Boolean, int) tmp = state.SpendCoins(coins);
+            if (tmp.Item1)
+            {
+                // play sfx
+                itemBuySoundEffect?.Play();
+            }
             GraphicalUserInterface.Instance.renderCoins(player, tmp.Item2);
             return tmp.Item1;
         }
         private Vector2 GetRandomInitialPos()
         {
-            Random rd = new Random();
-            int totalPosNum = InitialPositions.ToArray().Length;
+            var rd = new Random();
+            var totalPosNum = InitialPositions.ToArray().Length;
+            
             if (totalPosNum <= 0)
             {
                 throw new InvalidOperationException("No initial position " +
                     "registered. Please add at least one 'Entry' Tile on map and make sure " +
                     "map is loaded before Players' creation");
             }
+            
             return InitialPositions[rd.Next(0, totalPosNum)];
         }
 
@@ -279,7 +322,7 @@ namespace SandPerSand
             // check for new connection / disconnection
             foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
             {
-                GamePadCapabilities capabilities = GamePad.GetCapabilities(playerIndex);
+                var capabilities = GamePad.GetCapabilities(playerIndex);
                 if (capabilities.IsConnected)
                 {
                     if (!players.ContainsKey(playerIndex))
@@ -308,94 +351,58 @@ namespace SandPerSand
 
         }
 
-        public Boolean CheckAllPrepared()
+        public bool CheckAllPrepared()
         {
             if (players.Count == 0)
             {
                 return false;
             }
-            var allPreparedFlag = true;
-            foreach (var player in players.Values)
-            {
-                if (!player.GetComponent<PlayerStates>().Prepared)
-                {
-                    allPreparedFlag = false;
-                }
-            }
-            return allPreparedFlag;
+
+            return Players.Values.All(player => player.GetComponent<PlayerStates>()!.Prepared);
         }
 
-        public Boolean CheckOneExit()
+        public bool CheckOneExit()
         {
-            if (players.Count == 0)
-            {
-                return false;
-            }
-            foreach (var player in players.Values)
-            {
-                if (player.GetComponent<PlayerStates>().Exited)
-                {
-                    return true;
-                }
-            }
-            return false;
+            return players.Values.Any(player => player.GetComponent<PlayerStates>()!.Exited);
         }
 
-        public Boolean CheckAllDead()
+        public bool CheckAllDead()
         {
             if (players.Count == 0)
             {
                 return true;
             }
+            
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerComponent>().IsAlive)
+                if (player.GetComponent<PlayerComponent>()!.IsAlive)
                 {
                     return false;
-                } else {
-                    player.GetComponent<PlayerStates>().RoundRank = players.Values.Count;
                 }
+
+                player.GetComponent<PlayerStates>()!.RoundRank = players.Values.Count;
             }
             return true;
         }
 
-        public Boolean CheckAllDeadOrExit()
+        public bool CheckAllDeadOrExit()
         {
             if (players.Count == 0)
             {
                 return false;
             }
-            var allExitedFlag = true;
-            foreach (var player in players.Values)
-            {
-                if (!player.GetComponent<PlayerStates>().Exited && player.GetComponent<PlayerComponent>().IsAlive)
-                {
-                    allExitedFlag = false;
-                }
-            }
-            return allExitedFlag;
+
+            return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsAlive || player.GetComponent<PlayerStates>().Exited);
         }
 
-        public Boolean CheckAllFinishedShop()
+        public bool CheckAllFinishedShop()
         {
-            if (players.Count == 0)
-            {
-                return true;
-            }
-            var allExitedFlag = true;
-            foreach (var player in players.Values)
-            {
-                if (!player.GetComponent<PlayerStates>().FnishedShop)
-                {
-                    allExitedFlag = false;
-                }
-            }
-            return allExitedFlag;
+            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FnishedShop);
         }
 
-        public void finalizeRanks()
+        public void FinalizeRanks()
         {
-            int notExitedFrom = 1;
+            var notExitedFrom = 1;
             foreach (var player in players.Values)
             {
                 if (player.GetComponent<PlayerStates>().RoundRank != -1)
@@ -405,33 +412,38 @@ namespace SandPerSand
             }
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerStates>().RoundRank == -1)
+                if (player.GetComponent<PlayerStates>()!.RoundRank == -1)
                 {
-                    player.GetComponent<PlayerStates>().RoundRank = notExitedFrom++;
+                    player.GetComponent<PlayerStates>()!.RoundRank = notExitedFrom++;
                 }
             }
         }
 
         public List<GameObject> InGamePlayerGo()
         {
-            List<GameObject> result = new List<GameObject>();
+            return players.Values.Where(player => !player.GetComponent<PlayerStates>()!.Exited && player.GetComponent<PlayerComponent>()!.IsAlive).ToList();
+        }
 
-            foreach(GameObject player in players.Values)
+        public void SetAllPlayerControls(bool enabled)
+        {
+            foreach (var player in players.Values)
             {
-                if (!player.GetComponent<PlayerStates>().Exited && player.GetComponent<PlayerComponent>().IsAlive)
+                if (enabled)
                 {
-                    result.Add(player);
+                    PlayerUtils.ResumePlayerControl(player);
+                }
+                else
+                {
+                    PlayerUtils.ShieldPlayerControl(player);
                 }
             }
-
-            return result;
         }
     }
 
     public class PlayerStates : Behaviour
     {
-        public Boolean Prepared;
-        public static Boolean Paused;
+        public bool Prepared;
+        public static bool Paused;
         public string MinorItem;
         public string MajorItem;
         public int Coins;
@@ -445,7 +457,7 @@ namespace SandPerSand
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         public Collider Collider { get; set; }
 
-        public List<(string id, float timeleft, float tot_time, Vector2 pos)> activeItems { private set; get; }
+        public List<(string id, float timeleft, float tot_time, Vector2 pos)> ActiveItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -457,7 +469,7 @@ namespace SandPerSand
             Exited = false;
             FnishedShop = false;
             RoundRank = -1;
-            activeItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
+            ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
             Score = 0;
         }
 
@@ -488,58 +500,58 @@ namespace SandPerSand
             //======= End of Yuchen stuff
 
             //<<<<<<< Clemens stuff
-            float timeDelta = Time.DeltaTime;
+            var timeDelta = Time.DeltaTime;
 
-            List<int> remove = new List<int>();
+            var remove = new List<int>();
 
             //bool lightning = false;
 
-            for (int i = 0; i < activeItems.Count; i++)
+            for (var i = 0; i < ActiveItems.Count; i++)
             {
-                Vector2 pos = activeItems[i].pos;
-                float time = activeItems[i].timeleft;
-                if (activeItems[i].id == "position_swap")
+                var pos = ActiveItems[i].pos;
+                var time = ActiveItems[i].timeleft;
+                if (ActiveItems[i].id == "position_swap")
                 {
-                    Debug.Print((activeItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
+                    Debug.Print((ActiveItems[i].pos - this.Transform.Position).LengthSquared().ToString());
+                    if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
                     {
-                        this.Transform.Position = activeItems[i].pos;
+                        this.Transform.Position = ActiveItems[i].pos;
                         time = -1f;
                         Collider.IsActive = true;
                     }
                     else
                     {
-                        Vector2 vel = (activeItems[i].pos - this.Transform.Position) / (activeItems[i].pos - this.Transform.Position).Length();
-                        this.Transform.Position = (activeItems[i].pos * 0.1f + 0.9f * this.Transform.Position) + vel / 10;
+                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
+                        this.Transform.Position = (ActiveItems[i].pos * 0.1f + 0.9f * this.Transform.Position) + vel / 10;
                         var collider = this.Owner.GetComponent<Collider>();
                         Collider.IsActive = false;
                     }
                 }
                 else
                 {
-                    if (activeItems[i].pos.Y < 0)
+                    if (ActiveItems[i].pos.Y < 0)
                     {
-                        pos = activeItems[i].pos;
-                        time = activeItems[i].timeleft - timeDelta;
+                        pos = ActiveItems[i].pos;
+                        time = ActiveItems[i].timeleft - timeDelta;
                     }
-                    else if ((activeItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
+                    else if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
                     {
                         pos = -Vector2.One;
-                        time = activeItems[i].timeleft - timeDelta;
+                        time = ActiveItems[i].timeleft - timeDelta;
                     }
                     else
                     {
-                        Vector2 vel = (activeItems[i].pos - this.Transform.Position) / (activeItems[i].pos - this.Transform.Position).Length();
-                        pos = activeItems[i].pos * 0.9f + 0.1f * this.Transform.Position - vel / 10;
-                        time = activeItems[i].timeleft;
+                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
+                        pos = ActiveItems[i].pos * 0.9f + 0.1f * this.Transform.Position - vel / 10;
+                        time = ActiveItems[i].timeleft;
                     }
                 }
 
-                if (activeItems[i].timeleft < 0)
+                if (ActiveItems[i].timeleft < 0)
                 {
                     remove.Add(i);
                 }
-                activeItems[i] = (activeItems[i].id, time, activeItems[i].tot_time, pos);
+                ActiveItems[i] = (ActiveItems[i].id, time, ActiveItems[i].tot_time, pos);
 
                 //if(activeItems[i].id == "lightning")
                 //{
@@ -554,14 +566,14 @@ namespace SandPerSand
             //    Collider.IsActive = true;
             //}
 
-            for (int i = remove.Count - 1; i >= 0; i--)
+            for (var i = remove.Count - 1; i >= 0; i--)
             {
-                if (activeItems[i].id == "lightning")
+                if (ActiveItems[i].id == "lightning")
                 {
                     Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One;
                     Collider.Transform.LossyScale = Vector2.One * 0.8f;
                 }
-                activeItems.RemoveAt(remove[i]);
+                ActiveItems.RemoveAt(remove[i]);
             }
             //======= End of Clemens stuff
         }
@@ -572,8 +584,8 @@ namespace SandPerSand
             var playerIndex = InputHandler.PlayerIndex;
             if (Prepared)
             {
-                Prepared = false;
-                Debug.Print("Player" + playerIndex + "UnPrepared.");
+                //Prepared = false;
+                //Debug.Print("Player" + playerIndex + "UnPrepared.");
             }
             else
             {
@@ -584,22 +596,15 @@ namespace SandPerSand
 
         public static void TogglePaused()
         {
-            if (Paused)
-            {
-                Paused = false;
-            }
-            else
-            {
-                Paused = true;
-            }
+            Paused = !Paused;
         }
 
-        public Boolean addItemToInventory(string item, Boolean Major)
+        public bool AddItemToInventory(string item, bool major)
         {
             //returns true if item was added
-            if (Major)
+            if (major)
             {
-                if(MajorItem == null)
+                if (MajorItem == null)
                 {
                     MajorItem = item;
                     return true;
@@ -616,47 +621,46 @@ namespace SandPerSand
             return false;
         }
 
-        public string useItem(Boolean Major)
+        public string UseItem(bool major)
             //returns null if no item
         {
-            if (Major)
+            if (major)
             {
-                string tmp = MajorItem;
+                var tmp = MajorItem;
                 MajorItem = null;
                 return tmp;
             }
             else
             {
-                string tmp = MinorItem;
+                var tmp = MinorItem;
                 MinorItem=null;
                 return tmp;
             }
         }
 
-        public int addCoins(int amount)
+        public int AddCoins(int amount)
         {
             Coins += amount;
             return Coins;
         }
 
-        public (Boolean, int) spendCoins(int amount)
+        public (bool, int) SpendCoins(int amount)
             //returns true when action was successfull
         {
-            if(Coins >= amount)
-            {
-                Coins -= amount;
-                return (true, Coins);
-            }
-            else
+            if (Coins < amount)
             {
                 return (false, Coins);
             }
+            
+            Coins -= amount;
+            return (true, Coins);
+
         }
 
-        public float getJumpFactor()
+        public float GetJumpFactor()
         {
             float jumpfactor = 1;
-            foreach(var item in activeItems)
+            foreach(var item in ActiveItems)
             {
                 if(item.id == "wings") 
                 {
@@ -674,11 +678,11 @@ namespace SandPerSand
             return jumpfactor;
         }
 
-        public float getAccellerationFactor()
+        public float GetAccellerationFactor()
         {
             float accelleration = 1;
 
-            foreach (var item in activeItems)
+            foreach (var item in ActiveItems)
             {
                 if (item.id == "speedup")
                 {
@@ -696,11 +700,11 @@ namespace SandPerSand
             return accelleration;
         }
 
-        public float getInvertedMovement()
+        public float GetInvertedMovement()
         {
             float invertedMovement = 1;
 
-            foreach (var item in activeItems)
+            foreach (var item in ActiveItems)
             {
                 if (item.id == "dizzy_eyes")
                 {
@@ -712,7 +716,7 @@ namespace SandPerSand
 
         public bool gravityOn()
         {
-            foreach (var item in activeItems)
+            foreach (var item in ActiveItems)
             {
                 if (item.id == "position_swap")
                 {
@@ -722,17 +726,17 @@ namespace SandPerSand
             return true;
         }
 
-        public void addActiveItem(string id, float timeleft, float tot_time, Vector2 pos)
+        public void AddActiveItem(string id, float timeleft, float totTime, Vector2 pos)
         {
-            for (int i = 0; i < activeItems.Count; i++)
+            for (var i = 0; i < ActiveItems.Count; i++)
             { 
-                if(id == activeItems[i].id)
+                if(id == ActiveItems[i].id)
                 {
-                    activeItems[i] = (id, timeleft, tot_time, pos);
+                    ActiveItems[i] = (id, timeleft, totTime, pos);
                     return;
                 }
             }
-            activeItems.Add((id, timeleft, tot_time, pos));
+            ActiveItems.Add((id, timeleft, totTime, pos));
         }
     }
 }

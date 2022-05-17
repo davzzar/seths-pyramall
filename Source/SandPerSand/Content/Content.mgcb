@@ -25,6 +25,54 @@
 /processorParam:TextureFormat=Compressed
 /build:background.png
 
+#begin GUI/button_A_down.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GUI/button_A_down.png
+
+#begin GUI/button_A_up.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GUI/button_A_up.png
+
+#begin GUI/button_X_down.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GUI/button_X_down.png
+
+#begin GUI/button_X_up.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:GUI/button_X_up.png
+
 #begin GUI/Item_slot.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -49,19 +97,7 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/left_bumper.png
 
-#begin GUI/right_bumper.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=True
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=True
-/processorParam:MakeSquare=True
-/processorParam:TextureFormat=Compressed
-/build:GUI/right_bumper.png
-
-#begin playerfour.png
+#begin GUI/playerfour.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -73,7 +109,7 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/playerfour.png
 
-#begin playerone.png
+#begin GUI/playerone.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -85,7 +121,7 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/playerone.png
 
-#begin playerthree.png
+#begin GUI/playerthree.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -97,7 +133,7 @@
 /processorParam:TextureFormat=Compressed
 /build:GUI/playerthree.png
 
-#begin playertwo.png
+#begin GUI/playertwo.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -108,6 +144,18 @@
 /processorParam:MakeSquare=True
 /processorParam:TextureFormat=Compressed
 /build:GUI/playertwo.png
+
+#begin GUI/right_bumper.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=True
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=True
+/processorParam:MakeSquare=True
+/processorParam:TextureFormat=Compressed
+/build:GUI/right_bumper.png
 
 #begin ProtoPlayer.png
 /importer:TextureImporter
