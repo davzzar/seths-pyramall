@@ -12,25 +12,9 @@ namespace SandPerSand
     public class GameStateManager : Behaviour
     {
         private static GameStateManager instance;
-        private static bool exitTrigger = false;
         private static GameState currentState;
         public static bool inMenu;
         public static float countDowncounter;
-
-        public bool TriggerExit()
-        {
-            Debug.Print("exit trigger script is run");
-            if(currentState== GameState.InRound||
-                currentState== GameState.CountDown)
-            {
-                if (exitTrigger == false)
-                {
-                    exitTrigger = true;
-                    return true;
-                }
-            }
-            return false;
-        }
 
         public GameStateManager()
         {
@@ -91,22 +75,11 @@ namespace SandPerSand
                         currentState = GameState.RoundStartCountdown;
                         Debug.Print("GameState: Prepare-> RoundStartCountDown");
                         countDowncounter = 0;
-                        exitTrigger = false;
-                        //// unhide all players
-                        //foreach (var player in PlayersManager.Instance.Players.Values)
-                        //{
-                        //    PlayerUtils.UnhidePlayer(player);
-                        //    player.GetComponent<PlayerComponent>()!.IsAlive = true;
-                        //}
                     }
                     break;
+
                 case GameState.RoundStartCountdown:
                     {
-                        foreach (var player in PlayersManager.Instance.Players.Values)
-                        {
-                            PlayerUtils.UnhidePlayer(player);
-                            player.GetComponent<PlayerComponent>()!.IsAlive = true;                            
-                        }
                         countDowncounter += Time.DeltaTime;
                         if(countDowncounter >= 3f)
                         {
@@ -115,17 +88,12 @@ namespace SandPerSand
                         break;
                     }
                 case GameState.InRound:
-                    if (PlayersManager.Instance.CheckOneExit())
+                    if (PlayersManager.Instance.CheckOneExit() ||
+                        PlayersManager.Instance.CheckAllDead())
                     {
                         currentState = GameState.CountDown;
                         Debug.Print("GameState: InRound-> CountDown");
                         countDowncounter = 0f;
-                    }
-                    if (PlayersManager.Instance.CheckAllDead())
-                    {
-                        currentState = GameState.CountDown;
-                        Debug.Print("GameState: InRound-> CountDown");
-                        countDowncounter = 10.0f;
                     }
                     break;
                 case GameState.CountDown:
@@ -133,7 +101,6 @@ namespace SandPerSand
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
                     {
                         countDowncounter = 0f;
-                        exitTrigger = false;
                         PlayersManager.Instance.FinalizeRanks();
                         currentState = GameState.RoundCheck;
                         // Debug
@@ -193,6 +160,11 @@ namespace SandPerSand
         }
         private void RoundCheckToRoundStartCountDown()
         {
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                PlayerUtils.UnhidePlayer(player);
+                player.GetComponent<PlayerComponent>()!.IsAlive = true;
+            }
             currentState = GameState.RoundStartCountdown;
             Debug.Print("GameState: RoundCheck-> RoundStartCountDown");
             // TODO load correct scene
@@ -204,6 +176,11 @@ namespace SandPerSand
 
         private void ShopToRoundStartCountdown()
         {
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                PlayerUtils.UnhidePlayer(player);
+                player.GetComponent<PlayerComponent>()!.IsAlive = true;
+            }
             currentState = GameState.RoundStartCountdown;
             Debug.Print("GameState: Shop-> RoundStartCountdown");
             // TODO load correct scene
