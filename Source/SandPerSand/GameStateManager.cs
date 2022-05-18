@@ -38,6 +38,7 @@ namespace SandPerSand
             {
                 throw new InvalidOperationException("Can't create more than one GameStateManager");
             }
+            instance = this;
             Debug.Print("gamestatemanager is created");
         }
 
