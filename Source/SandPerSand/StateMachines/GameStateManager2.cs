@@ -12,7 +12,7 @@ namespace SandPerSand
     {
         public static GameObject MakeGameStateManager(string name = null, Scene scene = null)
         {
-            var (go, _, _) = MakeStateMachine<GameStateManager2>(
+            var (go, managerComponent, stateList) = MakeStateMachine<GameStateManager2>(
                 name, scene,
                 typeof(PrepareState),
                 typeof(PreRoundState),
@@ -21,6 +21,8 @@ namespace SandPerSand
                 typeof(RoundCheckState),
                 typeof(InShopState)
                 );
+            // TODO another place to define initial CurrentState
+            managerComponent.CurrentState = stateList[0];
             return go;
         }
     }
@@ -30,29 +32,17 @@ namespace SandPerSand
         [Obsolete("CurrentGameState is deprecated; Please stop querying " +
 "CurrentGameState all over the place, instead register your code to OnEnter," +
 "OnExit events of corresponding State.")]
-        public GameState CurrentGameState
-        {
-            get
-            {
-                GameState currentGameState = CurrentState switch
-                {
-                    (PrepareState) => GameState.Prepare,
-                    (PreRoundState) => GameState.RoundStartCountdown,
-                    (InRoundState) => GameState.InRound,
-                    (CountDownState) => GameState.CountDown,
-                    (RoundCheckState) => GameState.RoundCheck,
-                    (InShopState) => GameState.Shop,
-                    _ => GameState.Prepare
-                };
-                return currentGameState;
-            }
-        }
-
+        public GameState CurrentGameState => CurrentState.GameState;
         protected override void Update()
         {
             base.Update();
             // check correctness
-            Debug.Assert(CurrentGameState == GameStateManager.Instance.CurrentState);
+            //Debug.Assert(CurrentGameState == GameStateManager.Instance.CurrentState);
+            if(CurrentGameState != GameStateManager.Instance.CurrentState)
+            {
+                Debug.Print($"GameState mismatch: not {CurrentGameState} , shoule be {GameStateManager.Instance.CurrentState}");
+            }
+            
         }
     }
 
@@ -61,9 +51,11 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
+            GameState = GameState.Prepare;
         }
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckAllPrepared())
             {
                 ChangeState<PreRoundState>();
@@ -78,9 +70,11 @@ namespace SandPerSand
         {
             base.OnAwake();
             countDowncounter = 0f;
+            GameState = GameState.RoundStartCountdown;
         }
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 3f)
             {
@@ -94,10 +88,12 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
+            GameState = GameState.InRound;
         }
 
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckOneExit())
             {
                 ChangeState<CountDownState>();
@@ -118,11 +114,13 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
+            GameState = GameState.CountDown;
             countDowncounter = 0f;
         }
 
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
             {
@@ -139,9 +137,11 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
+            GameState = GameState.RoundCheck;
         }
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 2f)
             {
@@ -164,10 +164,12 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
+            GameState = GameState.Shop;
         }
 
         protected override void Update()
         {
+            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckAllFinishedShop())
             {
                 ChangeState<PreRoundState>();

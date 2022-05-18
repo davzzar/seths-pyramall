@@ -36,6 +36,8 @@ namespace SandPerSand
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
+            var stateGo = Template.MakeGameStateManager();
+
             var itemwiki = managerGo.AddComponent<ItemWiki>();
             itemwiki.LoadFromContent("TilesetItems");
 

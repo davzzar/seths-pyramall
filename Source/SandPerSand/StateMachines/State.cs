@@ -15,11 +15,17 @@ namespace SandPerSand
 
             foreach (var state in states)
             {
-                if (!typeof(State<Manager>).IsAssignableFrom(state.GetType()))
-                {
-                    throw new ArgumentException($"{state.GetType()} is not a valid state for state manager {typeof(Manager)}");
-                }
+                //// FIXME Runtime.Type causing exception , remove check for now
+                //if (!typeof(State<Manager>).IsAssignableFrom(state.GetType()))
+                //{
+                //    throw new ArgumentException($"{state.GetType()} is not a valid state for state manager {typeof(Manager)}");
+                //}
 
+                // FIXME is scene needed here for creating stateGameObject?
+                if (scene == null)
+                {
+                    scene = SceneManager.ScopedScene;
+                }
                 var stateGameObject = new GameObject(state.Name, scene);
                 stateGameObject.Transform.Parent = managerGameObject.Transform;
 
@@ -39,6 +45,9 @@ namespace SandPerSand
 
     public class State<T>: Behaviour where T: StateManager<T>
     {
+        [Obsolete("GameState is deprecated")]
+        public GameState GameState;
+
         protected T stateManager;
 
         public event Action OnEnter;
@@ -59,7 +68,10 @@ namespace SandPerSand
 
         protected void ChangeState<State>() where State : State<T>
         {
-            var nextState = Owner.Transform.Parent.Owner.GetComponentInChildren<State>() ?? throw new ArgumentException($"{typeof(StateManager)} has no state of type {typeof(State)}");
+            var nextState = Owner.Transform.Parent.Owner
+                .GetComponentInChildren<State>() ?? throw
+                new ArgumentException($"{typeof(StateManager<T>)} " +
+                $"has no state of type {typeof(State)}");
 
             stateManager.CurrentState.Exit();
             stateManager.CurrentState = nextState;
