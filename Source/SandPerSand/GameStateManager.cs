@@ -68,8 +68,6 @@ namespace SandPerSand
             {
                 case GameState.Prepare:
                     // at prepare state, PlayersManager keep checking for new gamepad
-                    
-                    PlayersManager.Instance.CheckConnections();
                     if (PlayersManager.Instance.CheckAllPrepared())
                     {
                         currentState = GameState.RoundStartCountdown;
@@ -101,15 +99,7 @@ namespace SandPerSand
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
                     {
                         countDowncounter = 0f;
-                        PlayersManager.Instance.FinalizeRanks();
                         currentState = GameState.RoundCheck;
-                        // Debug
-                        Debug.Print("GameState: CountDown-> RoundCheck");
-                        foreach(var item in PlayersManager.Instance.Players)
-                        {
-                            Debug.Print("Player "+ item.Key + " : Rank " +
-                                item.Value.GetComponent<PlayerStates>().RoundRank);
-                        }
                     }
                     break;
                 case GameState.RoundCheck:
@@ -119,12 +109,16 @@ namespace SandPerSand
                         countDowncounter = 0f;
                         if (PlayersManager.Instance.CheckAllDead())
                         {
+                            //RoundCheckToRoundStartCountDown();
                             Debug.WriteLine("No players were alive. No shop.");
-                            RoundCheckToRoundStartCountDown();
+                            currentState = GameState.RoundStartCountdown;
+                            Debug.Print("GameState: RoundCheck-> RoundStartCountDown");
                         }
                         else
                         {
-                            RoundCheckToShop();
+                            //RoundCheckToShop();
+                            currentState = GameState.Shop;
+                            Debug.Print("GameState: RoundCheck-> Shop");
                         }
                     }
                     break;
@@ -136,37 +130,29 @@ namespace SandPerSand
                     // after all player is moved to exit, proceed to the next round
                     if (PlayersManager.Instance.CheckAllFinishedShop())
                     {
-                        ShopToRoundStartCountdown();
-                        // rik's code
-                        foreach (var player in PlayersManager.Instance.Players.Values)
-                        {
-                            PlayerUtils.UnhidePlayer(player);
-                            player.GetComponent<PlayerComponent>()!.IsAlive = true;
-                        }
+                        currentState = GameState.RoundStartCountdown;
+                        Debug.Print("GameState: Shop-> RoundStartCountdown");
+                        //ShopToRoundStartCountdown();
                     }
                     break;
             }
         }
 
-        private void RoundCheckToShop()
+        public void RoundCheckToShop()
         {
-            currentState = GameState.Shop;
-            Debug.Print("GameState: RoundCheck-> Shop");
             // load new scene
             // FIXME correct shop scene number
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load ShopScene current index = 3
             sceneManager.LoadAt(3);
         }
-        private void RoundCheckToRoundStartCountDown()
+        public void RoundCheckToRoundStartCountDown()
         {
             foreach (var player in PlayersManager.Instance.Players.Values)
             {
                 PlayerUtils.UnhidePlayer(player);
                 player.GetComponent<PlayerComponent>()!.IsAlive = true;
             }
-            currentState = GameState.RoundStartCountdown;
-            Debug.Print("GameState: RoundCheck-> RoundStartCountDown");
             // TODO load correct scene
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load RoundScene current index = 1
@@ -174,15 +160,13 @@ namespace SandPerSand
 
         }
 
-        private void ShopToRoundStartCountdown()
+        public void ShopToRoundStartCountdown()
         {
             foreach (var player in PlayersManager.Instance.Players.Values)
             {
                 PlayerUtils.UnhidePlayer(player);
                 player.GetComponent<PlayerComponent>()!.IsAlive = true;
             }
-            currentState = GameState.RoundStartCountdown;
-            Debug.Print("GameState: Shop-> RoundStartCountdown");
             // TODO load correct scene
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
             // Load RoundScene current index = 1

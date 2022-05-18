@@ -55,6 +55,7 @@ namespace SandPerSand
         }
         public override void OnUpdate()
         {
+            PlayersManager.Instance.CheckConnections();
             if (PlayersManager.Instance.CheckAllPrepared())
             {
                 ChangeState<PreRoundState>();
@@ -121,8 +122,18 @@ namespace SandPerSand
             if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
             {
                 countDowncounter = 0f;
+
                 PlayersManager.Instance.FinalizeRanks();
+
                 ChangeState<RoundCheckState>();
+
+                // Debug
+                Debug.Print("GameState: CountDown-> RoundCheck");
+                foreach (var item in PlayersManager.Instance.Players)
+                {
+                    Debug.Print("Player " + item.Key + " : Rank " +
+                        item.Value.GetComponent<PlayerStates>().RoundRank);
+                }
             }
         }
     }
@@ -145,10 +156,12 @@ namespace SandPerSand
                 if (PlayersManager.Instance.CheckAllDead())
                 {
                     ChangeState<PreRoundState>();
+                    GameStateManager.Instance.RoundCheckToRoundStartCountDown();
                 }
                 else
                 {
                     ChangeState<InShopState>();
+                    GameStateManager.Instance.RoundCheckToShop();
                 }
             }
         }
