@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -25,7 +25,7 @@ namespace SandPerSand
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> players;
+        private static Dictionary<PlayerIndex, GameObject> players;
         public Dictionary<PlayerIndex, GameObject> Players
         {
             get => players;
@@ -59,8 +59,8 @@ namespace SandPerSand
         public GameState? LastGameState { get; set; }
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         // TODO hard coded shopTime
-        public float ShopTime { get; private set; } = 30f;
-        public float ShopTimeCounter { get; private set; } = 0;
+        public float ShopTime { get; private set; } = 10f;
+        public CancelableTimer ShopTimer { get; private set; } = null;
         public int CurRank { get; private set; }
         private PlayerIndex[] rankList;
 
@@ -86,130 +86,171 @@ namespace SandPerSand
 
         protected override void Update()
         {
-            if (CurrentGameState == GameState.InRound && LastGameState != GameState.InRound)
+            if (CurrentGameState == GameState.InRound)
             {
-                SetAllPlayerControls(true);
+                if(LastGameState != GameState.InRound)
+                {
+                    //Enter
+                    SetAllPlayerControls(true);
+                    LastGameState = GameState.InRound;
+                }
+                else
+                {
+                    //During
+                }
             }
-            else if ((CurrentGameState == GameState.RoundStartCountdown || CurrentGameState == GameState.Prepare) && LastGameState != CurrentGameState)
+            else if (CurrentGameState == GameState.Prepare)
             {
-                SetAllPlayerControls(false);
+                if (LastGameState != GameState.Prepare)
+                {
+                    //Enter
+                    SetAllPlayerControls(false);
+                    LastGameState = GameState.Prepare;
+                }
+                else
+                {
+                    //During
+                }
             }
             else if (CurrentGameState == GameState.RoundStartCountdown)
             {
-                if (LastGameState == GameState.Shop)
+                if(LastGameState != GameState.RoundStartCountdown)
                 {
-                    // this holds because we clear initial positions each time we exit a round
-                    // initial positions are round specific
-                    if (InitialPositions.ToArray().Length <= 0)
+                    // Enter from Shop or RoundCheck
+                    if (LastGameState == GameState.Shop || LastGameState == GameState.RoundCheck)
                     {
-                        Debug.Print("Cannot respawn Players, because the map is " +
-                            "not loaded or no initial positions on map.");
-                        return;
+                        if (EnterRoundStartCountdownFromShopOrRoundCheck())
+                        {
+                            LastGameState = GameState.RoundStartCountdown;
+                        }
                     }
-                    LastGameState = GameState.InRound;
-                    foreach (var playerIndex in Players.Keys)
+                    // Enter from other states (= Prepare)
+                    else
                     {
-                        RespawnPlayer(playerIndex, GetRandomInitialPos());
+                        SetAllPlayerControls(false);
+                        LastGameState = GameState.RoundStartCountdown;
                     }
+                }
+                else
+                {
+                    //During
                 }
             }
             else if (CurrentGameState == GameState.Shop)
             {
-                var atLeastOneAlive = false;
-                foreach (var player in Players)
-                {
-                    if (player.Value.GetComponentInChildren<PlayerComponent>().IsAlive == true)
-                    {
-                        atLeastOneAlive = true;
-                    }
-                }
-                if (!atLeastOneAlive)
-                {
-                    Debug.WriteLine("No players were alive. No shop.");
-                    foreach (var player in Players)
-                    {
-                        player.Value.GetComponentInChildren<PlayerStates>().FnishedShop = true;
-                    }
-                    LastGameState = GameState.Shop;
-                    return;
-                }
+                // Enter shop
                 if (LastGameState != GameState.Shop)
                 {
-                    // FIXME wait for shop map
-                    if (ShopEntryPosition.X < 4)
+                    if (EnterShop())
                     {
-                        Debug.Print("Cannot respawn Player in the shop, " +
-                            "because initial position is not yet loaded or invalid.");
-                        return;
+                        LastGameState = GameState.Shop;
                     }
-                    // clear initial positions when exit a round
-                    // since they are round-specific FIXME better place to do this???
-                    InitialPositions = new List<Vector2>();
-
-                    // calculate rank list
-                    rankList = new PlayerIndex[Players.Count];
-                    foreach (var player in Players)
-                    {
-                        var rank = player.Value.GetComponent<PlayerStates>().RoundRank;
-                        if (rank <= 0)
-                        {
-                            throw new Exception("Invalid rank at end");
-                        }
-                        rankList[rank - 1] = player.Key;
-                    }
-
-                    // respawn players -> queue by rank list
-                    // disable all players controller
-                    var entryX = ShopEntryPosition.X;
-                    foreach (var playerIndex in rankList)
-                    {
-                        if (players[playerIndex].GetComponentInChildren<PlayerComponent>().IsAlive == true)
-                        {
-                            RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
-                            PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
-                        } else
-                        {
-                            players[playerIndex].GetComponentInChildren<PlayerStates>().FnishedShop = true;
-                        }
-                    }
-                    // ShopEntryPsition can be reset right after use
-                    // If not reset, players will be spawned before shop map is
-                    // loaded next time ... then drop
-                    ShopEntryPosition = Vector2.Zero;
-                    LastGameState = GameState.Shop;
-                    ShopTimeCounter = ShopTime;
-                    CurRank = 0;
                 }
-                ShopTimeCounter += Time.DeltaTime;
-
-                // TODO HOY fix for out of bounds exception on line 191
-                if (CurRank - 1 >= rankList.Length || CurRank <= 0)
+                else
                 {
-                    CurRank = 0;
+                    DuringShop();
                 }
-
-                if (ShopTimeCounter >= ShopTime || Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop)
-                {
-                    // Reset the shop coutner
-                    ShopTimeCounter = 0;
-
-                    // If this was not the first player, set the one before to be finished with the shop
-                    if(CurRank>0)
-                    {
-                        Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
-                        //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
-                    }
-
-                    // Activate the controller of the next player
-                    if(CurRank < rankList.Length) 
-                        PlayerUtils.ResumePlayerControl(Players[rankList[CurRank]]);
-                    CurRank++;
-                }
-
+                
+            }
+            else
+            {
+                LastGameState = CurrentGameState;
             }
         }
 
+        private void DuringShop()
+        {
+            bool ItsCurrentPlayersTurn =
+    CurRank == 0 || CurRank < rankList.Length &&
+    Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
+            Debug.Print("CurRank:" + CurRank);
+            if (ItsCurrentPlayersTurn)
+            {
+                var curPlayer = Players[rankList[CurRank]];
+                var curPlayerState = curPlayer.GetComponent<PlayerStates>();
+                Debug.Assert(curPlayerState.FinishedShop == false);
+                PlayerUtils.ResumePlayerControl(curPlayer);
+                // init new timer
+                ShopTimer = Owner.AddComponent<CancelableTimer>();
+                ShopTimer.Init(ShopTime,
+                    () => {
+                        curPlayerState.FinishedShop = true;
+                        PlayerUtils.HidePlayer(curPlayer);
+                    },
+                    ()=> { return CheckAllFinishedShop(); }
+                    );
 
+                CurRank++;
+            }
+        }
+
+        private bool EnterShop()
+        {
+            // wait for shop map
+            if (ShopEntryPosition.X < 4)
+            {
+                Debug.Print("Cannot respawn Player in the shop, " +
+                    "because initial position is not yet loaded or invalid.");
+                return false;
+            }
+            Debug.Print("PM: -> Shop");
+            // clear initial positions when exit a round
+            // since they are round-specific FIXME better place to do this???
+            InitialPositions = new List<Vector2>();
+
+            // calculate rank list
+            rankList = new PlayerIndex[Players.Count];
+            foreach (var player in Players)
+            {
+                var rank = player.Value.GetComponent<PlayerStates>().RoundRank;
+                if (rank <= 0)
+                {
+                    throw new Exception("Invalid rank at end");
+                }
+                rankList[rank - 1] = player.Key;
+            }
+
+            // respawn players -> queue by rank list
+            // disable all players controller
+            var entryX = ShopEntryPosition.X;
+            foreach (var playerIndex in rankList)
+            {
+                if (players[playerIndex].GetComponentInChildren<PlayerComponent>().IsAlive == true)
+                {
+                    RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
+                    PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
+                }
+                else
+                {
+                    players[playerIndex].GetComponentInChildren<PlayerStates>().FinishedShop = true;
+                    PlayerUtils.HidePlayer(Players[playerIndex]);
+                }
+            }
+            // ShopEntryPsition can be reset right after use
+            // If not reset, players will be spawned before shop map is
+            // loaded next time ... then drop
+            ShopEntryPosition = Vector2.Zero;
+            CurRank = 0;
+            return true;
+        }
+
+        private bool EnterRoundStartCountdownFromShopOrRoundCheck()
+        {
+            // this holds because we clear initial positions each time we exit a round
+            // initial positions are round specific
+            if (InitialPositions.ToArray().Length <= 0)
+            {
+                Debug.Print("Cannot respawn Players, because the map is " +
+                    "not loaded or no initial positions on map.");
+                return false;
+            }
+            foreach (var playerIndex in Players.Keys)
+            {
+                RespawnPlayer(playerIndex, GetRandomInitialPos());
+            }
+            SetAllPlayerControls(false);
+            return true;
+        }
 
         public GameObject GetPlayer(PlayerIndex index) {
             return players[index];
@@ -252,10 +293,13 @@ namespace SandPerSand
             {
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
                 players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
+                players[playerIndex].GetComponent<RigidBody>()!.IsKinematic = false;
                 players[playerIndex].Transform.Position = position;
+                players[playerIndex].GetComponent<SpriteRenderer>()!.IsActive = true;
                 players[playerIndex].GetComponent<Animator>().Entry();
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
                 players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
+                players[playerIndex].GetComponent<PlayerComponent>()!.AddCameraControlPoint();
             }
             else
             {
@@ -397,7 +441,7 @@ namespace SandPerSand
 
         public bool CheckAllFinishedShop()
         {
-            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FnishedShop);
+            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FinishedShop);
         }
 
         public void FinalizeRanks()
@@ -448,7 +492,15 @@ namespace SandPerSand
         public string MajorItem;
         public int Coins;
         public bool Exited { get; set; }
-        public bool FnishedShop { get; set; }
+        private bool finishedShop;
+        public bool FinishedShop
+        {
+            get => finishedShop;
+            set
+            {
+                finishedShop = value;
+            }
+        }
         public int RoundRank { get; set; }
         public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
@@ -467,7 +519,7 @@ namespace SandPerSand
             MajorItem = null;
             Coins = 0;
             Exited = false;
-            FnishedShop = false;
+            FinishedShop = false;
             RoundRank = -1;
             ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
             Score = 0;
@@ -485,11 +537,11 @@ namespace SandPerSand
             }
             if (LastGameState != CurrentGameState)
             {
-                if(LastGameState == GameState.RoundCheck )
+                if(CurrentGameState == GameState.Shop )
                 {
-
-                    FnishedShop = false;
-                }else if(LastGameState == GameState.Shop)
+                    FinishedShop = false;
+                }
+                else if(CurrentGameState == GameState.RoundStartCountdown)
                 {
                     // reset round states
                     Exited = false;

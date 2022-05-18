@@ -327,6 +327,22 @@ namespace SandPerSand
                 }
             }
 
+            public void Reload()
+            {
+                if (this.loadedScene != null)
+                {
+                    SceneManager.UnloadScene(this.loadedScene);
+                }
+
+                var scene = new Scene();
+
+                var loaderGo = new GameObject($"Loader for Scene {loadedSceneIndex}", scene);
+                loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
+
+                this.loadedScene = scene;
+                SceneManager.LoadSceneAdditive(this.loadedScene);
+            }
+
             /// <inheritdoc />
             protected override void Update()
             {
