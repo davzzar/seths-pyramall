@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace SandPerSand
 {
+
     public static partial class Template
     {
         public static GameObject MakeGameStateManager(string name = null, Scene scene = null)
@@ -21,8 +22,9 @@ namespace SandPerSand
                 typeof(RoundCheckState),
                 typeof(InShopState)
                 );
-            // TODO another place to define initial CurrentState
+            // TODO another place to set up initial CurrentState
             managerComponent.CurrentState = stateList[0];
+            managerComponent.CurrentState.EnterFrom(null);
             return go;
         }
     }
@@ -37,6 +39,10 @@ namespace SandPerSand
         {
             base.Update();
         }
+        public State GetState<State>() where State : State<RealGameStateManager>
+        {
+            return Owner.GetComponentInChildren<State>();
+        }
     }
 
     public class PrepareState : State<RealGameStateManager>
@@ -46,9 +52,9 @@ namespace SandPerSand
             base.OnAwake();
             GameState = GameState.Prepare;
         }
-        public override void OnUpdate()
+        protected override void Update()
         {
-            PlayersManager.Instance.CheckConnections();
+            base.Update();
             if (PlayersManager.Instance.CheckAllPrepared())
             {
                 ChangeState<PreRoundState>();
@@ -61,15 +67,17 @@ namespace SandPerSand
         protected override void OnAwake()
         {
             base.OnAwake();
-            CountDowncounter = 0f;
             GameState = GameState.RoundStartCountdown;
+            OnEnter += (sender, lastState) => {
+                CountDowncounter = 0f;
+            };
         }
-        public override void OnUpdate()
+        protected override void Update()
         {
+            base.Update();
             CountDowncounter += Time.DeltaTime;
             if (CountDowncounter >= 3f)
             {
-                CountDowncounter = 0f;
                 ChangeState<InRoundState>();
             }
         }
@@ -83,16 +91,13 @@ namespace SandPerSand
             GameState = GameState.InRound;
         }
 
-        public override void OnUpdate()
+        protected override void Update()
         {
-            if (PlayersManager.Instance.CheckOneExit())
+            base.Update();
+            if (PlayersManager.Instance.CheckOneExit()||
+                PlayersManager.Instance.CheckAllDead())
             {
                 ChangeState<CountDownState>();
-            }
-            if (PlayersManager.Instance.CheckAllDead())
-            {
-                ChangeState<CountDownState>();
-                // TODO set different Timer
             }
         }
     }
@@ -103,27 +108,19 @@ namespace SandPerSand
         {
             base.OnAwake();
             GameState = GameState.CountDown;
-            CountDowncounter = 0f;
+            OnEnter += (sender, lastState) => {
+                CountDowncounter = 0f;
+            };
         }
 
-        public override void OnUpdate()
+        protected override void Update()
         {
+            base.Update();
             CountDowncounter += Time.DeltaTime;
-            if (CountDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
+            if (CountDowncounter >= 10f ||
+                PlayersManager.Instance.CheckAllDeadOrExit())
             {
-                CountDowncounter = 0f;
-
-                PlayersManager.Instance.FinalizeRanks();
-
                 ChangeState<RoundCheckState>();
-
-                // Debug
-                Debug.Print("GameState: CountDown-> RoundCheck");
-                foreach (var item in PlayersManager.Instance.Players)
-                {
-                    Debug.Print("Player " + item.Key + " : Rank " +
-                        item.Value.GetComponent<PlayerStates>().RoundRank);
-                }
             }
         }
     }
@@ -134,48 +131,26 @@ namespace SandPerSand
         {
             base.OnAwake();
             GameState = GameState.RoundCheck;
-            CountDowncounter = 0f;
+            OnEnter += (sender, lastState) => {
+                CountDowncounter = 0f;
+            };
         }
-        public override void OnUpdate()
+
+        protected override void Update()
         {
+            base.Update();
             CountDowncounter += Time.DeltaTime;
             if (CountDowncounter >= 2f)
             {
-                CountDowncounter = 0f;
                 if (PlayersManager.Instance.CheckAllDead())
                 {
                     ChangeState<PreRoundState>();
-                    RoundCheckToRoundStartCountDown();
                 }
                 else
                 {
                     ChangeState<InShopState>();
-                    RoundCheckToShop();
                 }
             }
-        }
-
-        private void RoundCheckToShop()
-        {
-            // load new scene
-            // FIXME correct shop scene number
-            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            // Load ShopScene current index = 3
-            sceneManager.LoadAt(3);
-        }
-
-        private void RoundCheckToRoundStartCountDown()
-        {
-            foreach (var player in PlayersManager.Instance.Players.Values)
-            {
-                PlayerUtils.UnhidePlayer(player);
-                player.GetComponent<PlayerComponent>()!.IsAlive = true;
-            }
-            // TODO load correct scene
-            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            // Load RoundScene current index = 1
-            sceneManager.Reload();
-
         }
     }
 
@@ -187,31 +162,13 @@ namespace SandPerSand
             GameState = GameState.Shop;
         }
 
-        public override void OnUpdate()
+        protected override void Update()
         {
+            base.Update();
             if (PlayersManager.Instance.CheckAllFinishedShop())
             {
                 ChangeState<PreRoundState>();
-                ShopToRoundStartCountdown();
             }
-
-        }
-
-        private void ShopToRoundStartCountdown()
-        {
-            foreach (var player in PlayersManager.Instance.Players.Values)
-            {
-                PlayerUtils.UnhidePlayer(player);
-                player.GetComponent<PlayerComponent>()!.IsAlive = true;
-            }
-            // TODO load correct scene
-            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-            // Load RoundScene current index = 1
-            sceneManager.LoadAt(1);
         }
     }
-
-
-
-
 }

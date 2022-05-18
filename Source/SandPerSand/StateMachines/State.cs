@@ -45,11 +45,10 @@ namespace SandPerSand
         protected override void Update()
         {
             base.Update();
-            CurrentState.OnUpdate();
         }
     }
 
-    public class State<T>: Behaviour where T: StateManager<T>
+    public class State<T> : Behaviour where T : StateManager<T>
     {
         [Obsolete("countDowncounter is deprecated")]
         public float CountDowncounter;
@@ -59,20 +58,27 @@ namespace SandPerSand
 
         protected T stateManager;
 
-        public event Action OnEnter;
-
+        public event EventHandler<State<T>> OnEnter;
         public event Action OnExit;
+        public event Action OnUpdate;
 
         protected override void OnAwake()
         {
-            base.OnAwake();
-
             stateManager = Owner.Transform.Parent.Owner.GetComponent<T>();
-
             if (stateManager == null)
             {
                 throw new InvalidOperationException($"Statemachine requires a manager component of type {typeof(T)}");
             }
+            if (stateManager.CurrentState != this)
+            {
+                IsActive = false;
+            }
+        }
+
+        protected override void Update()
+        {
+            base.Update();
+            OnUpdate?.Invoke();
         }
 
         protected void ChangeState<State>() where State : State<T>
@@ -82,26 +88,24 @@ namespace SandPerSand
                 new ArgumentException($"{typeof(StateManager<T>)} " +
                 $"has no state of type {typeof(State)}");
 
+            var lastState = stateManager.CurrentState;
+
             stateManager.CurrentState.Exit();
             stateManager.CurrentState = nextState;
-            stateManager.CurrentState.Enter();
+            stateManager.CurrentState.EnterFrom(lastState);
         }
 
-        public void Enter()
+
+        public void EnterFrom(State<T> lastState)
         {
-            Owner.IsEnabled = true;
-            OnEnter?.Invoke();
+            IsActive = true;
+            OnEnter?.Invoke(this,lastState);
         }
 
         public void Exit()
         {
-            Owner.IsEnabled = false;
+            IsActive = false;
             OnExit?.Invoke();
-        }
-
-        public virtual void OnUpdate()
-        {
-
         }
     }
 }

@@ -37,6 +37,9 @@ namespace SandPerSand
             }
         }
 
+        [Obsolete("GameStateManager.CurrentState is deprecated; Please stop querying " +
+"CurrentGameState all over the place, instead register your code to OnEnter," +
+"OnExit events of corresponding State.")]
         public GameState CurrentState
         {
             get
@@ -44,7 +47,7 @@ namespace SandPerSand
                 return GameObject.FindComponent<RealGameStateManager>().CurrentGameState;
             }
         }
-        
+        [Obsolete("GameStateManager will soon no longer exist.")]
         public bool InMenu { get
             {
                 return inMenu;
@@ -52,6 +55,7 @@ namespace SandPerSand
             set { inMenu = value; }
         }
 
+        [Obsolete("GameStateManager will soon no longer exist.")]
         public float CountDowncounter { 
             get
             {
@@ -59,9 +63,6 @@ namespace SandPerSand
             } 
         }
 
-        protected override void Update()
-        {
-        }
     }
 
     public enum GameState

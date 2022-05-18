@@ -82,6 +82,29 @@ namespace SandPerSand
         {
             base.OnAwake();
             LastGameState = null;
+            var realGSM = GameObject.FindComponent<RealGameStateManager>();
+            realGSM.GetState<PrepareState>().OnUpdate += () =>
+            {
+                CheckConnections();
+            };
+            realGSM.GetState<PreRoundState>().OnEnter += (sender, lastState) =>
+            {
+                foreach (var player in Players.Values)
+                {
+                    PlayerUtils.UnhidePlayer(player);
+                    player.GetComponent<PlayerComponent>()!.IsAlive = true;
+                }
+            };
+            realGSM.GetState<RoundCheckState>().OnEnter += (sender, lastState) => {
+                FinalizeRanks();
+                // Debug
+                Debug.Print("GameState: CountDown-> RoundCheck");
+                foreach (var item in Players)
+                {
+                    Debug.Print("Player " + item.Key + " : Rank " +
+                        item.Value.GetComponent<PlayerStates>().RoundRank);
+                }
+            };
         }
 
         protected override void Update()
@@ -522,6 +545,24 @@ namespace SandPerSand
             RoundRank = -1;
             ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
             Score = 0;
+
+            var realGSM = GameObject.FindComponent<RealGameStateManager>();
+            realGSM.GetState<InShopState>().OnExit += () =>
+            {
+                FinishedShop = false;
+            };
+            realGSM.GetState<PreRoundState>().OnEnter += (sender,preState) =>
+            {
+                Exited = false;
+                RoundRank = -1;
+            };
+            realGSM.GetState<PrepareState>().OnUpdate += () =>
+            {
+                if (PrepareButtonPressed)
+                {
+                    TogglePrepared();
+                }
+            };
         }
 
         /// <summary>
@@ -530,24 +571,7 @@ namespace SandPerSand
         protected override void Update()
         {
             //<<<<<<< Yuchen stuff
-            if (PrepareButtonPressed && CurrentGameState == GameState.Prepare)
-            {
-                TogglePrepared();
-            }
-            if (LastGameState != CurrentGameState)
-            {
-                if(CurrentGameState == GameState.Shop )
-                {
-                    FinishedShop = false;
-                }
-                else if(CurrentGameState == GameState.RoundStartCountdown)
-                {
-                    // reset round states
-                    Exited = false;
-                    RoundRank = -1;
-                }
-                LastGameState = CurrentGameState;
-            }
+
             //======= End of Yuchen stuff
 
             //<<<<<<< Clemens stuff
