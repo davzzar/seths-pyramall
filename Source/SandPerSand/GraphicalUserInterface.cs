@@ -291,7 +291,7 @@ namespace SandPerSand
                 scores.Reverse();
                 try
                 {
-                    MidscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.CurRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.ShopTime - PlayersManager.Instance.ShopTimeCounter)) + " seconds left";
+                    MidscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.CurRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.ShopTimer.CountDown)) + " seconds left";
                     MidscreenTextPanel.TextColor = PlayerIndexToColor[scores[PlayersManager.Instance.CurRank - 1].index];
                 }
                 catch

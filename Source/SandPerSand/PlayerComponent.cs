@@ -125,14 +125,6 @@ namespace SandPerSand
                     color = Color.DarkGray * 0.8f;
                     // disable colision
                     Owner.GetComponentInChildren<Collider>().IsActive = false;
-                    // hide sprite after 10s( or at RoundCheck)
-                    Owner.AddComponent<GoTimer>().Init(10f,() =>
-                    {
-                        if (!Owner.GetComponent<PlayerStates>()!.IsAlive)
-                        {
-                            Owner.GetComponent<SpriteRenderer>()!.IsActive = false;
-                        }
-                    });
                     RemoveCameraControlPoint();
                 }
                 
