@@ -242,7 +242,7 @@ namespace SandPerSand
 
         private void ControlUpdate()
         {
-            Debug.WriteLine($"Position of game object {Owner.Name}: {Owner.Transform.Position}");
+            //Debug.WriteLine($"Position of game object {Owner.Name}: {Owner.Transform.Position}");
             
             #if DEBUG
             ShowDebug();

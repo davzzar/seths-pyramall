@@ -163,7 +163,6 @@ namespace SandPerSand
             bool ItsCurrentPlayersTurn =
     CurRank == 0 || CurRank < rankList.Length &&
     Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
-            Debug.Print("CurRank:" + CurRank);
             if (ItsCurrentPlayersTurn)
             {
                 var curPlayer = Players[rankList[CurRank]];

@@ -117,9 +117,9 @@ namespace SandPerSand
                         }
                     }
                     Vector2 pos = newTileGo.Transform.Position;
-                    Debug.Print("test");
-                    Debug.Print((pos.X + 0.5f).ToString());
-                    Debug.Print((pos.Y + 0.5f).ToString());
+                    //Debug.WriteLine("test");
+                    //Debug.Print((pos.X + 0.5f).ToString());
+                    //Debug.Print((pos.Y + 0.5f).ToString());
 
                     sandSim.AddSandSource(new Aabb(pos.X, pos.Y, size / 64f, size / 64f));
                     //sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
