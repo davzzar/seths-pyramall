@@ -51,6 +51,9 @@ namespace SandPerSand
 
     public class State<T>: Behaviour where T: StateManager<T>
     {
+        [Obsolete("countDowncounter is deprecated")]
+        public float CountDowncounter;
+
         [Obsolete("GameState is deprecated")]
         public GameState GameState;
 

@@ -12,7 +12,7 @@ namespace SandPerSand
     {
         public static GameObject MakeGameStateManager(string name = null, Scene scene = null)
         {
-            var (go, managerComponent, stateList) = MakeStateMachine<GameStateManager2>(
+            var (go, managerComponent, stateList) = MakeStateMachine<RealGameStateManager>(
                 name, scene,
                 typeof(PrepareState),
                 typeof(PreRoundState),
@@ -27,7 +27,7 @@ namespace SandPerSand
         }
     }
 
-    public class GameStateManager2 : StateManager<GameStateManager2>
+    public class RealGameStateManager : StateManager<RealGameStateManager>
     {
         [Obsolete("CurrentGameState is deprecated; Please stop querying " +
 "CurrentGameState all over the place, instead register your code to OnEnter," +
@@ -36,17 +36,10 @@ namespace SandPerSand
         protected override void Update()
         {
             base.Update();
-            // check correctness
-            //Debug.Assert(CurrentGameState == GameStateManager.Instance.CurrentState);
-            if(CurrentGameState != GameStateManager.Instance.CurrentState)
-            {
-                Debug.Print($"GameState mismatch: not {CurrentGameState} , shoule be {GameStateManager.Instance.CurrentState}");
-            }
-            
         }
     }
 
-    public class PrepareState : State<GameStateManager2>
+    public class PrepareState : State<RealGameStateManager>
     {
         protected override void OnAwake()
         {
@@ -63,27 +56,26 @@ namespace SandPerSand
         }
     }
 
-    public class PreRoundState : State<GameStateManager2>
+    public class PreRoundState : State<RealGameStateManager>
     {
-        float countDowncounter;
         protected override void OnAwake()
         {
             base.OnAwake();
-            countDowncounter = 0f;
+            CountDowncounter = 0f;
             GameState = GameState.RoundStartCountdown;
         }
         public override void OnUpdate()
         {
-            countDowncounter += Time.DeltaTime;
-            if (countDowncounter >= 3f)
+            CountDowncounter += Time.DeltaTime;
+            if (CountDowncounter >= 3f)
             {
-                countDowncounter = 0f;
+                CountDowncounter = 0f;
                 ChangeState<InRoundState>();
             }
         }
     }
 
-    public class InRoundState : State<GameStateManager2>
+    public class InRoundState : State<RealGameStateManager>
     {
         protected override void OnAwake()
         {
@@ -105,23 +97,21 @@ namespace SandPerSand
         }
     }
 
-    public class CountDownState : State<GameStateManager2>
+    public class CountDownState : State<RealGameStateManager>
     {
-        private float countDowncounter;
-
         protected override void OnAwake()
         {
             base.OnAwake();
             GameState = GameState.CountDown;
-            countDowncounter = 0f;
+            CountDowncounter = 0f;
         }
 
         public override void OnUpdate()
         {
-            countDowncounter += Time.DeltaTime;
-            if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
+            CountDowncounter += Time.DeltaTime;
+            if (CountDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
             {
-                countDowncounter = 0f;
+                CountDowncounter = 0f;
 
                 PlayersManager.Instance.FinalizeRanks();
 
@@ -138,36 +128,58 @@ namespace SandPerSand
         }
     }
 
-    public class RoundCheckState : State<GameStateManager2>
+    public class RoundCheckState : State<RealGameStateManager>
     {
-        private float countDowncounter;
         protected override void OnAwake()
         {
             base.OnAwake();
             GameState = GameState.RoundCheck;
-            countDowncounter = 0f;
+            CountDowncounter = 0f;
         }
         public override void OnUpdate()
         {
-            countDowncounter += Time.DeltaTime;
-            if (countDowncounter >= 2f)
+            CountDowncounter += Time.DeltaTime;
+            if (CountDowncounter >= 2f)
             {
-                countDowncounter = 0f;
+                CountDowncounter = 0f;
                 if (PlayersManager.Instance.CheckAllDead())
                 {
                     ChangeState<PreRoundState>();
-                    GameStateManager.Instance.RoundCheckToRoundStartCountDown();
+                    RoundCheckToRoundStartCountDown();
                 }
                 else
                 {
                     ChangeState<InShopState>();
-                    GameStateManager.Instance.RoundCheckToShop();
+                    RoundCheckToShop();
                 }
             }
         }
+
+        private void RoundCheckToShop()
+        {
+            // load new scene
+            // FIXME correct shop scene number
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load ShopScene current index = 3
+            sceneManager.LoadAt(3);
+        }
+
+        private void RoundCheckToRoundStartCountDown()
+        {
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                PlayerUtils.UnhidePlayer(player);
+                player.GetComponent<PlayerComponent>()!.IsAlive = true;
+            }
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.Reload();
+
+        }
     }
 
-    public class InShopState : State<GameStateManager2>
+    public class InShopState : State<RealGameStateManager>
     {
         protected override void OnAwake()
         {
@@ -180,8 +192,22 @@ namespace SandPerSand
             if (PlayersManager.Instance.CheckAllFinishedShop())
             {
                 ChangeState<PreRoundState>();
+                ShopToRoundStartCountdown();
             }
 
+        }
+
+        private void ShopToRoundStartCountdown()
+        {
+            foreach (var player in PlayersManager.Instance.Players.Values)
+            {
+                PlayerUtils.UnhidePlayer(player);
+                player.GetComponent<PlayerComponent>()!.IsAlive = true;
+            }
+            // TODO load correct scene
+            var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            // Load RoundScene current index = 1
+            sceneManager.LoadAt(1);
         }
     }
 
