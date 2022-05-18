@@ -1,4 +1,4 @@
-﻿using Engine;
+using Engine;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,6 +41,12 @@ namespace SandPerSand
     public class StateManager<T>: Behaviour where T: StateManager<T>
     {
         public State<T> CurrentState { get; internal set; }
+
+        protected override void Update()
+        {
+            base.Update();
+            CurrentState.OnUpdate();
+        }
     }
 
     public class State<T>: Behaviour where T: StateManager<T>
@@ -88,6 +94,11 @@ namespace SandPerSand
         {
             Owner.IsEnabled = false;
             OnExit?.Invoke();
+        }
+
+        public virtual void OnUpdate()
+        {
+
         }
     }
 }

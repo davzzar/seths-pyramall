@@ -53,9 +53,8 @@ namespace SandPerSand
             base.OnAwake();
             GameState = GameState.Prepare;
         }
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckAllPrepared())
             {
                 ChangeState<PreRoundState>();
@@ -72,12 +71,12 @@ namespace SandPerSand
             countDowncounter = 0f;
             GameState = GameState.RoundStartCountdown;
         }
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 3f)
             {
+                countDowncounter = 0f;
                 ChangeState<InRoundState>();
             }
         }
@@ -91,18 +90,16 @@ namespace SandPerSand
             GameState = GameState.InRound;
         }
 
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckOneExit())
             {
                 ChangeState<CountDownState>();
-                //countDowncounter = 10f;
             }
             if (PlayersManager.Instance.CheckAllDead())
             {
                 ChangeState<CountDownState>();
-                //countDowncounter = 0f;
+                // TODO set different Timer
             }
         }
     }
@@ -118,9 +115,8 @@ namespace SandPerSand
             countDowncounter = 0f;
         }
 
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
             {
@@ -138,17 +134,16 @@ namespace SandPerSand
         {
             base.OnAwake();
             GameState = GameState.RoundCheck;
+            countDowncounter = 0f;
         }
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             countDowncounter += Time.DeltaTime;
             if (countDowncounter >= 2f)
             {
                 countDowncounter = 0f;
                 if (PlayersManager.Instance.CheckAllDead())
                 {
-                    Debug.WriteLine("No players were alive. No shop.");
                     ChangeState<PreRoundState>();
                 }
                 else
@@ -167,9 +162,8 @@ namespace SandPerSand
             GameState = GameState.Shop;
         }
 
-        protected override void Update()
+        public override void OnUpdate()
         {
-            if (stateManager.CurrentState != this) return;
             if (PlayersManager.Instance.CheckAllFinishedShop())
             {
                 ChangeState<PreRoundState>();
