@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Engine;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
@@ -103,7 +103,7 @@ namespace SandPerSand
                 var playerIndex = item.Key;
                 var player = item.Value;
                 var playerState = player.GetComponent<PlayerStates>();
-                if (!playerState.FnishedShop)
+                if (!playerState.FinishedShop)
                 {
                     Vector2 distance = this.Transform.Position - player.Transform.Position;
                     if (distance.Length() <= 1f)
@@ -111,7 +111,7 @@ namespace SandPerSand
                         // a player reached the exit
                         //TODO record round ranking and other information somewhere
                         Debug.Print("Player " + playerIndex + " triggered Exit.");
-                        playerState.FnishedShop = true;
+                        playerState.FinishedShop = true;
 
                         PlayerUtils.HidePlayer(player);
                     }

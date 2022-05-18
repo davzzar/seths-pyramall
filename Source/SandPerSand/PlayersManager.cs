@@ -162,19 +162,20 @@ namespace SandPerSand
         {
             bool ItsCurrentPlayersTurn =
     CurRank == 0 || CurRank < rankList.Length &&
-    Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop;
+    Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
             Debug.Print("CurRank:" + CurRank);
             if (ItsCurrentPlayersTurn)
             {
                 var curPlayer = Players[rankList[CurRank]];
                 var curPlayerState = curPlayer.GetComponent<PlayerStates>();
-                Debug.Assert(curPlayerState.FnishedShop == false);
+                Debug.Assert(curPlayerState.FinishedShop == false);
                 PlayerUtils.ResumePlayerControl(curPlayer);
                 // init new timer
                 ShopTimer = Owner.AddComponent<CancelableTimer>();
                 ShopTimer.Init(ShopTime,
                     () => {
-                    curPlayerState.FnishedShop = true;
+                        curPlayerState.FinishedShop = true;
+                        PlayerUtils.HidePlayer(curPlayer);
                     },
                     ()=> { return CheckAllFinishedShop(); }
                     );
@@ -221,7 +222,8 @@ namespace SandPerSand
                 }
                 else
                 {
-                    players[playerIndex].GetComponentInChildren<PlayerStates>().FnishedShop = true;
+                    players[playerIndex].GetComponentInChildren<PlayerStates>().FinishedShop = true;
+                    PlayerUtils.HidePlayer(Players[playerIndex]);
                 }
             }
             // ShopEntryPsition can be reset right after use
@@ -291,10 +293,13 @@ namespace SandPerSand
             {
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
                 players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
+                players[playerIndex].GetComponent<RigidBody>()!.IsKinematic = false;
                 players[playerIndex].Transform.Position = position;
+                players[playerIndex].GetComponent<SpriteRenderer>()!.IsActive = true;
                 players[playerIndex].GetComponent<Animator>().Entry();
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
                 players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
+                players[playerIndex].GetComponent<PlayerComponent>()!.AddCameraControlPoint();
             }
             else
             {
@@ -436,7 +441,7 @@ namespace SandPerSand
 
         public bool CheckAllFinishedShop()
         {
-            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FnishedShop);
+            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FinishedShop);
         }
 
         public void FinalizeRanks()
@@ -487,7 +492,15 @@ namespace SandPerSand
         public string MajorItem;
         public int Coins;
         public bool Exited { get; set; }
-        public bool FnishedShop { get; set; }
+        private bool finishedShop;
+        public bool FinishedShop
+        {
+            get => finishedShop;
+            set
+            {
+                finishedShop = value;
+            }
+        }
         public int RoundRank { get; set; }
         public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
@@ -506,7 +519,7 @@ namespace SandPerSand
             MajorItem = null;
             Coins = 0;
             Exited = false;
-            FnishedShop = false;
+            FinishedShop = false;
             RoundRank = -1;
             ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
             Score = 0;
@@ -524,11 +537,11 @@ namespace SandPerSand
             }
             if (LastGameState != CurrentGameState)
             {
-                if(LastGameState == GameState.RoundCheck )
+                if(CurrentGameState == GameState.Shop )
                 {
-
-                    FnishedShop = false;
-                }else if(LastGameState == GameState.Shop)
+                    FinishedShop = false;
+                }
+                else if(CurrentGameState == GameState.RoundStartCountdown)
                 {
                     // reset round states
                     Exited = false;

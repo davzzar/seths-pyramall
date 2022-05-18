@@ -129,7 +129,6 @@ namespace SandPerSand
                     break;
                 case GameState.CountDown:
                     countDowncounter += Time.DeltaTime;
-                    PlayersManager.Instance.CheckAllDead();
                     if (countDowncounter >= 10f || PlayersManager.Instance.CheckAllDeadOrExit())
                     {
                         countDowncounter = 0f;
@@ -185,10 +184,6 @@ namespace SandPerSand
         {
             currentState = GameState.Shop;
             Debug.Print("GameState: RoundCheck-> Shop");
-            foreach (var player in PlayersManager.Instance.Players.Values)
-            {
-                PlayerUtils.UnhidePlayer(player);
-            }
             // load new scene
             // FIXME correct shop scene number
             var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
