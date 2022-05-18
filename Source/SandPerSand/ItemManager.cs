@@ -72,7 +72,7 @@ namespace SandPerSand
                 itemId = PlayersManager.Instance.UseItem(playerIndex, true);
             }
 
-            if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown)
+            if ((inputHandler.getButtonState(Buttons.LeftShoulder) == ButtonState.Pressed || inputHandler.getButtonState(Buttons.LeftTrigger) == ButtonState.Pressed) && (GameStateManager.Instance.CurrentState == GameState.InRound || GameStateManager.Instance.CurrentState == GameState.CountDown))
             {
                 itemId = PlayersManager.Instance.UseItem(playerIndex, false);
             }
