@@ -60,7 +60,7 @@ namespace SandPerSand
         public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         // TODO hard coded shopTime
         public float ShopTime { get; private set; } = 10f;
-        public CancelableTimer ShopTimer { get; private set; } = null;
+        public GoTimer ShopTimer { get; private set; } = null;
         public int CurRank { get; private set; }
         private PlayerIndex[] rankList;
 
@@ -83,10 +83,21 @@ namespace SandPerSand
             base.OnAwake();
             LastGameState = null;
             var realGSM = GameObject.FindComponent<RealGameStateManager>();
+            realGSM.GetState<PrepareState>().OnEnter += (sender, lastState) =>
+            {
+                SetAllPlayerControls(false);
+            };
+
             realGSM.GetState<PrepareState>().OnUpdate += () =>
             {
                 CheckConnections();
             };
+
+            realGSM.GetState<InRoundState>().OnEnter += (sender, lastState) =>
+            {
+                SetAllPlayerControls(true);
+            };
+
             realGSM.GetState<PreRoundState>().OnEnter += (sender, lastState) =>
             {
                 foreach (var player in Players.Values)
@@ -94,6 +105,7 @@ namespace SandPerSand
                     PlayerUtils.UnhidePlayer(player);
                     player.GetComponent<PlayerComponent>()!.IsAlive = true;
                 }
+                SetAllPlayerControls(false);
             };
             realGSM.GetState<RoundCheckState>().OnEnter += (sender, lastState) => {
                 FinalizeRanks();
@@ -105,37 +117,19 @@ namespace SandPerSand
                         item.Value.GetComponent<PlayerStates>().RoundRank);
                 }
             };
+            realGSM.GetState<InShopState>().OnExit += () => {
+                GoTimer[] timerList = Owner.GetComponents<GoTimer>();
+                foreach( var timer in timerList)
+                {
+                    // FIXME potential risk : timers are added for dead players
+                    timer.Destroy();
+                }
+            };
         }
 
         protected override void Update()
         {
-            if (CurrentGameState == GameState.InRound)
-            {
-                if(LastGameState != GameState.InRound)
-                {
-                    //Enter
-                    SetAllPlayerControls(true);
-                    LastGameState = GameState.InRound;
-                }
-                else
-                {
-                    //During
-                }
-            }
-            else if (CurrentGameState == GameState.Prepare)
-            {
-                if (LastGameState != GameState.Prepare)
-                {
-                    //Enter
-                    SetAllPlayerControls(false);
-                    LastGameState = GameState.Prepare;
-                }
-                else
-                {
-                    //During
-                }
-            }
-            else if (CurrentGameState == GameState.RoundStartCountdown)
+            if (CurrentGameState == GameState.RoundStartCountdown)
             {
                 if(LastGameState != GameState.RoundStartCountdown)
                 {
@@ -150,13 +144,8 @@ namespace SandPerSand
                     // Enter from other states (= Prepare)
                     else
                     {
-                        SetAllPlayerControls(false);
                         LastGameState = GameState.RoundStartCountdown;
                     }
-                }
-                else
-                {
-                    //During
                 }
             }
             else if (CurrentGameState == GameState.Shop)
@@ -173,7 +162,6 @@ namespace SandPerSand
                 {
                     DuringShop();
                 }
-                
             }
             else
             {
@@ -193,14 +181,13 @@ namespace SandPerSand
                 Debug.Assert(curPlayerState.FinishedShop == false);
                 PlayerUtils.ResumePlayerControl(curPlayer);
                 // init new timer
-                ShopTimer = Owner.AddComponent<CancelableTimer>();
+                ShopTimer = Owner.AddComponent<GoTimer>();
+                // bug only canceled the last timer
                 ShopTimer.Init(ShopTime,
                     () => {
                         curPlayerState.FinishedShop = true;
                         PlayerUtils.HidePlayer(curPlayer);
-                    },
-                    ()=> { return CheckAllFinishedShop(); }
-                    );
+                    });
 
                 CurRank++;
             }
