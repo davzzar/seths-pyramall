@@ -60,6 +60,7 @@ namespace SandPerSand
 
         public event EventHandler<State<T>> OnEnter;
         public event Action OnExit;
+        public event Action OnExitDynamic;
         public event Action OnUpdate;
 
         protected override void OnAwake()
@@ -89,7 +90,6 @@ namespace SandPerSand
                 $"has no state of type {typeof(State)}");
 
             var lastState = stateManager.CurrentState;
-
             stateManager.CurrentState.Exit();
             stateManager.CurrentState = nextState;
             stateManager.CurrentState.EnterFrom(lastState);
@@ -106,6 +106,13 @@ namespace SandPerSand
         {
             IsActive = false;
             OnExit?.Invoke();
+            OnExitDynamic?.Invoke();
+            if (OnExitDynamic != null)
+            {
+                foreach (Action action in OnExitDynamic.GetInvocationList())
+                    OnExitDynamic -= action;
+            }
+                
         }
     }
 }

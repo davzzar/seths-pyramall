@@ -126,6 +126,7 @@ namespace SandPerSand
                     // disable colision
                     Owner.GetComponentInChildren<Collider>().IsActive = false;
                     RemoveCameraControlPoint();
+                    // hide sprite on exit of RoundCheckState
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();

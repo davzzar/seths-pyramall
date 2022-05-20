@@ -165,7 +165,7 @@ namespace SandPerSand
         protected override void Update()
         {
             base.Update();
-            if (PlayersManager.Instance.CheckAllFinishedShop())
+            if (PlayersManager.Instance.AllFinishedShop)
             {
                 ChangeState<PreRoundState>();
             }

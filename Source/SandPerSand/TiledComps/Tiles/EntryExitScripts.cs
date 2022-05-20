@@ -59,6 +59,7 @@ namespace SandPerSand
                         Debug.Print("Player " + playerIndex + " triggered Exit.");
                         playerState.Exited = true;
                         playerState.RoundRank = rankingCounter++;
+                        PlayersManager.Instance.ShopQueue.Add(playerIndex);
                         playerState.Score += PlayersManager.Instance.Players.Count + 2 - rankingCounter;
 
                         PlayerUtils.HidePlayer(player);

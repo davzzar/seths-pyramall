@@ -12,6 +12,7 @@ namespace SandPerSand
 {
     public class PlayersManager : Behaviour
     {
+        private RealGameStateManager GSM;
         private static PlayersManager instance;
         internal static PlayersManager Instance
         {
@@ -56,16 +57,13 @@ namespace SandPerSand
             Debug.Print("player manager created");
         }
 
-        public GameState? LastGameState { get; set; }
-        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
-        // TODO hard coded shopTime
-        public float ShopTime { get; private set; } = 10f;
+        public float ShopTime { get; private set; } = Conf.Time.ShopTime;
         public GoTimer ShopTimer { get; private set; } = null;
         public int CurRank { get; private set; }
-        private PlayerIndex[] rankList;
 
         private SoundEffectPlayer itemPickupSoundEffect;
         private SoundEffectPlayer itemBuySoundEffect;
+
         protected override void OnEnable()
         {
             // add components to the manager owner
@@ -78,27 +76,23 @@ namespace SandPerSand
             itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
             itemBuySoundEffect.LoadFromContent("Sounds/shop_payment");
         }
-        protected override void OnAwake()
+
+        private void DefPrepare()
         {
-            base.OnAwake();
-            LastGameState = null;
-            var realGSM = GameObject.FindComponent<RealGameStateManager>();
-            realGSM.GetState<PrepareState>().OnEnter += (sender, lastState) =>
+            GSM.GetState<PrepareState>().OnEnter += (sender, lastState) =>
             {
                 SetAllPlayerControls(false);
             };
-
-            realGSM.GetState<PrepareState>().OnUpdate += () =>
+            GSM.GetState<PrepareState>().OnUpdate += () =>
             {
                 CheckConnections();
             };
 
-            realGSM.GetState<InRoundState>().OnEnter += (sender, lastState) =>
-            {
-                SetAllPlayerControls(true);
-            };
-
-            realGSM.GetState<PreRoundState>().OnEnter += (sender, lastState) =>
+        }
+        private void DefPreRound()
+        {
+            bool isEntered = false;
+            GSM.GetState<PreRoundState>().OnEnter += (sender, lastState) =>
             {
                 foreach (var player in Players.Values)
                 {
@@ -106,79 +100,114 @@ namespace SandPerSand
                     player.GetComponent<PlayerComponent>()!.IsAlive = true;
                 }
                 SetAllPlayerControls(false);
-            };
-            realGSM.GetState<RoundCheckState>().OnEnter += (sender, lastState) => {
-                FinalizeRanks();
-                // Debug
-                Debug.Print("GameState: CountDown-> RoundCheck");
-                foreach (var item in Players)
+                if (lastState.GetType() == typeof(PrepareState))
                 {
-                    Debug.Print("Player " + item.Key + " : Rank " +
-                        item.Value.GetComponent<PlayerStates>().RoundRank);
+                    isEntered = true;
                 }
-            };
-            realGSM.GetState<InShopState>().OnExit += () => {
-                GoTimer[] timerList = Owner.GetComponents<GoTimer>();
-                foreach( var timer in timerList)
+                else
                 {
-                    // FIXME potential risk : timers are added for dead players
-                    timer.Destroy();
+                    isEntered = false;
+                }
+                    
+            };
+            GSM.GetState<PreRoundState>().OnUpdate += () =>
+            {
+                if (!isEntered)
+                {
+                    isEntered = EnterRoundStartCountdownFromShopOrRoundCheck();
+                }
+                else
+                {
+                    //Do real update stuff
                 }
             };
         }
 
-        protected override void Update()
+        private void DefInRound()
         {
-            if (CurrentGameState == GameState.RoundStartCountdown)
+            GSM.GetState<InRoundState>().OnEnter += (sender, lastState) =>
             {
-                if(LastGameState != GameState.RoundStartCountdown)
+                SetAllPlayerControls(true);
+            };
+
+        }
+        private void DefRoundCheck()
+        {
+            GSM.GetState<RoundCheckState>().OnEnter += (sender, lastState) => {
+                FinalizeRanks();
+                // hide all players
+                foreach (var item in Players)
                 {
-                    // Enter from Shop or RoundCheck
-                    if (LastGameState == GameState.Shop || LastGameState == GameState.RoundCheck)
-                    {
-                        if (EnterRoundStartCountdownFromShopOrRoundCheck())
-                        {
-                            LastGameState = GameState.RoundStartCountdown;
-                        }
-                    }
-                    // Enter from other states (= Prepare)
-                    else
-                    {
-                        LastGameState = GameState.RoundStartCountdown;
-                    }
+                    PlayerUtils.HidePlayer(item.Value);
+                    Debug.Print("Player " + item.Key + " : Rank " +
+                        item.Value.GetComponent<PlayerStates>().RoundRank);
                 }
-            }
-            else if (CurrentGameState == GameState.Shop)
-            {
-                // Enter shop
-                if (LastGameState != GameState.Shop)
+            };
+            GSM.GetState<RoundCheckState>().OnExit += ( ) => {
+                // clear initial positions when exit a round
+                InitialPositions = new List<Vector2>();
+            };
+            
+        }
+
+        public List<PlayerIndex> ShopQueue;
+        public bool AllFinishedShop => ShopQueue.All(playerIndex => Players[playerIndex].GetComponent<PlayerStates>()!.FinishedShop);
+        private void DefInShop()
+        {
+            ShopQueue = new List<PlayerIndex>();
+            bool isEntered = false;
+
+            InShopState inShop = GSM.GetState<InShopState>();
+            inShop.OnEnter += (sender,preState) => {
+                isEntered = false;
+            };
+            inShop.OnUpdate += () => {
+                if (!isEntered)
                 {
-                    if (EnterShop())
-                    {
-                        LastGameState = GameState.Shop;
-                    }
+                    isEntered = EnterShop();
                 }
                 else
                 {
                     DuringShop();
                 }
-            }
-            else
-            {
-                LastGameState = CurrentGameState;
-            }
+            };
+            inShop.OnExit += () => {
+                GoTimer[] timerList = Owner.GetComponents<GoTimer>();
+                foreach (var timer in timerList)
+                {
+                    timer.Destroy();
+                }
+                ShopQueue = new List<PlayerIndex>();
+                // ShopEntryPsition must be reset after use
+                ShopEntryPosition = Vector2.Zero;
+            };
+        }
+
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+            GSM = GameObject.FindComponent<RealGameStateManager>();
+            DefPrepare();
+            DefPreRound();
+            DefInRound();
+            DefRoundCheck();
+            DefInShop();
+        }
+
+        protected override void Update()
+        {
         }
 
         private void DuringShop()
         {
             bool ItsCurrentPlayersTurn =
-    CurRank == 0 || CurRank < rankList.Length &&
-    Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
+    CurRank == 0 || CurRank < ShopQueue.Count &&
+    Players[ShopQueue[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
             if (ItsCurrentPlayersTurn)
             {
-                var curPlayer = Players[rankList[CurRank]];
+                var curPlayer = Players[ShopQueue[CurRank]];
                 var curPlayerState = curPlayer.GetComponent<PlayerStates>();
-                Debug.Assert(curPlayerState.FinishedShop == false);
+                //Debug.Assert(curPlayerState.FinishedShop == false);
                 PlayerUtils.ResumePlayerControl(curPlayer);
                 // init new timer
                 ShopTimer = Owner.AddComponent<GoTimer>();
@@ -203,50 +232,21 @@ namespace SandPerSand
                 return false;
             }
             Debug.Print("PM: -> Shop");
-            // clear initial positions when exit a round
-            // since they are round-specific FIXME better place to do this???
-            InitialPositions = new List<Vector2>();
-
-            // calculate rank list
-            rankList = new PlayerIndex[Players.Count];
-            foreach (var player in Players)
-            {
-                var rank = player.Value.GetComponent<PlayerStates>().RoundRank;
-                if (rank <= 0)
-                {
-                    throw new Exception("Invalid rank at end");
-                }
-                rankList[rank - 1] = player.Key;
-            }
-
             // respawn players -> queue by rank list
-            // disable all players controller
             var entryX = ShopEntryPosition.X;
-            foreach (var playerIndex in rankList)
+            foreach (var playerIndex in ShopQueue)
             {
-                if (players[playerIndex].GetComponentInChildren<PlayerComponent>().IsAlive == true)
-                {
-                    RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
-                    PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
-                }
-                else
-                {
-                    players[playerIndex].GetComponentInChildren<PlayerStates>().FinishedShop = true;
-                    PlayerUtils.HidePlayer(Players[playerIndex]);
-                }
+                RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
+                // disable all players controller
+                PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
             }
-            // ShopEntryPsition can be reset right after use
-            // If not reset, players will be spawned before shop map is
-            // loaded next time ... then drop
-            ShopEntryPosition = Vector2.Zero;
             CurRank = 0;
             return true;
         }
 
         private bool EnterRoundStartCountdownFromShopOrRoundCheck()
         {
-            // this holds because we clear initial positions each time we exit a round
-            // initial positions are round specific
+            // make sure initial positions are loaded from the new level
             if (InitialPositions.ToArray().Length <= 0)
             {
                 Debug.Print("Cannot respawn Players, because the map is " +
@@ -261,17 +261,12 @@ namespace SandPerSand
             return true;
         }
 
-        public GameObject GetPlayer(PlayerIndex index) {
-            return players[index];
-        }
-
         public bool DestroyPlayer(PlayerIndex index)
         {
             if (!players.ContainsKey(index))
             {
                 return false;
             }
-            
             GraphicalUserInterface.Instance.destroyPlayerInfo(index);
             players[index].Destroy();
             players.Remove(index);
@@ -448,11 +443,6 @@ namespace SandPerSand
             return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsAlive || player.GetComponent<PlayerStates>().Exited);
         }
 
-        public bool CheckAllFinishedShop()
-        {
-            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FinishedShop);
-        }
-
         public void FinalizeRanks()
         {
             var notExitedFrom = 1;
@@ -515,7 +505,6 @@ namespace SandPerSand
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
         public GameState LastGameState{ get; set; }
-        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         public Collider Collider { get; set; }
 
         public List<(string id, float timeleft, float tot_time, Vector2 pos)> ActiveItems { private set; get; }
@@ -557,11 +546,6 @@ namespace SandPerSand
         /// </summary>
         protected override void Update()
         {
-            //<<<<<<< Yuchen stuff
-
-            //======= End of Yuchen stuff
-
-            //<<<<<<< Clemens stuff
             var timeDelta = Time.DeltaTime;
 
             var remove = new List<int>();
@@ -637,7 +621,6 @@ namespace SandPerSand
                 }
                 ActiveItems.RemoveAt(remove[i]);
             }
-            //======= End of Clemens stuff
         }
 
         public void TogglePrepared()
