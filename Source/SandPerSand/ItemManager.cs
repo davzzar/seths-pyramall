@@ -106,24 +106,13 @@ namespace SandPerSand
                     }
                     break;
                 case "lightning":
-                    foreach (GameObject p in players)
+                    foreach (var p in players)
                     {
-                        if (p.Transform.Position.Y > this.Transform.Position.Y)
+                        if (p != Owner && p.Transform.Position.Y > Transform.Position.Y)
                         {
-                            if (p != this.Owner && p.Transform.Position.Y > this.Transform.Position.Y)
-                            {
-                                int duration = 0;
-                                float dist = p.Transform.Position.Y - this.Transform.Position.Y;
-                                if (dist > 30)
-                                {
-                                    duration = 10;
-                                }
-                                else
-                                {
-                                    duration = (int)(dist / 3);
-                                }
-                                p.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, duration, duration, this.Transform.Position);
-                            }
+                            var dist = p.Transform.Position.Y - this.Transform.Position.Y;
+                            var duration = Math.Min(10, Math.Max(3, (int)(dist / 3)));
+                            p.GetComponentInChildren<PlayerStates>().AddActiveItem(itemId, duration, duration, this.Transform.Position);
                         }
                     }
                     break;
@@ -238,17 +227,17 @@ namespace SandPerSand
                     ItemRendererList[i].Transform.LossyScale = 0.5f * Vector2.One;
                     ItemRendererList[i].Transform.LocalPosition = -(Vector2.UnitY * 0.125f) + (facingright ? -Vector2.UnitX * .1f : Vector2.UnitX * .1f);
                 }
-                //else if (activeItems[i].id == "lightning")
-                //{
-                //    if (activeItems[i].pos.Y < 0)
-                //    {
-                //        ItemRendererList[i].SetSourceRectangle(63, 32, 32);
-                //    }
-                //    else
-                //    {
-                //        //ItemRendererList[i].Transform.LocalRotation = new Quaternion(i,)
-                //    }
-                //}
+                else if (activeItems[i].id == "lightning")
+                {
+                    if (activeItems[i].pos.Y < 0)
+                    {
+                        ItemRendererList[i].SetSourceRectangle(63, 32, 32);
+                    }
+                    else
+                    {
+                        //ItemRendererList[i].Transform.LocalRotation = new Quaternion(i,)
+                    }
+                }
                 else if (activeItems[i].id == "position_swap")
                 {
                     ItemRendererList[i].SetSourceRectangle(63, 32, 32);

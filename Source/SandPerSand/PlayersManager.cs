@@ -550,7 +550,7 @@ namespace SandPerSand
 
             var remove = new List<int>();
 
-            //bool lightning = false;
+            bool lightning = false;
 
             for (var i = 0; i < ActiveItems.Count; i++)
             {
@@ -599,18 +599,18 @@ namespace SandPerSand
                 }
                 ActiveItems[i] = (ActiveItems[i].id, time, ActiveItems[i].tot_time, pos);
 
-                //if(activeItems[i].id == "lightning")
-                //{
-                //    lightning = true;
-                //}
+                if (ActiveItems[i].id == "lightning")
+                {
+                    lightning = true;
+                }
             }
 
-            //if (lightning)
-            //{
-            //    Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One * 0.8f;
-            //    Collider.IsActive = false;
-            //    Collider.IsActive = true;
-            //}
+            if (lightning)
+            {
+                Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One * 0.8f;
+                Collider.IsActive = false;
+                Collider.IsActive = true;
+            }
 
             for (var i = remove.Count - 1; i >= 0; i--)
             {
