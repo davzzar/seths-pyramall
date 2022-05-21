@@ -649,11 +649,8 @@ namespace SandPerSand
             //returns true if item was added
             if (major)
             {
-                if (MajorItem == null)
-                {
-                    MajorItem = item;
-                    return true;
-                }
+                MajorItem = item;
+                return true;
             }
             else
             {
