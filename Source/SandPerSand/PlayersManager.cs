@@ -507,7 +507,8 @@ namespace SandPerSand
         public GameState LastGameState{ get; set; }
         public Collider Collider { get; set; }
 
-        public List<(string id, float timeleft, float tot_time, Vector2 pos)> ActiveItems { private set; get; }
+        public List<Items.Item> ActiveItems { private set; get; }
+        public List<Items.Item> PursueItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -519,7 +520,8 @@ namespace SandPerSand
             Exited = false;
             FinishedShop = false;
             RoundRank = -1;
-            ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
+            ActiveItems = new List<Items.Item>();
+            PursueItems = new List<Items.Item>();
             Score = 0;
 
             var realGSM = GameObject.FindComponent<RealGameStateManager>();
@@ -552,75 +554,95 @@ namespace SandPerSand
 
             bool lightning = false;
 
-            for (var i = 0; i < ActiveItems.Count; i++)
+            for (var i = 0; i < PursueItems.Count; i++)
             {
-                var pos = ActiveItems[i].pos;
-                var time = ActiveItems[i].timeleft;
-                if (ActiveItems[i].id == "position_swap")
+                if (PursueItems[i].Id == ItemId.position_swap)
                 {
-                    Debug.Print((ActiveItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
+                    if (((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed < ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime)
                     {
-                        this.Transform.Position = ActiveItems[i].pos;
-                        time = -1f;
-                        Collider.IsActive = true;
+                        float fraction = - ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed + ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime;
+                        Debug.Print(fraction.ToString());
+                        //fraction = ((float)Math.Log2(fraction + 1d));
+                        fraction = ((float)Math.Pow(0.9d, fraction * 50f));
+                        //fraction = ((float)Math.Pow(2f, -fraction));
+                        Debug.Print(fraction.ToString());
+                        this.Transform.Position = PursueItems[i].Position * fraction + (1 - fraction) * ((Items.PositionSwapItem) PursueItems[i]).Source;
+                        ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed += timeDelta;
+                        Collider.IsActive = false;
                     }
                     else
                     {
-                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
-                        this.Transform.Position = (ActiveItems[i].pos * 0.1f + 0.9f * this.Transform.Position) + vel / 10;
-                        var collider = this.Owner.GetComponent<Collider>();
-                        Collider.IsActive = false;
+                        PursueItems[i].Delete = true;
+                        Collider.IsActive = true;
+                        this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity = ((Items.PositionSwapItem)PursueItems[i]).Velocity;
                     }
                 }
                 else
                 {
-                    if (ActiveItems[i].pos.Y < 0)
+                    if ((PursueItems[i].Position - this.Transform.Position).LengthSquared() < 0.1f)
                     {
-                        pos = ActiveItems[i].pos;
-                        time = ActiveItems[i].timeleft - timeDelta;
-                    }
-                    else if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
-                    {
-                        pos = -Vector2.One;
-                        time = ActiveItems[i].timeleft - timeDelta;
+                        PursueItems[i].pursue = false;
                     }
                     else
                     {
-                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
-                        pos = ActiveItems[i].pos * 0.9f + 0.1f * this.Transform.Position - vel / 10;
-                        time = ActiveItems[i].timeleft;
+                        var vel = (PursueItems[i].Position - this.Transform.Position) / (PursueItems[i].Position - this.Transform.Position).Length();
+                        PursueItems[i].Position = PursueItems[i].Position * 0.9f + 0.1f * this.Transform.Position - vel / 10;
                     }
                 }
-
-                if (ActiveItems[i].timeleft < 0)
+             }
+            Debug.Print("pursue items");
+            for (var i = PursueItems.Count - 1; i >= 0; i--)
+            {
+                Debug.Print(PursueItems[i].Id.ToString());
+                if (PursueItems[i].Delete)
                 {
-                    remove.Add(i);
+                    PursueItems.RemoveAt(i);
                 }
-                ActiveItems[i] = (ActiveItems[i].id, time, ActiveItems[i].tot_time, pos);
+                else if (!PursueItems[i].pursue)
+                {
+                    bool updated = false;
+                    for (var j = 0; j < ActiveItems.Count; i++)
+                    {
+                        if (PursueItems[j].Id == ActiveItems[j].Id)
+                        {
+                            ActiveItems[j].TimeLeft = PursueItems[j].TotTime;
+                            updated = true;
+                            break;
+                        }
+                    }
+                    if (!updated)
+                    {
+                        ActiveItems.Add(PursueItems[i]);
+                    }
+                    PursueItems.RemoveAt(i);
+                }
+            }
 
-                if (ActiveItems[i].id == "lightning")
+            for (var i = ActiveItems.Count - 1; i >= 0; i--)
+            {
+                ActiveItems[i].TimeLeft = ActiveItems[i].TimeLeft - timeDelta;
+
+                if(ActiveItems[i].TimeLeft < 0)
+                {
+                    ActiveItems[i].Delete = true;
+                }
+
+                if (ActiveItems[i].Id == ItemId.lightning)
                 {
                     lightning = true;
                 }
-            }
-
-            if (lightning)
-            {
-                Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One * 0.8f;
-                Collider.IsActive = false;
-                Collider.IsActive = true;
-            }
-
-            for (var i = remove.Count - 1; i >= 0; i--)
-            {
-                if (ActiveItems[i].id == "lightning")
+                if (ActiveItems[i].Delete)
                 {
-                    Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One;
-                    Collider.Transform.LossyScale = Vector2.One * 0.8f;
+                    ActiveItems.RemoveAt(i);
                 }
-                ActiveItems.RemoveAt(remove[i]);
             }
+
+            //if (lightning)
+            //{
+            //    Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One * 0.8f;
+            //    Collider.IsActive = false;
+            //    Collider.IsActive = true;
+            //}
         }
 
         public void TogglePrepared()
@@ -704,17 +726,17 @@ namespace SandPerSand
             float jumpfactor = 1;
             foreach(var item in ActiveItems)
             {
-                if(item.id == "wings") 
+                if(item.Id == ItemId.wings) 
                 {
-                    jumpfactor *= 1.5f;
+                    jumpfactor *= 2f;
                 }
-                else if(item.id == "ice_block")
+                else if(item.Id == ItemId.ice_block)
                 {
                     jumpfactor *= 0;
                 }
-                else if ((item.id == "lightning"))
+                else if ((item.Id == ItemId.lightning))
                 {
-                    jumpfactor *= 0.8f;
+                    jumpfactor *= 0.5f;
                 }
             }
             return jumpfactor;
@@ -726,17 +748,17 @@ namespace SandPerSand
 
             foreach (var item in ActiveItems)
             {
-                if (item.id == "speedup")
+                if (item.Id == ItemId.speedup)
                 {
                     accelleration *= 1.5f;
                 }
-                else if (item.id == "ice_block")
+                else if (item.Id == ItemId.ice_block)
                 {
                     accelleration *= 0f;
                 }
-                else if ((item.id == "lightning"))
+                else if ((item.Id == ItemId.lightning))
                 {
-                    accelleration *= 0.8f;
+                    accelleration *= 0.5f;
                 }
             }
             return accelleration;
@@ -748,7 +770,7 @@ namespace SandPerSand
 
             foreach (var item in ActiveItems)
             {
-                if (item.id == "dizzy_eyes")
+                if (item.Id == ItemId.dizzy_eyes)
                 {
                     invertedMovement *= -1f;
                 }
@@ -760,7 +782,7 @@ namespace SandPerSand
         {
             foreach (var item in ActiveItems)
             {
-                if (item.id == "position_swap")
+                if (item.Id == ItemId.position_swap)
                 {
                     return false;
                 }
@@ -768,17 +790,24 @@ namespace SandPerSand
             return true;
         }
 
-        public void AddActiveItem(string id, float timeleft, float totTime, Vector2 pos)
+        public void AddActiveItem(Items.Item newItem)
         {
-            for (var i = 0; i < ActiveItems.Count; i++)
-            { 
-                if(id == ActiveItems[i].id)
-                {
-                    ActiveItems[i] = (id, timeleft, totTime, pos);
-                    return;
-                }
+            if (newItem.pursue)
+            {
+                PursueItems.Add(newItem);
             }
-            ActiveItems.Add((id, timeleft, totTime, pos));
+            else
+            {
+                for (var i = 0; i < ActiveItems.Count; i++)
+                {
+                    if (newItem.Id == ActiveItems[i].Id)
+                    {
+                        ActiveItems[i].TimeLeft = newItem.TotTime;
+                        return;
+                    }
+                }
+                ActiveItems.Add(newItem);
+            }
         }
     }
 }
