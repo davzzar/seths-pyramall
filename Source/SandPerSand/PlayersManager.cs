@@ -560,9 +560,13 @@ namespace SandPerSand
                 {
                     if (((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed < ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime)
                     {
-                        float fraction = ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed - ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime;
-                        fraction = fraction * fraction;
-                        PursueItems[i].Position = PursueItems[i].Position * fraction + (1 - fraction) * this.Transform.Position;
+                        float fraction = - ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed + ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime;
+                        Debug.Print(fraction.ToString());
+                        //fraction = ((float)Math.Log2(fraction + 1d));
+                        fraction = ((float)Math.Pow(0.9d, fraction * 50f));
+                        //fraction = ((float)Math.Pow(2f, -fraction));
+                        Debug.Print(fraction.ToString());
+                        this.Transform.Position = PursueItems[i].Position * fraction + (1 - fraction) * ((Items.PositionSwapItem) PursueItems[i]).Source;
                         ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed += timeDelta;
                         Collider.IsActive = false;
                     }
@@ -570,6 +574,7 @@ namespace SandPerSand
                     {
                         PursueItems[i].Delete = true;
                         Collider.IsActive = true;
+                        this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity = ((Items.PositionSwapItem)PursueItems[i]).Velocity;
                     }
                 }
                 else
@@ -585,22 +590,29 @@ namespace SandPerSand
                     }
                 }
              }
-
+            Debug.Print("pursue items");
             for (var i = PursueItems.Count - 1; i >= 0; i--)
             {
+                Debug.Print(PursueItems[i].Id.ToString());
                 if (PursueItems[i].Delete)
                 {
                     PursueItems.RemoveAt(i);
                 }
                 else if (!PursueItems[i].pursue)
                 {
+                    bool updated = false;
                     for (var j = 0; j < ActiveItems.Count; i++)
                     {
                         if (PursueItems[j].Id == ActiveItems[j].Id)
                         {
                             ActiveItems[j].TimeLeft = PursueItems[j].TotTime;
-                            continue;
+                            updated = true;
+                            break;
                         }
+                    }
+                    if (!updated)
+                    {
+                        ActiveItems.Add(PursueItems[i]);
                     }
                     PursueItems.RemoveAt(i);
                 }

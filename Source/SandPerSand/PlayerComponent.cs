@@ -230,8 +230,10 @@ namespace SandPerSand
             var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
 
-            var itemsManager = Owner.GetOrAddComponent<ItemManager>();
+            var itemsManager = Owner.GetOrAddComponent<Items.ItemManager>();
             itemsManager.inputHandler = InputHandler;
+
+            var itemsRenderer = Owner.GetOrAddComponent<Items.ItemRenderer>();
 
             // Subscribe to events
             // disable the timerBar when it fills up so it is not shown.

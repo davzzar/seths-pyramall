@@ -14,10 +14,10 @@ namespace SandPerSand.Items
         public Vector2 Position { get; set; }
         public bool Delete = false;
 
-        public Item(ItemId id, Vector2 Destination, float TimeLeft, float TotTime, bool pursue)
+        public Item(ItemId id, Vector2 Position, float TimeLeft, float TotTime, bool pursue)
         {
             this.Id = id;
-            this.Position = Destination;
+            this.Position = Position;
             this.TimeLeft = TimeLeft;
             this.TotTime = TotTime;
             this.pursue = pursue;
@@ -28,15 +28,16 @@ namespace SandPerSand.Items
     {
         public Vector2 Source { get;}
         public Vector2 Velocity { get;}
-        public float ExchangeTime { get; } = 1f;
+        public float ExchangeTime { get; set; }
         public float ExchangeTimePassed { get; set; } = 0f;
 
-        public PositionSwapItem(ItemId id, Vector2 Destination, float TimeLeft, float TotTime, bool pursue, Vector2 Velocity, Vector2 Source) : base(id, Destination, TimeLeft, TotTime, pursue)
+        public PositionSwapItem(ItemId id, Vector2 Destination, float TimeLeft, float TotTime, bool pursue, Vector2 Velocity, Vector2 Source, float dist) : base(id, Destination, TimeLeft, TotTime, pursue)
         {
             this.Position = Destination;
             this.Velocity = Velocity;
             this.Source = Source;
             this.pursue = true;
+            this.ExchangeTime = ((float)Math.Log10(dist)) / 3;
         }
     }
 }
