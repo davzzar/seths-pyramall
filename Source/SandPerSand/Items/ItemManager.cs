@@ -74,8 +74,8 @@ namespace SandPerSand.Items
                         Vector2 velfirst = firstPlayer.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity;
                         this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity = Vector2.Zero;
                         firstPlayer.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity = Vector2.Zero;
-                        firstPlayer.GetComponentInChildren<PlayerStates>().AddActiveItem(new Items.PositionSwapItem(ItemId.position_swap, this.Transform.Position, 0f, 0f, true, velthis, firstPlayer.Transform.Position, dist));
-                        this.Owner.GetComponentInChildren<PlayerStates>().AddActiveItem(new Items.PositionSwapItem(ItemId.position_swap, firstPlayer.Transform.Position, 0f, 0f, true, velfirst, this.Transform.Position, dist));
+                        firstPlayer.GetComponentInChildren<PlayerStates>().AddActiveItem(new Items.PositionSwapItem(ItemId.position_swap, this.Transform.Position, 0f, 0f, true, velfirst, firstPlayer.Transform.Position, dist));
+                        this.Owner.GetComponentInChildren<PlayerStates>().AddActiveItem(new Items.PositionSwapItem(ItemId.position_swap, firstPlayer.Transform.Position, 0f, 0f, true, velthis, this.Transform.Position, dist));
                     }
                     break;
                 case "lightning":
