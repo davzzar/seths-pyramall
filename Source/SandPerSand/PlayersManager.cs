@@ -590,10 +590,8 @@ namespace SandPerSand
                     }
                 }
              }
-            Debug.Print("pursue items");
             for (var i = PursueItems.Count - 1; i >= 0; i--)
             {
-                Debug.Print(PursueItems[i].Id.ToString());
                 if (PursueItems[i].Delete)
                 {
                     PursueItems.RemoveAt(i);

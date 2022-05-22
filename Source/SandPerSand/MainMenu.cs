@@ -154,7 +154,7 @@ namespace SandPerSand
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(3);
-                UI.Root = null;
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
             };*/
 
             // Create Mode 2 Button
@@ -164,9 +164,8 @@ namespace SandPerSand
             Mode2Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(1);
-                UI.Root = null;
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
             };
 
             // Create Exit to Menu
