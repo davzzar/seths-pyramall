@@ -119,7 +119,7 @@ namespace Engine
                 {
                     Debug.Assert(this.owningRigidBody.Body != null);
 
-                    if (this.IsActiveInHierarchy)
+                    if (this.fixture != null)
                     {
                         this.owningRigidBody.Body.Remove(this.fixture);
                         this.DestroyCurrentFixture();
@@ -190,6 +190,7 @@ namespace Engine
         /// <inheritdoc />
         protected override void OnEnable()
         {
+            Debug.Assert(this.body == null);
             var rigidBody = this.owningRigidBody;
 
             if (rigidBody == null)
@@ -237,7 +238,8 @@ namespace Engine
                 this.owningRigidBody.RemoveCollider(this);
                 this.owningRigidBody = null;
             }
-            else
+            
+            if(this.body != null)
             {
                 PhysicsManager.World.Remove(this.body);
                 this.body = null;

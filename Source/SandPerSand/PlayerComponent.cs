@@ -150,8 +150,8 @@ namespace SandPerSand
         }
 
         public InputHandler InputHandler { get; set; }
-
-        protected override void OnEnable()
+        
+        protected override void OnAwake()
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnEnable();
@@ -169,7 +169,7 @@ namespace SandPerSand
 
             InputHandler = new InputHandler(PlayerIndex);
             Debug.Print($"Player with player index {PlayerIndex} created");
-            
+
             var colliderGo = new GameObject("Player collider");
             colliderGo.Transform.Parent = Owner.Transform;
             colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);

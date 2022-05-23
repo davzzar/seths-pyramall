@@ -8,6 +8,8 @@
     {
         private bool isActive = true;
 
+        internal BehaviourState behaviourState = BehaviourState.Disabled;
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="Behaviour"/> is active and can receive <see cref="Update"/> callbacks if the <see cref="Component.Owner"/> is enabled in hierarchy.
         /// </summary>
@@ -65,12 +67,31 @@
 
         internal void OnEnableInternal()
         {
+            if (this.behaviourState != BehaviourState.Disabled)
+            {
+                return;
+            }
+
+            this.behaviourState = BehaviourState.Enabled;
             this.OnEnable();
         }
 
         internal void OnDisableInternal()
         {
+            if (this.behaviourState != BehaviourState.Enabled)
+            {
+                return;
+            }
+
+            this.behaviourState = BehaviourState.Disabled;
             this.OnDisable();
+        }
+
+        internal enum BehaviourState
+        {
+            Disabled,
+
+            Enabled
         }
     }
 }

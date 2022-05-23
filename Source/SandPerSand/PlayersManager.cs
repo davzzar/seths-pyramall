@@ -295,6 +295,7 @@ namespace SandPerSand
         {
             if (players.ContainsKey(playerIndex))
             {
+                players[playerIndex].IsEnabled = true;
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
                 players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
                 players[playerIndex].GetComponent<RigidBody>()!.IsKinematic = false;

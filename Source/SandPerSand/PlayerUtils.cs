@@ -58,21 +58,22 @@ namespace SandPerSand
 
         public static void HidePlayer(GameObject player)
         {
-            player.GetComponent<PlayerComponent>()!.RemoveCameraControlPoint();
-            player.GetComponent<SpriteRenderer>()!.IsActive = false;
-            player.GetComponent<PlayerControlComponent>()!.IsActive = false;
-            player.GetComponent<RigidBody>()!.IsKinematic = true;
-            player.GetComponent<RigidBody>()!.LinearVelocity = new Vector2(0, 0);
+            player.IsEnabled = false;
+            // player.GetComponent<PlayerComponent>()!.RemoveCameraControlPoint();
+            // player.GetComponent<SpriteRenderer>()!.IsActive = false;
+            // player.GetComponent<PlayerControlComponent>()!.IsActive = false;
+            // player.GetComponent<RigidBody>()!.IsKinematic = true;
+            // player.GetComponent<RigidBody>()!.LinearVelocity = new Vector2(0, 0);
         }
 
         public static void UnhidePlayer(GameObject player)
         {
-            
-            player.GetComponent<PlayerComponent>()!.AddCameraControlPoint();
-            player.GetComponent<SpriteRenderer>()!.IsActive = true;
-            player.GetComponent<PlayerControlComponent>()!.IsActive = true;
-            player.GetComponent<RigidBody>()!.IsKinematic = false;
-            player.GetComponent<Animator>()!.Entry();
+            player.IsEnabled = true;
+            // player.GetComponent<PlayerComponent>()!.AddCameraControlPoint();
+            // player.GetComponent<SpriteRenderer>()!.IsActive = true;
+            // player.GetComponent<PlayerControlComponent>()!.IsActive = true;
+            // player.GetComponent<RigidBody>()!.IsKinematic = false;
+            // player.GetComponent<Animator>()!.Entry();
             //player.GetComponent<PlayerComponent>()!.IsAlive = true;
         }
     }

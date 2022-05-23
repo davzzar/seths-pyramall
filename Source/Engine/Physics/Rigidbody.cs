@@ -230,6 +230,7 @@ namespace Engine
             this.body.LinearDamping = this.linearDamping;
             this.body.Mass = this.mass;
 
+            this.colliders.Clear();
             this.Owner.GetComponentsInChildren(this.colliders);
 
             foreach (var collider in this.colliders)
@@ -241,6 +242,18 @@ namespace Engine
         /// <inheritdoc />
         protected override void OnDisable()
         {
+            Debug.Assert(this.body != null);
+            
+            foreach (var collider in this.colliders)
+            {
+                collider.OwningRigidBody = null;
+            }
+
+            this.colliders.Clear();
+
+            PhysicsManager.World.Remove(this.body);
+            this.body = null;
+
             PhysicsManager.Remove(this);
         }
 
