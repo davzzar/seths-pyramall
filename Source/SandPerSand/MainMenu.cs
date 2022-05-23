@@ -128,6 +128,80 @@ namespace SandPerSand
             UI.Root = rootPanel;
         }
 
+        private void RemovePauseMenu()
+        {
+            // Reset the GUI
+            UI.Root = GraphicalUserInterface.Instance.rootPanel;
+        }
+
+        private void ShowPauseMenu()
+        {
+            var _Resume = new MenuItem();
+            _Resume.Text = "Resume";
+            _Resume.Color = Color.White;
+            _Resume.Id = "_Resume";
+            _Resume.Selected += (sender, e) =>
+            {
+                this.RemovePauseMenu();
+            };
+
+            var menuSeparator1 = new MenuSeparator();
+
+            var _ItemWiki = new MenuItem();
+            _ItemWiki.Text = "Item Wiki";
+            _ItemWiki.Color = Color.White;
+            _ItemWiki.Id = "_ItemWiki";
+
+            var menuSeparator2 = new MenuSeparator();
+
+            var _SoundSettings = new MenuItem();
+            _SoundSettings.Text = "Sound Settings";
+            _SoundSettings.Color = Color.White;
+            _SoundSettings.Id = "_SoundSettings";
+            _SoundSettings.Selected += (sender, e) =>
+            {
+                this.ShowSettings();
+            };
+
+            var _RestartGame = new MenuItem();
+            _RestartGame.Text = "Restart Game";
+            _RestartGame.Color = Color.White;
+            _RestartGame.Id = "_RestartGame";
+
+            var _ExitToMenu = new MenuItem();
+            _ExitToMenu.Text = "Exit to Main Menu";
+            _ExitToMenu.Color = Color.White;
+            _ExitToMenu.Id = "_ExitToMenu";
+
+            var _ExitToDesktop = new MenuItem();
+            _ExitToDesktop.Text = "Quit to Desktop";
+            _ExitToDesktop.Color = Color.White;
+            _ExitToDesktop.Id = "_ExitToDesktop";
+
+            var verticalMenu1 = new VerticalMenu();
+            verticalMenu1.HorizontalAlignment = Myra.Graphics2D.UI.HorizontalAlignment.Center;
+            verticalMenu1.VerticalAlignment = Myra.Graphics2D.UI.VerticalAlignment.Center;
+            verticalMenu1.SelectionHoverBackground = new SolidBrush("#B02921FF");
+            verticalMenu1.SelectionBackground = new SolidBrush("#FF9503FF");
+            verticalMenu1.BorderThickness = new Thickness(2);
+            verticalMenu1.Padding = new Thickness(0, 4);
+            verticalMenu1.Border = new SolidBrush("#202020FF");
+            verticalMenu1.Items.Add(_Resume);
+            verticalMenu1.Items.Add(menuSeparator1);
+            verticalMenu1.Items.Add(_ItemWiki);
+            verticalMenu1.Items.Add(menuSeparator2);
+            verticalMenu1.Items.Add(_SoundSettings);
+            verticalMenu1.Items.Add(_RestartGame);
+            verticalMenu1.Items.Add(_ExitToMenu);
+            verticalMenu1.Items.Add(_ExitToDesktop);
+
+            var _menuPanel = new Panel();
+            _menuPanel.Background = new SolidBrush("#000000AA");
+            _menuPanel.Widgets.Add(verticalMenu1);
+
+            UI.Root = _menuPanel;
+        }
+
         private void ShowStartGame()
         {
             var rootPanel = new Panel
