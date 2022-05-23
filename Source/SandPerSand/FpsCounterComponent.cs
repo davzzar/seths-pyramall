@@ -33,7 +33,7 @@ namespace SandPerSand
         /// <inheritdoc />
         protected override void Update()
         {
-            this.avgDeltaTime = (Time.DeltaTime + this.avgDeltaTime * 9f) / 10f;
+            this.avgDeltaTime = (Time.UnscaledDeltaTime + this.avgDeltaTime * 9f) / 10f;
             this.Fps = 1f / this.avgDeltaTime;
 
             this.textRenderer.Text = $"Total FPS: {MathF.Round(1f / this.avgDeltaTime, 3)}\n" +

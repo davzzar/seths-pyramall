@@ -51,7 +51,7 @@ namespace Engine
                     throw new ArgumentException("The time scale cannot be infinite.");
                 }
 
-                timeScale = MathF.Max(0f, value);
+                timeScale = MathF.Max(0.000001f, value);
             }
         }
 
