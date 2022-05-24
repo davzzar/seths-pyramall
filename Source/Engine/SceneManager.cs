@@ -51,7 +51,11 @@ namespace Engine
         /// Otherwise it is the <see cref="ActiveScene"/>
         /// </summary>
         [NotNull]
-        public static Scene ScopedScene => scopedScene ?? ActiveScene;
+        public static Scene ScopedScene
+        {
+            get => scopedScene ?? ActiveScene;
+            internal set => scopedScene = value;
+        }
 
         public static IReadOnlyList<Scene> OpenScenes { get; }
 
@@ -68,6 +72,7 @@ namespace Engine
             scenesToRemoveBackBuffer = new List<Scene>();
 
             activeScene = new Scene();
+            activeScene.Name = "Initial Scene";
             openScenes.Add(activeScene);
         }
 

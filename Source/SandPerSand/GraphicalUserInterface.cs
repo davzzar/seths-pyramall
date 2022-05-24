@@ -26,8 +26,20 @@ namespace SandPerSand
             {
                 if (instance == null)
                 {
-                    instance = new GraphicalUserInterface();
+                    var scene = SceneManager.ActiveScene;
+                    GameObject go;
+                    if (scene != null)
+                    {
+                        go = new GameObject("GUI stuff", scene);
+                    }
+                    else
+                    {
+                        go = new GameObject("GUI stuff");
+                    }
+
+                    instance = go.AddComponent<GraphicalUserInterface>();
                 }
+
                 return instance;
             }
         }

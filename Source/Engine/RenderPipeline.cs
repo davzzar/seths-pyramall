@@ -155,11 +155,14 @@ namespace Engine
                     
                     foreach (var renderer in this.renderers)
                     {
+                        SceneManager.ScopedScene = renderer.Owner.Scene;
                         renderer.Draw();
                     }
 
                     Graphics.SpriteBatch.End();
                 }
+
+                SceneManager.ScopedScene = null;
 
                 // Draw Gizmos if needed, don't sort draw calls
 #if DEBUG
@@ -182,11 +185,14 @@ namespace Engine
 
                     foreach (var renderer in this.guiRenderers)
                     {
+                        SceneManager.ScopedScene = renderer.Owner.Scene;
                         renderer.Draw();
                     }
 
                     Graphics.SpriteBatch.End();
                 }
+
+                SceneManager.ScopedScene = null;
 
                 Graphics.EndRender();
             }

@@ -343,7 +343,7 @@ namespace SandPerSand
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
-                    var guiGo = new GameObject();
+                    var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
             }
@@ -356,6 +356,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + this.loadedSceneIndex;
 
                 var loaderGo = new GameObject($"Loader for Scene {loadedSceneIndex}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
@@ -399,6 +400,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + index;
 
                 var loaderGo = new GameObject($"Loader for Scene {index}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[index]);
