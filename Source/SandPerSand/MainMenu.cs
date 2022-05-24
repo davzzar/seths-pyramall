@@ -190,7 +190,7 @@ namespace SandPerSand
                                 }
                                 else if (widgets[selectedItem * 2 + 1].GetType() == typeof(ComboBox))
                                 {
-                                    if (((ComboBox)widgets[index]).Items.Count - ((ComboBox)widgets[index]).SelectedIndex > 0)
+                                    if (((ComboBox)widgets[index]).Items.Count - ((ComboBox)widgets[index]).SelectedIndex - 1 > 0)
                                     {
                                         ((ComboBox)widgets[index]).SelectedIndex += 1;
                                     }
