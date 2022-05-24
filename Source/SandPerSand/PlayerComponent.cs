@@ -74,7 +74,7 @@ namespace SandPerSand
         private PlayerIndex playerIndex;
 
         private IPlayerControlState state = new InControlState();
-        private bool isAlive = true;
+        private bool isPlayerAlive = true;
         private bool initialized = false;
 
         public PlayerIndex PlayerIndex
@@ -97,21 +97,21 @@ namespace SandPerSand
             }
         }
 
-        public bool IsAlive
+        public bool IsPlayerAlive
         {
-            get => this.isAlive;
+            get => this.isPlayerAlive;
             set
             {
-                if (this.isAlive == value)
+                if (this.isPlayerAlive == value)
                 {
                     return;
                 }
 
-                this.isAlive = value;
+                this.isPlayerAlive = value;
                 
                 Color color;
 
-                if (this.isAlive)// dead -> alive
+                if (this.isPlayerAlive)// dead -> alive
                 {
                     color = Color.White;
                     // enable collision
@@ -262,7 +262,7 @@ namespace SandPerSand
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P))
             {
-                this.IsAlive = !this.IsAlive;
+                this.IsPlayerAlive = !this.IsPlayerAlive;
             }
 
             base.Update();

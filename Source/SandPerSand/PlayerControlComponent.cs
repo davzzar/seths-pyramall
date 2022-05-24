@@ -149,6 +149,8 @@ namespace SandPerSand
 
             onScreenControls = Owner.GetComponentInChildren<OnScreenControlController>();
 
+            this.Owner.GetComponent<PlayerComponent>()!.IsPlayerAlive = true;
+
             this.HasSandReachedBefore = false;
         }
 
@@ -248,7 +250,7 @@ namespace SandPerSand
             ShowDebug();
             #endif
 
-            if (!Owner.GetComponent<PlayerComponent>()?.IsAlive ?? false)
+            if (!Owner.GetComponent<PlayerComponent>()?.IsPlayerAlive ?? false)
             {
                 return;
             }
@@ -318,7 +320,7 @@ namespace SandPerSand
                     
                     if (player != null)
                     {
-                        player.IsAlive = false;
+                        player.IsPlayerAlive = false;
                         Debug.WriteLine("Player IsAlive set to false.");
                     } else
                     {

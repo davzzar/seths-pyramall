@@ -208,7 +208,7 @@ namespace Engine
                 }
             }
 
-            if (rigidBody == null)
+            if(rigidBody == null)
             {
                 this.body = PhysicsManager.World.CreateBody(this.Transform.Position, this.Transform.Rotation);
                 Debug.Assert(this.body != null);
