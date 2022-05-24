@@ -15,9 +15,11 @@ using Myra.Graphics2D.UI;
 
 namespace SandPerSand
 {
-    public class MainMenu : Component
+    public class MainMenu : Behaviour
     {
         // STYLESHEET
+
+        private MenuState menuState = MenuState.Main;
 
         private FontSystem _fontSystem;
 
@@ -27,12 +29,262 @@ namespace SandPerSand
 
         private int currentItemIndex;
 
+        private VerticalStackPanel rootStack;
+        private Grid rootGrid;
+        private int selectedItem = 0;
+        InputHandler inputHandler;
+        bool release = true;
+        bool releaseX = true;
+        bool aRelease = true;
+
         (int x, int y, string text)[] Resolutions = new (int x, int y, string text)[] {
                 (1280, 720, "1280x720 (16:9)"),
                 (1920, 1080, "1920x1080 (16:9)"),
                 (2560, 1440, "2560x1440 (16:9)"),
                 (3840, 2160, "3840x2160 (16:9)"),
             };
+        int resSelect = 0;
+
+        protected override void Update()
+        {
+            base.Update();
+
+            if(UI.Root.GetType() == typeof(Panel))
+            {
+                if (menuState == MenuState.Main || menuState == MenuState.Play)
+                {
+                    var widgets = rootStack.Widgets;
+
+                    // Check the device for Player One
+                    GamePadCapabilities capabilities = GamePad.GetCapabilities(PlayerIndex.One);
+
+                    // If there a controller attached, handle it
+                    if (capabilities.IsConnected)
+                    {
+                        // Get the current state of Controller1
+                        GamePadState state = GamePad.GetState(PlayerIndex.One);
+
+                        if (capabilities.HasLeftYThumbStick)
+                        {
+                            if ((state.DPad.Down == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.Y < -.5f) && release)
+                            {
+                                selectedItem++;
+                                release = false;
+                            }
+                            else if ((state.DPad.Up == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.Y > .5f) && release)
+                            {
+                                selectedItem--;
+                                release = false;
+                            }
+                            else if (state.DPad.Up == Microsoft.Xna.Framework.Input.ButtonState.Released && state.DPad.Down == Microsoft.Xna.Framework.Input.ButtonState.Released && Math.Abs(state.ThumbSticks.Left.Y) < .5f)
+                            {
+                                release = true;
+                            }
+                        }
+
+                        if (capabilities.HasAButton)
+                        {
+                            if (state.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed && aRelease)
+                            {
+                                ((TextButton)widgets[selectedItem + 1]).DoClick();
+                                selectedItem = 0;
+                                aRelease = false;
+                            }
+                            else if (state.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                            {
+                                aRelease = true;
+                            }
+                        }
+                    }
+
+                    if (selectedItem > widgets.Count - 2)
+                    {
+                        selectedItem = 0;
+                    }
+                    else if (selectedItem < 0)
+                    {
+                        selectedItem = widgets.Count - 2;
+                    }
+
+                    for (int i = 1; i < widgets.Count; i++)
+                    {
+                        if (i - 1 == selectedItem)
+                        {
+                            ((TextButton)widgets[i]).IsPressed = true;
+                        }
+                        else
+                        {
+                            ((TextButton)widgets[i]).IsPressed = false;
+                        }
+                    }
+                } else if (menuState == MenuState.Settings)
+                {
+                    var widgets = rootGrid.Widgets;
+
+                    // Check the device for Player One
+                    GamePadCapabilities capabilities = GamePad.GetCapabilities(PlayerIndex.One);
+
+                    // If there a controller attached, handle it
+                    if (capabilities.IsConnected)
+                    {
+                        // Get the current state of Controller1
+                        GamePadState state = GamePad.GetState(PlayerIndex.One);
+
+                        if (capabilities.HasLeftYThumbStick)
+                        {
+                            if ((state.DPad.Down == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.Y < -.5f) && release)
+                            {
+                                selectedItem++;
+                                release = false;
+                            }
+                            else if ((state.DPad.Up == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.Y > .5f) && release)
+                            {
+                                selectedItem--;
+                                release = false;
+                            }
+                            else if (state.DPad.Up == Microsoft.Xna.Framework.Input.ButtonState.Released && state.DPad.Down == Microsoft.Xna.Framework.Input.ButtonState.Released && Math.Abs(state.ThumbSticks.Left.Y) < .5f)
+                            {
+                                release = true;
+                            }
+                        }
+                        if (capabilities.HasLeftXThumbStick)
+                        {
+                            if ((state.DPad.Left == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.X < -.5f) && releaseX)
+                            {
+                                int index = selectedItem * 2 + 1;
+                                if (index > widgets.Count){}
+                                else if (widgets[selectedItem * 2 + 1].GetType() == typeof(HorizontalSlider))
+                                {
+                                    if (((HorizontalSlider)widgets[index]).Value <= 10)
+                                    {
+                                        ((HorizontalSlider)widgets[index]).Value = 0;
+                                    }
+                                    else
+                                    {
+                                        ((HorizontalSlider)widgets[index]).Value -= 10f;
+                                    } 
+                                }
+                                else if (widgets[selectedItem * 2 + 1].GetType() == typeof(ComboBox))
+                                {
+                                    if (((ComboBox)widgets[index]).SelectedIndex > 0)
+                                    {
+                                        ((ComboBox)widgets[index]).SelectedIndex -= 1;
+                                    }
+                                }
+                                releaseX = false;
+                            }
+                            else if ((state.DPad.Right == Microsoft.Xna.Framework.Input.ButtonState.Pressed || state.ThumbSticks.Left.X > .5f) && releaseX)
+                            {
+                                int index = selectedItem * 2 + 1;
+                                if (index > widgets.Count){}
+                                else if (widgets[selectedItem * 2 + 1].GetType() == typeof(HorizontalSlider))
+                                {
+                                    if (((HorizontalSlider)widgets[index]).Value >= 90)
+                                    {
+                                        ((HorizontalSlider)widgets[index]).Value = 100;
+                                    }
+                                    else
+                                    {
+                                        ((HorizontalSlider)widgets[index]).Value += 10f;
+                                    }
+                                }
+                                else if (widgets[selectedItem * 2 + 1].GetType() == typeof(ComboBox))
+                                {
+                                    if (((ComboBox)widgets[index]).Items.Count - ((ComboBox)widgets[index]).SelectedIndex - 1 > 0)
+                                    {
+                                        ((ComboBox)widgets[index]).SelectedIndex += 1;
+                                    }
+                                }
+                                releaseX = false;
+                            }
+                            else if (state.DPad.Left == Microsoft.Xna.Framework.Input.ButtonState.Released && state.DPad.Right == Microsoft.Xna.Framework.Input.ButtonState.Released && Math.Abs(state.ThumbSticks.Left.X) < .5f)
+                            {
+                                releaseX = true;
+                            }
+                        }
+
+                        if (capabilities.HasAButton)
+                        {
+                            if (state.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Pressed && aRelease)
+                            {
+                                if (widgets.Count / 2 == selectedItem)
+                                {
+                                    ((TextButton)rootStack.Widgets[2]).DoClick();
+                                    selectedItem = 0;
+                                }
+                                else if (widgets[selectedItem * 2 + 1].GetType() == typeof(CheckBox))
+                                {
+                                    ((CheckBox)widgets[selectedItem * 2 + 1]).IsChecked = !((CheckBox)widgets[selectedItem * 2 + 1]).IsChecked;
+                                }
+                                aRelease = false;
+                            }
+                            else if (state.Buttons.A == Microsoft.Xna.Framework.Input.ButtonState.Released)
+                            {
+                                aRelease = true;
+                            }
+                        }
+                    }
+
+                    if (selectedItem > widgets.Count / 2 + 1)
+                    {
+                        selectedItem = 0;
+                    }
+                    else if (selectedItem < 0)
+                    {
+                        selectedItem = (widgets.Count / 2);
+                    }
+
+                    for (int i = 0; i < widgets.Count / 2 + 1; i++)
+                    {
+                        int index = 2 * i + 1;
+                        if (i == selectedItem)
+                        {
+                            if(i == 4)
+                            {
+                                ((TextButton)rootStack.Widgets[2]).IsPressed = true;
+                            }
+                            else if(widgets[index].GetType() == typeof(HorizontalSlider))
+                            {
+                                ((HorizontalSlider)widgets[index]).ImageButton.IsPressed = true;
+                            }
+                            else if (widgets[index].GetType() == typeof(CheckBox))
+                            {
+                                ((CheckBox)widgets[index]).Border = new SolidBrush(Color.CornflowerBlue);
+                            }
+                            else if (widgets[index].GetType() == typeof(ComboBox))
+                            {
+                                ((ComboBox)widgets[index]).Border = new SolidBrush(Color.CornflowerBlue);
+                            }
+                        }
+                        else
+                        {
+                            if (i == 4)
+                            {
+                                ((TextButton)rootStack.Widgets[2]).IsPressed = false;
+                            }
+                            else if (widgets[index].GetType() == typeof(HorizontalSlider))
+                            {
+                                ((HorizontalSlider)widgets[index]).ImageButton.IsPressed = false;
+                            }
+                            else if (widgets[index].GetType() == typeof(CheckBox))
+                            {
+                                ((CheckBox)widgets[index]).Border = new SolidBrush(Color.Transparent);
+
+                            }
+                            else if (widgets[index].GetType() == typeof(ComboBox))
+                            {
+                                ((ComboBox)widgets[index]).Border = new SolidBrush(Color.Transparent);
+                            }
+                        }
+                    }
+                }
+                else if (menuState == MenuState.ItemWiki)
+                {
+
+                }
+            }
+        }
+
 
         private TextButton createTextButton(string Text)
         {
@@ -45,6 +297,7 @@ namespace SandPerSand
                 Font = _fontSystem.GetFont(32),
                 Background = new SolidBrush(new Color(155,34,38)),
                 PressedTextColor = Color.White,
+                Id = Text,
             };
             return button;
         }
@@ -72,6 +325,7 @@ namespace SandPerSand
 
         private void ShowMainMenu()
         {
+            menuState = MenuState.Main;
             var rootPanel = new Panel
             {
                 Background = this.BackgroundBrush
@@ -122,6 +376,7 @@ namespace SandPerSand
             panel.AddChild(settingsButton);
             panel.AddChild(itemWikiButton);
             panel.AddChild(exitButton);
+            rootStack = panel;
 
             rootPanel.AddChild(panel);
 
@@ -130,6 +385,7 @@ namespace SandPerSand
 
         private void ShowStartGame()
         {
+            menuState = MenuState.Play;
             var rootPanel = new Panel
             {
                 Background = this.BackgroundBrush
@@ -154,7 +410,7 @@ namespace SandPerSand
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(3);
-                UI.Root = null;
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
             };*/
 
             // Create Mode 2 Button
@@ -164,9 +420,8 @@ namespace SandPerSand
             Mode2Button.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                GameStateManager.Instance.InMenu = false;
                 loadManager.LoadAt(1);
-                UI.Root = null;
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
             };
 
             // Create Exit to Menu
@@ -176,7 +431,7 @@ namespace SandPerSand
             {
                 this.ShowMainMenu();
             };
-
+            rootStack = levelSelectorPanel;
             levelSelectorPanel.AddChild(titleLevelSelection);
             //levelSelectorPanel.AddChild(Mode1Button);
             levelSelectorPanel.AddChild(Mode2Button);
@@ -250,11 +505,58 @@ namespace SandPerSand
             ResolutionSelectorText.GridColumn = 0;
             ResolutionSelectorText.HorizontalAlignment = HorizontalAlignment.Left;
 
+            //var ResolutionSelector = new Grid()
+            //{
+            //    GridRow = 2,
+            //    GridColumn = 1,
+            //    RowSpacing = 1,
+            //    ColumnSpacing = 3,
+            //};
+
+            //var buttonLeft = createTextButton("<");
+            //buttonLeft.GridColumn = 0;
+            //buttonLeft.GridRow = 0;
+            //var buttonRight = createTextButton(">");
+            //buttonRight.GridColumn = 3;
+            //buttonRight.GridRow = 0;
+            //var buttonMid = createTextButton(Resolutions[resSelect].text);
+            //buttonMid.GridColumn = 2;
+            //buttonMid.GridRow = 0;
+
+
+            //buttonLeft.Click += (sender, e) =>
+            //{
+            //    if (resSelect < 0)
+            //    {
+            //        resSelect--;
+            //        buttonMid.Text = Resolutions[resSelect].text;
+            //    }
+            //};
+
+            //buttonLeft.Click += (sender, e) =>
+            //{
+            //    if (Resolutions[resSelect + 1].x <= GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width || Resolutions[resSelect + 1].x <= GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height)
+            //    {
+            //        resSelect--;
+            //        buttonMid.Text = Resolutions[resSelect].text;
+            //    }
+            //};
+            //buttonMid.Click += (sender, e) =>
+            //{
+            //    var index = resSelect;
+            //    this.BackgroundBrush = new TextureRegion(this.BackgroundTexture, new Rectangle(0, 0, Resolutions[index].x, Resolutions[index].y));
+            //    var res = new Engine.Int2(Resolutions[index].x, Resolutions[index].y);
+            //    GameEngine.Instance.Resolution = res;
+            //};
+
+
+
             var ResolutionSelector = new ComboBox()
             {
                 GridRow = 2,
                 GridColumn = 1,
-            };
+                BorderThickness = new Thickness(5),
+        };
 
             foreach (var res in Resolutions)
             {
@@ -290,6 +592,7 @@ namespace SandPerSand
                 GridRow = 3,
                 GridColumn = 1,
                 HorizontalAlignment = HorizontalAlignment.Right,
+                BorderThickness = new Thickness(5),
             };
 
             ToggleFullscreen.PressedChanged += (sender, e) =>
@@ -328,11 +631,17 @@ namespace SandPerSand
 
             rootPanel.AddChild(SettingsPanel);
 
+            rootGrid = SettingsGrid;
+            rootStack = SettingsPanel;
+            menuState = MenuState.Settings;
+
             UI.Root = rootPanel;
+
         }
 
         private void ShowItemWiki()
         {
+            menuState = MenuState.ItemWiki;
             var rootPanel = new Panel
             {
                 Background = this.BackgroundBrush
@@ -511,6 +820,8 @@ namespace SandPerSand
 
         protected override void OnAwake()
         {
+
+            inputHandler = new InputHandler(PlayerIndex.One);
             _fontSystem = new FontSystem();
             _fontSystem.AddFont(File.ReadAllBytes(@"Content/Fonts/Retro_Gaming.ttf"));
 
@@ -523,5 +834,16 @@ namespace SandPerSand
             
             UI.IsMouseVisible = true;
         }
+
+
+
+
     }
+}
+public enum MenuState
+{
+    Main,
+    Play,
+    Settings,
+    ItemWiki,
 }

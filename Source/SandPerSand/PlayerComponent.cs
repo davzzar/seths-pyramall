@@ -74,7 +74,7 @@ namespace SandPerSand
         private PlayerIndex playerIndex;
 
         private IPlayerControlState state = new InControlState();
-        private bool isAlive = true;
+        private bool isPlayerAlive = true;
         private bool initialized = false;
 
         public PlayerIndex PlayerIndex
@@ -97,21 +97,21 @@ namespace SandPerSand
             }
         }
 
-        public bool IsAlive
+        public bool IsPlayerAlive
         {
-            get => this.isAlive;
+            get => this.isPlayerAlive;
             set
             {
-                if (this.isAlive == value)
+                if (this.isPlayerAlive == value)
                 {
                     return;
                 }
 
-                this.isAlive = value;
+                this.isPlayerAlive = value;
                 
                 Color color;
 
-                if (this.isAlive)// dead -> alive
+                if (this.isPlayerAlive)// dead -> alive
                 {
                     color = Color.White;
                     // enable collision
@@ -125,15 +125,8 @@ namespace SandPerSand
                     color = Color.DarkGray * 0.8f;
                     // disable colision
                     Owner.GetComponentInChildren<Collider>().IsActive = false;
-                    // hide sprite after 10s( or at RoundCheck)
-                    Owner.AddComponent<GoTimer>().Init(10f,() =>
-                    {
-                        if (!Owner.GetComponent<PlayerStates>()!.IsAlive)
-                        {
-                            Owner.GetComponent<SpriteRenderer>()!.IsActive = false;
-                        }
-                    });
                     RemoveCameraControlPoint();
+                    // hide sprite on exit of RoundCheckState
                 }
                 
                 var renderer = Owner.GetComponent<SpriteRenderer>();
@@ -157,8 +150,8 @@ namespace SandPerSand
         }
 
         public InputHandler InputHandler { get; set; }
-
-        protected override void OnEnable()
+        
+        protected override void OnAwake()
         {
             // Note that PlayerIndex is always One when OnAwake is called. It needs to be updated whenever we update the index.
             base.OnEnable();
@@ -176,7 +169,7 @@ namespace SandPerSand
 
             InputHandler = new InputHandler(PlayerIndex);
             Debug.Print($"Player with player index {PlayerIndex} created");
-            
+
             var colliderGo = new GameObject("Player collider");
             colliderGo.Transform.Parent = Owner.Transform;
             colliderGo.Transform.LocalPosition = new Vector2(0, -0.17f);
@@ -237,8 +230,10 @@ namespace SandPerSand
             var cameraControlPoint = Owner.GetOrAddComponent<CameraControlPoint>();
             cameraControlPoint.Margin = new Border(5, 10, 5, 5);
 
-            var itemsManager = Owner.GetOrAddComponent<ItemManager>();
+            var itemsManager = Owner.GetOrAddComponent<Items.ItemManager>();
             itemsManager.inputHandler = InputHandler;
+
+            var itemsRenderer = Owner.GetOrAddComponent<Items.ItemRenderer>();
 
             // Subscribe to events
             // disable the timerBar when it fills up so it is not shown.
@@ -267,7 +262,7 @@ namespace SandPerSand
         {
             if (Keyboard.GetState().IsKeyDown(Keys.P))
             {
-                this.IsAlive = !this.IsAlive;
+                this.IsPlayerAlive = !this.IsPlayerAlive;
             }
 
             base.Update();

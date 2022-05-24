@@ -36,6 +36,8 @@ namespace SandPerSand
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
+            var stateGo = Template.MakeGameStateManager();
+
             var itemwiki = managerGo.AddComponent<ItemWiki>();
             itemwiki.LoadFromContent("TilesetItems");
 
@@ -316,15 +318,51 @@ namespace SandPerSand
 
             private Scene loadedScene;
 
+            protected override void OnAwake()
+            {
+                base.OnAwake();
+                var realGSM = GameObject.FindComponent<RealGameStateManager>();
+                realGSM.GetState<InShopState>().OnEnter += (sender, fromState) => {
+                    LoadShopScene();
+                };
+                realGSM.GetState<PreRoundState>().OnEnter += (sender, fromState) => {
+                    if (fromState.GetType() == typeof(InShopState))
+                    {
+                        LoadLevelScene();
+                    }
+                    else if (fromState.GetType() == typeof(RoundCheckState))
+                    {
+                        Reload();
+                    }
+                };
+            }
+
             public void LoadAt(int index)
             {
                 this.RunSceneLoader(index);
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
-                    var guiGo = new GameObject();
+                    var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
+            }
+
+            public void Reload()
+            {
+                if (this.loadedScene != null)
+                {
+                    SceneManager.UnloadScene(this.loadedScene);
+                }
+
+                var scene = new Scene();
+                scene.Name = "Scene " + this.loadedSceneIndex;
+
+                var loaderGo = new GameObject($"Loader for Scene {loadedSceneIndex}", scene);
+                loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
+
+                this.loadedScene = scene;
+                SceneManager.LoadSceneAdditive(this.loadedScene);
             }
 
             /// <inheritdoc />
@@ -362,6 +400,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + index;
 
                 var loaderGo = new GameObject($"Loader for Scene {index}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[index]);
@@ -370,6 +409,17 @@ namespace SandPerSand
                 this.loadedSceneIndex = index;
 
                 SceneManager.LoadSceneAdditive(this.loadedScene);
+            }
+
+            // FIXME hard code 
+            private void LoadShopScene()
+            {
+                LoadAt(3);
+            }
+            // FIXME hard code 
+            private void LoadLevelScene()
+            {
+                LoadAt(1);
             }
         }
 

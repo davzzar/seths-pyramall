@@ -60,7 +60,7 @@ namespace SandPerSand
             //              !isGrounded && JumpButtonPressed && CanUseCoyote
             jumpFlag = playerControler.WillJump;
             sandReachedFlag = playerControler.HasSandReached;
-            dieFlag = !playerComp.IsAlive;
+            dieFlag = !playerComp.IsPlayerAlive;
             // TODO set these flags correctly
             collectFlag = false;
 
