@@ -19,11 +19,16 @@ namespace SandPerSand
 {
     public class GraphicalUserInterface : Behaviour
     {
-        public static GraphicalUserInterface Instance
+        private static GraphicalUserInterface instance;
+        internal static GraphicalUserInterface Instance
         {
             get
             {
-                return GameObject.FindComponent<GraphicalUserInterface>();
+                if (instance == null)
+                {
+                    instance = new GraphicalUserInterface();
+                }
+                return instance;
             }
         }
 
@@ -150,7 +155,7 @@ namespace SandPerSand
 
         public GraphicalUserInterface()
         {
-
+            instance = this;
             guiGo = new GameObject();
             guiGo.Transform.LocalPosition = new Vector2(0f, 0f);
         }
@@ -161,10 +166,10 @@ namespace SandPerSand
 
             if(GameStateManager.Instance.CurrentState == GameState.RoundStartCountdown)
             {
-                MidscreenTextPanel.Text = String.Format("{0:0}", 3 - GameStateManager.Instance.CountDowncounter);
+                MidscreenTextPanel.Text = String.Format("{0:0}", 3 - GameObject.FindComponent<RealGameStateManager>().CurrentState.CountDowncounter);
             }else if (GameStateManager.Instance.CurrentState == GameState.CountDown)
             {
-                MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameStateManager.Instance.CountDowncounter) + " Seconds to Finish the Round";
+                MidscreenTextPanel.Text = String.Format("{0:0.0}", 10f - GameObject.FindComponent<RealGameStateManager>().CurrentState.CountDowncounter) + " Seconds to Finish the Round";
             } else if (GameStateManager.Instance.CurrentState == GameState.Shop)
             {
                 List<(int score, PlayerIndex index)> scores = new List<(int rank, PlayerIndex index)>();
