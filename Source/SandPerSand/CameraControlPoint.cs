@@ -2,7 +2,7 @@
 
 namespace SandPerSand
 {
-    public sealed class CameraControlPoint : Component
+    public sealed class CameraControlPoint : Behaviour
     {
         public bool AffectsHorizontal { get; set; } = true;
 
@@ -11,13 +11,13 @@ namespace SandPerSand
         public Border Margin { get; set; } = Border.Zero;
 
         /// <inheritdoc />
-        protected override void OnAwake()
+        protected override void OnEnable()
         {
             CameraController2.AddControlPoint(this);
         }
 
         /// <inheritdoc />
-        protected override void OnDestroy()
+        protected override void OnDisable()
         {
             CameraController2.RemoveControlPoint(this);
         }
