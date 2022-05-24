@@ -22,7 +22,7 @@ namespace SandPerSand.SandSim
 
         public Color StableSandColor { get; set; } = new Color(202, 103, 2);
         public int[,] StableSandColorOffset;
-        public int StableSandColourRange = 1000;
+        public int StableSandColourRange = 2000;
 
         public Color FlowingSandColor { get; set; } = new Color(196, 88, 47);
         public uint FlowingSandOffset = 0;
