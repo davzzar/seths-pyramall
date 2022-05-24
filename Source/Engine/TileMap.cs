@@ -9,13 +9,18 @@ using System.Diagnostics;
 
 namespace Engine
 {
-    public sealed class TileMap<T> : Component where T : TileLayer,new()
+    public abstract class TileMapBase : Component
+    {
+        public abstract Vector2 Size { get; }
+    }
+
+    public sealed class TileMap<T> : TileMapBase where T : TileLayer,new()
     {
         private string loadFromContentMapPath;
 
         private TiledMap sourceMap;
 
-        public Vector2 Size {
+        public override Vector2 Size {
             get {
                 return new Vector2(sourceMap.Width, sourceMap.Height);
             }
