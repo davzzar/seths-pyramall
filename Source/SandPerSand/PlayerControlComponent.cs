@@ -224,18 +224,7 @@ namespace SandPerSand
             }
             if (WillHardJump)
             {
-                // TODO breakthroughsand effect
-                var position = Owner.Transform.Position;
-                var effectGo = new GameObject("BreakThroughSand Effect");
-
-                
-                // just copied these code to make the jump works ...
-                CoyoteEnabled = false;
-                jumpEnded = false;
-                timeOfLeavingGround = float.MinValue;
-                isSandEscapeJump = true;
-                PerformJump();
-                ApplyVelocity();
+                PerformHardJump();
                 // reset control timers in advance if hard jump is performed
                 canHardJump = false;
                 blockHControl = false;
@@ -547,6 +536,19 @@ namespace SandPerSand
             }
 
             VerticalSpeed += jumpSpeed;
+        }
+
+        /// <summary>
+        /// Trigger on jump input near sand stream
+        /// Hand over control to HardJumpController
+        /// </summary>
+        private void PerformHardJump()
+        {
+            // TODO breakthroughsand effect
+            var position = Owner.Transform.Position;
+            var effectGo = new GameObject("BreakThroughSand Effect");
+            var hardJumpComp = Owner.GetOrAddComponent<HardJumpController>();
+            hardJumpComp.IsActive = true;
         }
 
 
