@@ -51,7 +51,7 @@ namespace SandPerSand
             Debug.Print($"HardJumpController Given JumpVelo:{JumpVelo}");
 
             // TODO breakthroughsand effect
-            var inPlacePSGo = Template.MakeJumpThroughSandEffect(StartPosition,-JumpVelo*0.3f);
+            var inPlacePSGo = Template.MakeJumpThroughSandEffectInPlace(StartPosition,-JumpVelo*0.3f);
             playerPSGo = Template.MakeJumpThroughSandEffect(StartPosition,-JumpVelo*0.3f);
             playerPSGo.Transform.Parent = Owner.Transform;
             playerPSGo.Transform.LocalPosition = Vector2.Zero;
@@ -82,11 +82,7 @@ namespace SandPerSand
             controlComp.IsActive = true;
             rigidBody.LinearVelocity = JumpVelo * (
                 PlayerControlComponent.MaxHorizontalSpeed / Math.Abs(JumpVelo.X));
-            if(playerPSGo!=null&& playerPSGo.IsAlive)
-            {
-                playerPSGo.Destroy();
-                playerPSGo = null;
-            }
+
         }
     }
 }
