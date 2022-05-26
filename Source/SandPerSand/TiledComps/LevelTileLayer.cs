@@ -123,7 +123,10 @@ namespace SandPerSand
 
                     sandSim.AddSandSource(new Aabb(pos.X, pos.Y, size / 64f, size / 64f));
                     //sandSim.AddSandSource(new Aabb(29f, 48.5f, 0.2f, 0.2f));
-
+                    break;
+                case "Background":
+                    // Add Renderer
+                    _ = AddTileRenderer(newTileGo, tile);
                     break;
             }
         }

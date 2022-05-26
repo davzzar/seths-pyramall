@@ -601,11 +601,11 @@ namespace SandPerSand
                 else if (!PursueItems[i].pursue)
                 {
                     bool updated = false;
-                    for (var j = 0; j < ActiveItems.Count; i++)
+                    for (var j = 0; j < ActiveItems.Count; j++)
                     {
-                        if (PursueItems[j].Id == ActiveItems[j].Id)
+                        if (PursueItems[i].Id == ActiveItems[j].Id)
                         {
-                            ActiveItems[j].TimeLeft = PursueItems[j].TotTime;
+                            ActiveItems[j].TimeLeft = PursueItems[i].TotTime;
                             updated = true;
                             break;
                         }
