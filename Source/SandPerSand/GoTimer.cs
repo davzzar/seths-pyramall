@@ -18,8 +18,10 @@ namespace SandPerSand
             if (CountDown <= 0)
             {
                 Fire();
-                Debug.Assert(IsAlive);
-                Destroy();
+                if (IsAlive)
+                {
+                    Destroy();
+                }
                 return;
             }
             CountDown -= Time.DeltaTime;

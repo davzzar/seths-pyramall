@@ -13,10 +13,9 @@ namespace SandPerSand
         private bool firstUpdate = false;
         private RigidBody rigidBody;
         private PlayerControlComponent controlComp;
-
-
         public Vector2 StartPosition;
         public Vector2 JumpVelo;
+        GameObject playerPSGo;
         public float JumpDistance = Conf.HardJumpDistance;
         protected override void OnEnable()
         {
@@ -25,7 +24,19 @@ namespace SandPerSand
             controlComp.IsActive = false;
 
             // record starting position
-            StartPosition = Owner.Transform.Position;
+            Vector2 distance = Transform.Position - StartPosition;
+            // TODO hard code
+            // TODO redundent check
+            if (distance.Length() >= 2f)
+            {
+                StartPosition = Owner.Transform.Position;
+            }
+            else
+            {
+                // TODO move towards instead of teleport
+                Owner.Transform.Position = StartPosition;
+            }
+
             // Give a Velocity
             rigidBody = Owner.GetComponent<RigidBody>();
             JumpVelo = Conf.HardJumpVelocity;
@@ -38,6 +49,12 @@ namespace SandPerSand
             // need better solution
             firstUpdate = true;
             Debug.Print($"HardJumpController Given JumpVelo:{JumpVelo}");
+
+            // TODO breakthroughsand effect
+            var inPlacePSGo = Template.MakeJumpThroughSandEffect(StartPosition,-JumpVelo*0.3f);
+            playerPSGo = Template.MakeJumpThroughSandEffect(StartPosition,-JumpVelo*0.3f);
+            playerPSGo.Transform.Parent = Owner.Transform;
+            playerPSGo.Transform.LocalPosition = Vector2.Zero;
         }
 
         protected override void Update()
@@ -65,6 +82,11 @@ namespace SandPerSand
             controlComp.IsActive = true;
             rigidBody.LinearVelocity = JumpVelo * (
                 PlayerControlComponent.MaxHorizontalSpeed / Math.Abs(JumpVelo.X));
+            if(playerPSGo!=null&& playerPSGo.IsAlive)
+            {
+                playerPSGo.Destroy();
+                playerPSGo = null;
+            }
         }
     }
 }

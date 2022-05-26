@@ -29,6 +29,7 @@ namespace SandPerSand
         // Hard Jump
         public bool WillHardJump => CanHardJump&& JumpButtonPressed;
         private bool couldHardJump = false;
+        private Vector2 HardJumpPosition; 
         private bool CanHardJump
         {
             get
@@ -67,6 +68,7 @@ namespace SandPerSand
                             haloGo.IsEnabled = true;
                         }
                         couldHardJump = true;
+                        HardJumpPosition = detectPosition;
                         return couldHardJump;
                     }
                 }
@@ -556,10 +558,8 @@ namespace SandPerSand
         /// </summary>
         private void PerformHardJump()
         {
-            // TODO breakthroughsand effect
-            var position = Owner.Transform.Position;
-            var effectGo = new GameObject("BreakThroughSand Effect");
             var hardJumpComp = Owner.GetOrAddComponent<HardJumpController>();
+            hardJumpComp.StartPosition = HardJumpPosition;
             hardJumpComp.IsActive = true;
         }
 
