@@ -12,23 +12,30 @@ namespace SandPerSand
     {
         private bool firstUpdate = false;
         private RigidBody rigidBody;
+        private PlayerControlComponent controlComp;
+
+
         public Vector2 StartPosition;
-        public Vector2 JumpVelo = Conf.Dist.HardJumpVelocity;
-        public float JumpDistance = Conf.Dist.HardJumpDistance;
+        public Vector2 JumpVelo;
+        public float JumpDistance = Conf.HardJumpDistance;
         protected override void OnEnable()
         {
+            // disable PlayerControlComponent
+            controlComp = Owner.GetComponent<PlayerControlComponent>();
+            controlComp.IsActive = false;
+
             // record starting position
             StartPosition = Owner.Transform.Position;
-
-            // disable PlayerControlComponent
-            var controlComp = Owner.GetComponent<PlayerControlComponent>();
-            controlComp.IsActive = false;
             // Give a Velocity
             rigidBody = Owner.GetComponent<RigidBody>();
+            JumpVelo = Conf.HardJumpVelocity;
+            if (rigidBody.LinearVelocity.X < 0)
+            {
+                JumpVelo.X = -JumpVelo.X;
+            }
             // TODO if I set it here, the LinearVelocity
             // will not be equal to the given JumpVelo from the first Update
             // need better solution
-            // rigidBody.LinearVelocity = JumpVelo;
             firstUpdate = true;
             Debug.Print($"HardJumpController Given JumpVelo:{JumpVelo}");
         }
@@ -37,20 +44,11 @@ namespace SandPerSand
         {
             if (firstUpdate)
             {
-                if (rigidBody.LinearVelocity.X >= 0)
-                {
-                    JumpVelo.X = Math.Abs(JumpVelo.X);
-                }
-                else
-                {
-                    JumpVelo.X = -Math.Abs(JumpVelo.X);
-                }
                 rigidBody.LinearVelocity = JumpVelo;
                 firstUpdate = false;
             }
             // if collision happen or reached the goal
             // stop hard jumping and hand over control to PlayerControlComponent
-            // note: if 
             if(Math.Abs(Owner.Transform.Position.X - StartPosition.X) > JumpDistance ||
                 // collision happening TODO better way of handling collision
                 rigidBody.LinearVelocity != JumpVelo)
@@ -64,10 +62,9 @@ namespace SandPerSand
         {
             // TODO I smelt bug,
             // what if someone want to set controlComp.IsActive = false during the hard jump
-            var controlComp = Owner.GetComponent<PlayerControlComponent>();
             controlComp.IsActive = true;
-            rigidBody = Owner.GetComponent<RigidBody>();
-            rigidBody.LinearVelocity = Vector2.Zero;
+            rigidBody.LinearVelocity = JumpVelo * (
+                PlayerControlComponent.MaxHorizontalSpeed / Math.Abs(JumpVelo.X));
         }
     }
 }

@@ -37,11 +37,8 @@ namespace SandPerSand
         }
 
 
-        public static class Dist
-        {
-            public static Vector2 HardJumpVelocity = new Vector2(27, 16);
-            public static float HardJumpDistance = 3f;
-        }
+        public static Vector2 HardJumpVelocity = new Vector2(27, 16);
+        public static float HardJumpDistance = 3f;
 
 
     }
