@@ -486,7 +486,7 @@ namespace SandPerSand
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
 
-                CreateMap("biglevel2");
+                CreateMap("test_level_1");
                 CreateCamera();
             }
         }

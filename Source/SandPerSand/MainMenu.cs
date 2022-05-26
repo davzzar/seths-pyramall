@@ -40,7 +40,7 @@ namespace SandPerSand
         (int x, int y, string text)[] Resolutions = new (int x, int y, string text)[] {
                 (1280, 720, "1280x720 (16:9)"),
                 (1920, 1080, "1920x1080 (16:9)"),
-                (2560, 1440, "2560x1440 (16:9)"),
+                (2500, 1440, "2560x1440 (16:9)"),
                 (3840, 2160, "3840x2160 (16:9)"),
             };
         int resSelect = 0;
