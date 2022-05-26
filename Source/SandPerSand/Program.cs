@@ -115,7 +115,6 @@ namespace SandPerSand
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
 
-            
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);

@@ -33,6 +33,11 @@ namespace Engine
         public static Camera CurrentCamera => instance.currentCamera;
 
         /// <summary>
+        /// Gets the current world to view matrix.
+        /// </summary>
+        public static ref Matrix3x3 CurrentWorldToView => ref instance.currentWorldToView;
+
+        /// <summary>
         /// Gets or sets the background color for the scene.
         /// </summary>
         public static Color BackgroundColor { get; set; } = new Color(37, 9, 25);
@@ -163,6 +168,7 @@ namespace Engine
             }
 
             instance.currentCamera = null;
+            instance.currentWorldToView = Matrix3x3.Identity;
             instance.isRendering = false;
         }
     }
