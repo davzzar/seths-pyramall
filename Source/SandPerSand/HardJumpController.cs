@@ -10,10 +10,11 @@ namespace SandPerSand
 {
     public class HardJumpController : Behaviour
     {
-        bool firstUpdate = false;
-        RigidBody rigidBody;
-        Vector2 StartPosition;
-        Vector2 JumpVelo = new Vector2(36,24);
+        private bool firstUpdate = false;
+        private RigidBody rigidBody;
+        public Vector2 StartPosition;
+        public Vector2 JumpVelo = Conf.Dist.HardJumpVelocity;
+        public float JumpDistance = Conf.Dist.HardJumpDistance;
         protected override void OnEnable()
         {
             // record starting position
@@ -50,7 +51,7 @@ namespace SandPerSand
             // if collision happen or reached the goal
             // stop hard jumping and hand over control to PlayerControlComponent
             // note: if 
-            if(Math.Abs(Owner.Transform.Position.X - StartPosition.X) > 3 ||
+            if(Math.Abs(Owner.Transform.Position.X - StartPosition.X) > JumpDistance ||
                 // collision happening TODO better way of handling collision
                 rigidBody.LinearVelocity != JumpVelo)
             {

@@ -1,4 +1,4 @@
-﻿using Engine;
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
@@ -27,18 +27,79 @@ namespace SandPerSand
         private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement();
 
         // Hard Jump
-        private bool canHardJump = false;
-        public bool WillHardJump => JumpButtonPressed && canHardJump;
-        private bool blockSandDetect = false;
-        private bool doSandDetect => (!blockSandDetect) && rigidBody.LinearVelocity.X != 0 && !IsGrounded;
-        private bool blockHControl = false;
-        
-        // Hard Jump parameters
-        private float maxHSpeedAfterSand = 0.6f* MaxHorizontalSpeed;
-        private float decelerationForBlockHControl = 0.7f * MaxDeceleration;
-        private float hardJumpSpan = 0.4f;
-        private float blockFallSandSpan = 0.4f;
-        private float blockHControlSpan = 0.4f;
+        public bool WillHardJump => CanHardJump&& JumpButtonPressed;
+        private bool couldHardJump = false;
+        private bool CanHardJump
+        {
+            get
+            {
+                var xVelo = rigidBody.LinearVelocity.X;
+                var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
+                if (GameStateManager.Instance.CurrentState != GameState.InRound
+                    || sandSimulation == null || IsGrounded || xVelo==0)
+                {
+                    // TODO disable HaloGo.
+                    haloGo.IsEnabled = false;
+                    couldHardJump = false;
+                    return couldHardJump;
+                }
+                float leftBound = 0.7f;
+                float rightBound = 1.5f;
+                float sandGridStep = 0.1f;
+                if (xVelo < 0)
+                {
+                    leftBound = -rightBound;
+                    rightBound = -leftBound;
+                }
+
+                for (float x = Transform.Position.X + leftBound;
+                    x < Transform.Position.X + rightBound; x += sandGridStep)
+                {
+                    var detectPosition = new Vector2(x, Transform.Position.Y);
+                    var index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    var sandGrid = sandSimulation.SandData[index];
+                    if (sandGrid.HasSand && !sandGrid.IsSandStable)
+                    {
+                        // TODO create HaloGo at THAT place.
+                        // activate Halo Animation
+                        if (!couldHardJump)
+                        {
+                            haloGo.IsEnabled = true;
+                        }
+                        couldHardJump = true;
+                        return couldHardJump;
+                    }
+                }
+                // TODO disable HaloGo.
+                haloGo.IsEnabled = false;
+                couldHardJump = false;
+                return couldHardJump;
+            }
+        }
+        // Sand Stream
+        private bool SandStreamDetected
+        {
+            get
+            {
+                if (GameStateManager.Instance.CurrentState != GameState.InRound
+                    || sandSimulation == null)
+                {
+                    return false;
+                }
+                // set up sand detector vector
+                var xVelo = rigidBody.LinearVelocity.X;
+                var sandDetector = new Vector2(0.2f, 0);
+                if (xVelo < 0)
+                {
+                    sandDetector = -sandDetector;
+                }
+                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
+                var sandGrid = sandSimulation.SandData[index];
+
+                return sandGrid.HasSand && !sandGrid.IsSandStable;
+            }
+        }
+
 
         // State
         public bool IsGrounded { get; private set; }
@@ -164,70 +225,18 @@ namespace SandPerSand
             ControlUpdate();
         }
 
-        private void HardJumpThroughFallingSand()
+
+
+        private void DetectHardJump()
         {
-            if (GameStateManager.Instance.CurrentState != GameState.InRound
-                || sandSimulation == null)
+
+            if (CanHardJump)
             {
-                return;
-            }
-            // set up sand detector vector
-            var xVelo = rigidBody.LinearVelocity.X;
-            var yVelo = rigidBody.LinearVelocity.Y;
-            var sandDetector = new Vector2(1f, 0);
-            if (xVelo < 0)
-            {
-                sandDetector = -sandDetector;
-            }
-            // Detect sand
-            bool sandDetected = false;
-            try { 
-                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
-                var sandGrid = sandSimulation.SandData[index];
-                sandDetected = doSandDetect && sandGrid.HasSand && !sandGrid.IsSandStable;
-            }
-            catch (NullReferenceException e)
-            {
-                Debug.WriteLine("SandData.PointToIndex failed for position :" + (Transform.Position + sandDetector));
-                return;
-            }
-            // If detected sand
-            var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
-            if (sandDetected)
-            {
-                // press A within 0.5s otherwise fall
-                // set onjump delegate
-                canHardJump = true;
-                blockSandDetect = true;
-                blockHControl = true;
-                // calculate immediate influence
-                xVelo = MathHelper.Clamp(xVelo, -maxHSpeedAfterSand, maxHSpeedAfterSand);
-                yVelo = 0f;
-                // apply immediate influence
-                rigidBody.LinearVelocity = new Vector2(xVelo, yVelo);
-                // TODO activate Halo Animation
-                haloGo.IsEnabled = true;
-                // set timers
-                Owner.AddComponent<GoTimer>().Init(hardJumpSpan, ()=> {
-                    canHardJump = false; // only able to hardjump within 0.5s
-                    // TODO not exactly what I want
-                    Owner.AddComponent<GoTimer>().Init(0.2f, () => {
-                        haloGo.IsEnabled = false;
-                    });
-                });
-                Owner.AddComponent<GoTimer>().Init(blockFallSandSpan, () => {
-                    blockSandDetect = false;// stop detect falling sand for 1s
-                });
-                Owner.AddComponent<GoTimer>().Init(blockHControlSpan, () => {
-                    blockHControl = false;// not allowed to accelerate horizontally for 2s 
-                });
+
             }
             if (WillHardJump)
             {
                 PerformHardJump();
-                // reset control timers in advance if hard jump is performed
-                canHardJump = false;
-                blockHControl = false;
             }
         }
 
@@ -247,7 +256,7 @@ namespace SandPerSand
             HasLandedInSand = false;
 
             // Sand Interaction
-            HardJumpThroughFallingSand();
+            DetectHardJump();
 
             if (HasSandReached && !HasSandReachedBefore)
             {
@@ -387,7 +396,6 @@ namespace SandPerSand
             ComputeGravityScale();
             ComputeHorizontalSpeed();
             ComputeVerticalSpeed();
-
             if (WillJump)
             {
                 CoyoteEnabled = false;
@@ -406,8 +414,9 @@ namespace SandPerSand
                 wasFacingRight = HorizontalDirection > 0;
                 Owner.GetComponent<SpriteRenderer>()!.FlipHorizontal();
             }
-            
+
             // Apply computed velocity
+            ComputeSandStreamInfluence();
             ApplyVelocity();
             
             #if DEBUG
@@ -480,11 +489,11 @@ namespace SandPerSand
 
         private void ComputeHorizontalSpeed()
         {
-            if (blockHControl)
-            {
-                HorizontalSpeed = MathUtils.MoveTowards(HorizontalSpeed, 0, decelerationForBlockHControl * Time.DeltaTime);
-                return;
-            }
+            //if (sandDetected)
+            //{
+            //    ComputeSandStreamInfluence();
+            //    return;
+            //}
             // NOTE: Check assumes there is a dead zone on the stick input.
             if (HorizontalDirection != 0) //
             {
@@ -513,7 +522,10 @@ namespace SandPerSand
             if (!IsGrounded) VerticalSpeed +=  Gravity * GravityScale * Time.DeltaTime;
 
             // clamp to terminal velocity
-            if (VerticalSpeed < MaxFallingSpeed) VerticalSpeed = MaxFallingSpeed; 
+            if (VerticalSpeed < MaxFallingSpeed)
+            {
+                VerticalSpeed = MaxFallingSpeed;
+            }
         }
 
 
@@ -551,6 +563,14 @@ namespace SandPerSand
             hardJumpComp.IsActive = true;
         }
 
+        private void ComputeSandStreamInfluence()
+        {
+            if (SandStreamDetected)
+            {
+                HorizontalSpeed = MathUtils.MoveTowards(HorizontalSpeed, 0, MaxDeceleration * 1.4f * Time.DeltaTime);
+                if (!IsGrounded) VerticalSpeed += Gravity * 3f * Time.DeltaTime;
+            }
+        }
 
         /// <summary>
         /// Show debug information for development.
