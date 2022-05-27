@@ -56,7 +56,6 @@ namespace SandPerSand.Items
                     break;
                 case "position_swap":
                     float y = 0;
-                    int i = 0;
                     GameObject firstPlayer = null;
                     foreach (GameObject p in players)
                     {
@@ -65,7 +64,6 @@ namespace SandPerSand.Items
                             y = p.Transform.Position.Y;
                             firstPlayer = p;
                         }
-                        i++;
                     }
                     if(firstPlayer!= null)
                     {
@@ -93,16 +91,14 @@ namespace SandPerSand.Items
                     break;
                 case "ice_block":
                     float y2 = 0;
-                    int i2 = 0;
                     GameObject firstPlayer2 = null;
                     foreach (GameObject p in players)
                     {
                         if (p.Transform.Position.Y > y2 && p != this.Owner)
                         {
-                            y = p.Transform.Position.Y;
+                            y2 = p.Transform.Position.Y;
                             firstPlayer2 = p;
                         }
-                        i2++;
                     }
                     if(firstPlayer2 != null)
                     {

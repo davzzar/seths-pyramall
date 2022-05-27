@@ -52,6 +52,7 @@ namespace SandPerSand
 
         public Panel rootPanel { get; private set; }
         private Label MidscreenTextPanel;
+        private Label UpperscreenTextPanel;
         private Grid InventoryGrid;
         private Grid ScoreBoard;
         private int FontSize;
@@ -139,6 +140,15 @@ namespace SandPerSand
                 Font = _fontSystem.GetFont(FontSize),
             };
 
+            UpperscreenTextPanel = new Label()
+            {
+                Text = "",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Top,
+                Font = _fontSystem.GetFont(FontSize),
+                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.t = W.h/4;"),
+            };
+
             InventoryGrid = new Grid()
             {
                 ColumnSpacing = 4,
@@ -147,6 +157,7 @@ namespace SandPerSand
             rootPanel = new Panel();
 
             rootPanel.AddChild(MidscreenTextPanel);
+            rootPanel.AddChild(UpperscreenTextPanel);
             rootPanel.AddChild(InventoryGrid);
 
             foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
@@ -193,12 +204,12 @@ namespace SandPerSand
                 scores.Reverse();
                 try
                 {
-                    MidscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.CurRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.ShopTimer.CountDown)) + " seconds left";
-                    MidscreenTextPanel.TextColor = PlayerIndexToColor[scores[PlayersManager.Instance.CurRank - 1].index];
+                    UpperscreenTextPanel.Text = "Player " + scores[PlayersManager.Instance.CurRank - 1].index + " can buy \n" + String.Format("{0:0}", Math.Ceiling(PlayersManager.Instance.ShopTimer.CountDown)) + " seconds left";
+                    UpperscreenTextPanel.TextColor = PlayerIndexToColor[scores[PlayersManager.Instance.CurRank - 1].index];
                 }
                 catch
                 {
-                    MidscreenTextPanel.TextColor = Color.White;
+                    UpperscreenTextPanel.TextColor = Color.White;
                 }
             }
         }
@@ -340,13 +351,13 @@ namespace SandPerSand
 
         public void InShopGUI(object sender, State<RealGameStateManager> prevState)
         {
-            MidscreenTextPanel.Text = "Welcome to the Shop";
-            MidscreenTextPanel.Visible = true;
+            UpperscreenTextPanel.Text = "Welcome to the Shop";
+            UpperscreenTextPanel.Visible = true;
         }
 
         public void RemoveInShopGUI()
         {
-            MidscreenTextPanel.Visible = false;
+            UpperscreenTextPanel.Visible = false;
         }
 
 
