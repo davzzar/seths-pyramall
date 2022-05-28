@@ -54,11 +54,16 @@ namespace SandPerSand
 
         private static GameObject CreateCamera()
         {
+            var tileMap = GameObject.FindComponent<TileMapBase>();
+            var min = tileMap.Transform.Position - new Vector2(2, 2);
+            var size = tileMap.Size + new Vector2(2, 2);
+
+
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
             var cameraController = cameraGo.AddComponent<CameraController2>();
-            cameraController.Bounds = Aabb.FromMinMax(new Vector2(-2, -2f), new Vector2(51, 100f));
+            cameraController.Bounds = Aabb.FromMinMax(min, size);
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -109,6 +114,7 @@ namespace SandPerSand
             sandSim.ResolutionY = (int)(map.Size.Y * 5);
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
@@ -343,7 +349,7 @@ namespace SandPerSand
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
-                    var guiGo = new GameObject();
+                    var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
             }
@@ -356,6 +362,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + this.loadedSceneIndex;
 
                 var loaderGo = new GameObject($"Loader for Scene {loadedSceneIndex}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
@@ -399,6 +406,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + index;
 
                 var loaderGo = new GameObject($"Loader for Scene {index}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[index]);
@@ -480,8 +488,6 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
-///HEAD
-                CreateSandPhysics_level_1();
             }
         }
 

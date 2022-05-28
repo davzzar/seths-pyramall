@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Text;
 using Engine;
@@ -69,6 +70,8 @@ namespace SandPerSand
         public static void UnhidePlayer(GameObject player)
         {
             player.IsEnabled = true;
+            player.GetComponent<PlayerComponent>().IsPlayerAlive = true;
+            player.GetComponentInChildren<Collider>().IsActive = true;
             // player.GetComponent<PlayerComponent>()!.AddCameraControlPoint();
             // player.GetComponent<SpriteRenderer>()!.IsActive = true;
             // player.GetComponent<PlayerControlComponent>()!.IsActive = true;

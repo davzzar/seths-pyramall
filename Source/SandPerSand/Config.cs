@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Xna.Framework;
 namespace SandPerSand
 {
     public class Conf
@@ -34,6 +35,10 @@ namespace SandPerSand
         {
             public static float ShopTime = 10f;
         }
+
+
+        public static Vector2 HardJumpVelocity = new Vector2(27, 16);
+        public static float HardJumpDistance = 3f;
 
 
     }

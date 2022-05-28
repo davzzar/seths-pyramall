@@ -71,6 +71,10 @@ namespace SandPerSand
                     shopItemScript.ItemId = tile.GetTileProperty("item_id");
                     _ = AddTileRenderer(newTileGo, tile);
                     break;
+                case "Background":
+                    // Add Renderer
+                    _ = AddTileRenderer(newTileGo, tile);
+                    break;
             }
         }
     }

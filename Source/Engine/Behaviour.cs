@@ -72,6 +72,7 @@
                 return;
             }
 
+            var prevState = this.behaviourState;
             this.behaviourState = BehaviourState.Enabled;
             this.OnEnable();
         }
@@ -83,6 +84,7 @@
                 return;
             }
 
+            var prevState = this.behaviourState;
             this.behaviourState = BehaviourState.Disabled;
             this.OnDisable();
         }

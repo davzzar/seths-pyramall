@@ -1,21 +1,8 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using Engine;
-using FontStashSharp;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
-using Myra.Graphics2D;
-using Myra.Graphics2D.Brushes;
-using Myra.Graphics2D.TextureAtlases;
-using Myra.Graphics2D.UI;
+﻿using Engine;
 
 namespace SandPerSand
 {
-    public class MainMenu : Component
+    public class MainMenu : Behaviour
     {
         protected override void OnAwake()
         {

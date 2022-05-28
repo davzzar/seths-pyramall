@@ -97,7 +97,7 @@ namespace SandPerSand
                 foreach (var player in Players.Values)
                 {
                     PlayerUtils.UnhidePlayer(player);
-                    player.GetComponent<PlayerComponent>()!.IsAlive = true;
+                    player.GetComponent<PlayerComponent>()!.IsPlayerAlive = true;
                 }
                 SetAllPlayerControls(false);
                 if (lastState.GetType() == typeof(PrepareState))
@@ -303,8 +303,9 @@ namespace SandPerSand
                 players[playerIndex].GetComponent<SpriteRenderer>()!.IsActive = true;
                 players[playerIndex].GetComponent<Animator>().Entry();
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
-                players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
+                players[playerIndex].GetComponent<PlayerComponent>().IsPlayerAlive = true;
                 players[playerIndex].GetComponent<PlayerComponent>()!.AddCameraControlPoint();
+                players[playerIndex].GetComponentInChildren<Collider>().IsActive = true;
             }
             else
             {
@@ -424,7 +425,7 @@ namespace SandPerSand
             
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerComponent>()!.IsAlive)
+                if (player.GetComponent<PlayerComponent>()!.IsPlayerAlive)
                 {
                     return false;
                 }
@@ -441,7 +442,7 @@ namespace SandPerSand
                 return false;
             }
 
-            return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsAlive || player.GetComponent<PlayerStates>().Exited);
+            return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsPlayerAlive || player.GetComponent<PlayerStates>().Exited);
         }
 
         public void FinalizeRanks()
@@ -465,7 +466,7 @@ namespace SandPerSand
 
         public List<GameObject> InGamePlayerGo()
         {
-            return players.Values.Where(player => !player.GetComponent<PlayerStates>()!.Exited && player.GetComponent<PlayerComponent>()!.IsAlive).ToList();
+            return players.Values.Where(player => !player.GetComponent<PlayerStates>()!.Exited && player.GetComponent<PlayerComponent>()!.IsPlayerAlive).ToList();
         }
 
         public void SetAllPlayerControls(bool enabled)
@@ -600,11 +601,11 @@ namespace SandPerSand
                 else if (!PursueItems[i].pursue)
                 {
                     bool updated = false;
-                    for (var j = 0; j < ActiveItems.Count; i++)
+                    for (var j = 0; j < ActiveItems.Count; j++)
                     {
-                        if (PursueItems[j].Id == ActiveItems[j].Id)
+                        if (PursueItems[i].Id == ActiveItems[j].Id)
                         {
-                            ActiveItems[j].TimeLeft = PursueItems[j].TotTime;
+                            ActiveItems[j].TimeLeft = PursueItems[i].TotTime;
                             updated = true;
                             break;
                         }
