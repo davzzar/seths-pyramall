@@ -57,9 +57,12 @@ namespace SandPerSand
                     x < Transform.Position.X + rightBound; x += sandGridStep)
                 {
                     var detectPosition = new Vector2(x, Transform.Position.Y);
-                    var index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    SandSim.Int2 index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    SandSim.Int2 index2 = new SandSim.Int2(index.X, index.Y-1);
                     var sandGrid = sandSimulation.SandData[index];
-                    if (sandGrid.HasSand && !sandGrid.IsSandStable)
+                    var sandGrid2 = sandSimulation.SandData[index2];
+                    if (sandGrid.HasSand && !sandGrid.IsSandStable
+                        && sandGrid2.HasSand && !sandGrid2.IsSandStable)
                     {
                         // TODO create HaloGo at THAT place.
                         // activate Halo Animation
