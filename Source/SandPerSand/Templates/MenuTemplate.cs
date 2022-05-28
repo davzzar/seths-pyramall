@@ -91,7 +91,7 @@ namespace SandPerSand
             // When the start button is clicked, remove the GUI by setting UI.Root to null
             startButton.Click += (sender, e) =>
             {
-                ShowStartGame();
+                ShowPlayModeMenu();
             };
 
             // Add a settings button
@@ -121,6 +121,9 @@ namespace SandPerSand
             panel.AddChild(settingsButton);
             panel.AddChild(itemWikiButton);
             panel.AddChild(exitButton);
+
+            // Add applicable controls to controls manager
+            MenuControlsManager.Instance.SetControls(startButton, settingsButton, itemWikiButton, exitButton);
 
             rootPanel.AddChild(panel);
 
@@ -206,7 +209,7 @@ namespace SandPerSand
             UI.Root = _menuPanel;
         }
 
-        public static void ShowStartGame()
+        public static void ShowPlayModeMenu()
         {
             var rootPanel = new Panel
             {
@@ -221,7 +224,7 @@ namespace SandPerSand
                 Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;"),
             };
 
-            var titleLevelSelection = createTitleLabel("Play");
+            var titleModeSelection = createTitleLabel("Select Play Mode");
 
             // Create Mode 1 Button
             //var Mode1Button = createTextButton("Shop (Debug)");
@@ -236,10 +239,10 @@ namespace SandPerSand
             };*/
 
             // Create Mode 2 Button
-            var Mode2Button = createTextButton("Infinity Mode");
+            var InfinityModeButton = createTextButton("Infinity Mode");
 
             // When the start button is clicked, remove the GUI by setting UI.Root to null
-            Mode2Button.Click += (sender, e) =>
+            InfinityModeButton.Click += (sender, e) =>
             {
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 loadManager.LoadAt(1);
@@ -247,17 +250,19 @@ namespace SandPerSand
             };
 
             // Create Exit to Menu
-            var ExitToMenu = createTextButton("Back");
+            var ExitToMenuButton = createTextButton("Back");
 
-            ExitToMenu.Click += (sender, e) =>
+            ExitToMenuButton.Click += (sender, e) =>
             {
                 ShowMainMenu();
             };
 
-            levelSelectorPanel.AddChild(titleLevelSelection);
+            levelSelectorPanel.AddChild(titleModeSelection);
             //levelSelectorPanel.AddChild(Mode1Button);
-            levelSelectorPanel.AddChild(Mode2Button);
-            levelSelectorPanel.AddChild(ExitToMenu);
+            levelSelectorPanel.AddChild(InfinityModeButton);
+            levelSelectorPanel.AddChild(ExitToMenuButton);
+
+            MenuControlsManager.Instance.SetControls(InfinityModeButton, ExitToMenuButton);
 
             rootPanel.AddChild(levelSelectorPanel);
 
@@ -331,6 +336,9 @@ namespace SandPerSand
             {
                 GridRow = 2,
                 GridColumn = 1,
+                BorderThickness = new Thickness(2),
+                Padding = new Thickness(3),
+                SelectedIndex = 0
             };
 
             foreach (var res in resolutions)
@@ -367,6 +375,9 @@ namespace SandPerSand
                 GridRow = 3,
                 GridColumn = 1,
                 HorizontalAlignment = HorizontalAlignment.Right,
+                BorderThickness = new Thickness(1),
+                OverBorder = new SolidBrush(Color.Cyan),
+                Padding = new Thickness(10, 0)
             };
 
             ToggleFullscreen.PressedChanged += (sender, e) =>
@@ -402,6 +413,8 @@ namespace SandPerSand
             SettingsPanel.AddChild(titleSettings);
             SettingsPanel.AddChild(SettingsGrid);
             SettingsPanel.AddChild(ExitToMenuSettings);
+
+            MenuControlsManager.Instance.SetControls(VolumeSlider, SoundsSlider, ResolutionSelector, ToggleFullscreen, ExitToMenuSettings);
 
             rootPanel.AddChild(SettingsPanel);
 
@@ -563,6 +576,8 @@ namespace SandPerSand
             grid.AddChild(ExitToMenu);
 
             rootPanel.AddChild(grid);
+
+            MenuControlsManager.Instance.SetControls(leftButton, rightButton, ExitToMenu);
 
             UI.Root = rootPanel;
         }
