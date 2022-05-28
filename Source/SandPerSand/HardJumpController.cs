@@ -1,4 +1,4 @@
-﻿using Engine;
+using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
@@ -17,6 +17,23 @@ namespace SandPerSand
         public Vector2 JumpVelo;
         GameObject playerPSGo;
         public float JumpDistance = Conf.HardJumpDistance;
+
+
+        // Sand Interaction
+        private SandSimulation sandSimulation;
+        public SandSimulation SandSimulation
+        {
+            get
+            {
+                if (this.sandSimulation == null || !this.sandSimulation.IsAlive)
+                {
+                    this.sandSimulation = GameObject.FindComponent<SandSimulation>();
+
+                }
+                return sandSimulation;
+            }
+        }
+
         protected override void OnEnable()
         {
             // disable PlayerControlComponent
@@ -64,6 +81,10 @@ namespace SandPerSand
                 rigidBody.LinearVelocity = JumpVelo;
                 firstUpdate = false;
             }
+            // delete sands
+            Circle circle = new Circle(Transform.Position, 1.5f);
+            SandSimulation.RemoveSand(circle);
+
             // if collision happen or reached the goal
             // stop hard jumping and hand over control to PlayerControlComponent
             if(Math.Abs(Owner.Transform.Position.X - StartPosition.X) > JumpDistance ||
