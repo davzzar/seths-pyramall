@@ -89,16 +89,29 @@ namespace SandPerSand
                     return false;
                 }
                 // set up sand detector vector
-                var xVelo = rigidBody.LinearVelocity.X;
-                var sandDetector = new Vector2(0.2f, 0);
-                if (xVelo < 0)
+                var sandDetector = Conf.SandDetectVec;
+                if (!wasFacingRight)
                 {
                     sandDetector = -sandDetector;
                 }
-                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
-                var sandGrid = sandSimulation.SandData[index];
 
-                return sandGrid.HasSand && !sandGrid.IsSandStable;
+                // detect sand
+                var detectPosition = Transform.Position + sandDetector;
+                Gizmos.DrawLine(detectPosition,
+                    detectPosition + new Vector2(0, 0.1f),Color.LimeGreen,2);
+
+                var index = sandSimulation.SandData.PointToIndex(detectPosition);
+                var sandGrid = sandSimulation.SandData[index];
+                if(sandGrid.HasSand && !sandGrid.IsSandStable)
+                {
+                    // delete sands
+                    var deleteSandPosition = Transform.Position - sandDetector;
+                    Circle circle = new Circle(deleteSandPosition,
+                        Conf.SandDetectRemoveRadius);
+                    sandSimulation.RemoveSand(circle);
+                    return true;
+                }
+                return false;
             }
         }
 
