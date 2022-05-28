@@ -37,6 +37,7 @@ namespace SandPerSand
         private bool SelectPressed => inputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
 
 
+
         private List<Widget> controlsList = new List<Widget>();
         private int currentControlsIndex;
 
@@ -71,7 +72,12 @@ namespace SandPerSand
 
                     },
                     {typeof(ComboBox), (
-                            (w, b) => ((ComboBox)w).Border = b ? new SolidBrush(Color.Aqua) : new SolidBrush(Color.Transparent),
+                            (w, b) =>
+                            {
+                                var combox = (ComboBox) w;
+                                combox.Border =
+                                    b ? new SolidBrush(Color.Aqua) : new SolidBrush(Color.Transparent);
+                            },
                             null,
                             w => 
                             {   var cbox = (ComboBox) w;
@@ -85,7 +91,6 @@ namespace SandPerSand
                         )
                     }
                 };
-
 
         public void SetControls(params Widget[] controls)
         {

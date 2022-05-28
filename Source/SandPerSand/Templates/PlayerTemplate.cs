@@ -55,6 +55,7 @@ namespace SandPerSand
                 "Sounds/player_step03",
                 "Sounds/player_step04", 
                 "Sounds/player_step05");
+            stepSoundComp.ShouldLock = true;
             stepSoundComp.Volume = 0.2f;
             stepSoundComp.Trigger = () =>
             {
