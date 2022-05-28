@@ -40,6 +40,10 @@ namespace SandPerSand
         public static Vector2 HardJumpVelocity = new Vector2(27, 16);
         public static float HardJumpDistance = 3f;
 
-
+        public static Vector2 SandDetectVec = new Vector2(0.2f, 0);
+        // sandDetector = (+/-) SandDetectVec
+        // detectPosition = Transform.Position + sandDetector;
+        // deleteSandPosition = Transform.Position - sandDetector;
+        public static float SandDetectRemoveRadius = 0.1f;
     }
 }
