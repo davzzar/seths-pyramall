@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Net;
 using Engine;
 using FontStashSharp;
 using Microsoft.Xna.Framework;
@@ -14,6 +15,19 @@ namespace SandPerSand
 {
     public static partial class Template
     {
+        // Sounds 
+        // TODO find a better way than making these static
+        private static SoundEffectPlayer uiSelectSfx;
+        private static SoundEffectPlayer uiBackSfx;
+        private static SoundEffectPlayer uiClickSfx;
+        private static SoundEffectPlayer uiPauseSfx;
+        private static SoundEffectPlayer uiUnpauseSfx;
+        private static SoundEffectPlayer uiStartGameSfx;
+        private static SoundEffectPlayer uiTickRightSfx;
+        private static SoundEffectPlayer uiTickLeftSfx;
+        private static SoundEffectPlayer uiToggleOnSfx;
+        private static SoundEffectPlayer uiToggleOffSfx;
+
         // STYLESHEET
 
         private static FontSystem _fontSystem;
@@ -23,6 +37,8 @@ namespace SandPerSand
         private static IBrush BackgroundBrush;
 
         private static int currentItemIndex;
+
+        private static GameObject menuSfxGO;
 
         static readonly (int x, int y, string text)[] resolutions = new (int x, int y, string text)[] {
                 (1280, 720, "1280x720 (16:9)"),
@@ -45,6 +61,19 @@ namespace SandPerSand
                 Background = new SolidBrush(new Color(155, 34, 38)),
                 PressedTextColor = Color.White,
             };
+
+            // add selection sound effect.
+            // FIXME Will play on menu creation as well,
+            // since FocusControl will set the top control's IsPressed = true
+            button.PressedChanged += (sender, e) =>
+            {
+                if (button.IsPressed)
+                {
+                    uiClickSfx?.Play();
+                }
+            };
+
+
             return button;
         }
 
@@ -82,6 +111,30 @@ namespace SandPerSand
             return panel;
         }
 
+        private static HorizontalSlider createSlider()
+        {
+            var slider = new HorizontalSlider()
+            {
+                Value = 50,
+                Minimum = 0,
+                Maximum = 100
+            };
+
+            slider.ValueChanged += (sender, e) =>
+            {
+                if (e.NewValue > e.OldValue)
+                {
+                    uiTickRightSfx?.Play();
+                }
+                else
+                {
+                    uiTickLeftSfx?.Play();
+                }
+            };
+
+            return slider;
+        }
+
         public static void ShowMainMenu()
         {
             var rootPanel = new Panel
@@ -99,6 +152,7 @@ namespace SandPerSand
             startButton.Click += (sender, e) =>
             {
                 ShowPlayModeMenu();
+                uiSelectSfx?.Play();
             };
 
             // Add a settings button
@@ -106,6 +160,7 @@ namespace SandPerSand
             settingsButton.Click += (sender, e) =>
             {
                 ShowSettings();
+                uiSelectSfx?.Play();
             };
 
             // Add a settings button
@@ -113,6 +168,7 @@ namespace SandPerSand
             itemWikiButton.Click += (sender, e) =>
             {
                 ShowItemWiki();
+                uiSelectSfx?.Play();
             };
 
             // Lastly an exit button that kills the app dead
@@ -155,18 +211,21 @@ namespace SandPerSand
             resumeButton.Click += (sender, e) =>
             {
                 RemovePauseMenu();
+                uiUnpauseSfx?.Play();
             };
 
             var itemWikiButton = createTextButton("Item Wiki");
             itemWikiButton.Click += (sender, e) =>
             {
                 ShowItemWiki();
+                uiSelectSfx?.Play();
             };
 
             var settingsButton = createTextButton("Settings");
             settingsButton.Click += (sender, e) =>
             {
                 ShowSettings();
+                uiSelectSfx?.Play();
             };
 
             var restartGameButton = createTextButton("Restart Game");
@@ -175,10 +234,14 @@ namespace SandPerSand
             exitToMenuButton.Id = "_ExitToMenu";
             exitToMenuButton.Click += (sender, e) =>
             {
+                // FIXME Does not actually exit the game, just loads menu
+
                 // exit game, unload scene, show menu
                 var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 //show menu
                 sceneManager.LoadAt(0);
+                
+                uiBackSfx?.Play();
             };
 
             var pauseMenuPanel = createVerticalStackPanel();
@@ -234,6 +297,9 @@ namespace SandPerSand
                 // disable menu controls
                 // TODO May be move this to a game state OnEnter?
                 MenuControlsManager.Instance.ClearControls();
+
+                // start game sfx
+                uiStartGameSfx?.Play();
             };
 
             // Create Exit to Menu
@@ -242,6 +308,7 @@ namespace SandPerSand
             ExitToMenuButton.Click += (sender, e) =>
             {
                 ShowPreviousMenu();
+                uiBackSfx?.Play();
             };
 
             levelSelectorPanel.AddChild(titleModeSelection);
@@ -277,38 +344,18 @@ namespace SandPerSand
             volumeSliderText.GridColumn = 0;
             volumeSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
-            var volumeSlider = new HorizontalSlider()
-            {
-                Value = 50,
-                Minimum = 0,
-                Maximum = 100,
-                GridRow = 0,
-                GridColumn = 1,
-            };
-
-            volumeSlider.ValueChanged += (sender, e) =>
-            {
-                // not implemented yet
-            };
+            var volumeSlider = createSlider();
+            volumeSlider.GridRow = 0;
+            volumeSlider.GridColumn = 1;
 
             var soundSliderText = createTextLabel("Sounds");
             soundSliderText.GridRow = 1;
             soundSliderText.GridColumn = 0;
             soundSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
-            var soundsSlider = new HorizontalSlider()
-            {
-                Value = 50,
-                Minimum = 0,
-                Maximum = 100,
-                GridRow = 1,
-                GridColumn = 1,
-            };
-
-            soundsSlider.ValueChanged += (sender, e) =>
-            {
-                // not implemented yet
-            };
+            var soundsSlider = createSlider();
+            soundsSlider.GridRow = 1;
+            soundsSlider.GridColumn = 1;
 
             var resolutionSelectorText = createTextLabel("Resolution");
             resolutionSelectorText.GridRow = 2;
@@ -339,11 +386,15 @@ namespace SandPerSand
 
             resolutionSelector.SelectedIndexChanged += (sender, e) =>
             {
+                uiTickLeftSfx?.Play();
+
                 var index = resolutionSelector.SelectedIndex.Value;
                 BackgroundBrush = new TextureRegion(BackgroundTexture, new Rectangle(0, 0, resolutions[index].x, resolutions[index].y));
                 var res = new Engine.Int2(resolutions[index].x, resolutions[index].y);
                 GameEngine.Instance.Resolution = res;
             };
+
+            // TODO add focus sound effect. No idea how to find the trigger...
 
             var toggleFullscreenText = createTextLabel("Fullscreen");
             toggleFullscreenText.GridRow = 3;
@@ -365,8 +416,24 @@ namespace SandPerSand
 
             ToggleFullscreen.PressedChanged += (sender, e) =>
             {
+                // sound effects
+                if (ToggleFullscreen.IsChecked)
+                {
+                    uiToggleOnSfx?.Play();
+                }
+                else
+                {
+                    uiToggleOffSfx?.Play();
+                }
+
                 GameEngine.Instance.Fullscreen = ToggleFullscreen.IsChecked;
             };
+
+            ToggleFullscreen.MouseEntered += (sender, e) =>
+            {
+                uiClickSfx?.Play();
+            };
+
 
             // Create Exit to Menu
             var exitToMenuButton = createTextButton("Back");
@@ -376,6 +443,7 @@ namespace SandPerSand
             exitToMenuButton.Click += (sender, e) =>
             {
                 ShowPreviousMenu();
+                uiBackSfx?.Play();
             };
 
             var grid = new Grid()
@@ -548,6 +616,7 @@ namespace SandPerSand
             {
                 itemWikiGo.Destroy();
                 ShowPreviousMenu();
+                uiBackSfx?.Play();
             };
 
             itemNavGrid.AddChild(leftButton);
@@ -608,7 +677,48 @@ namespace SandPerSand
 
                 BackgroundTexture = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("background"));
                 BackgroundBrush = new SolidBrush(new Color(38, 12, 26));
+
+                // add menu sound effects.
+                menuSfxGO = new GameObject("Menu sound effects");
+
+                const string soundPathPrefix = "Sounds/InterfaceSounds/";
                 
+                uiSelectSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiSelectSfx.LoadFromContent(soundPathPrefix + "select_01", 
+                    soundPathPrefix + "select_02", 
+                    soundPathPrefix + "select_03");
+
+                uiBackSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiBackSfx.LoadFromContent(soundPathPrefix + "back_01",
+                    soundPathPrefix + "back_02",
+                    soundPathPrefix + "back_03",
+                    soundPathPrefix + "back_04");
+
+                uiClickSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiClickSfx.LoadFromContent(soundPathPrefix + "click_01",
+                    soundPathPrefix + "click_02",
+                    soundPathPrefix + "click_03",
+                    soundPathPrefix + "click_04",
+                    soundPathPrefix + "click_05");
+
+                uiStartGameSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiStartGameSfx.LoadFromContent(soundPathPrefix + "startgame_01",
+                    soundPathPrefix + "startgame_02",
+                    soundPathPrefix + "startgame_03",
+                    soundPathPrefix + "startgame_04");
+
+                uiTickRightSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiTickRightSfx.LoadFromContent(soundPathPrefix + "tick_right");
+
+                uiTickLeftSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiTickLeftSfx.LoadFromContent(soundPathPrefix + "tick_left");
+
+                uiToggleOnSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiToggleOnSfx.LoadFromContent(soundPathPrefix + "toggle_on");
+
+                uiToggleOffSfx = menuSfxGO.AddComponent<SoundEffectPlayer>();
+                uiToggleOffSfx.LoadFromContent(soundPathPrefix + "toggle_off");
+
                 initializedMenu = true;
             }
         }

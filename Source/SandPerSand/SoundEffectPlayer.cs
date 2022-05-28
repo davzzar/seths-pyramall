@@ -14,6 +14,7 @@ namespace SandPerSand
 
         private Random random = new Random();
 
+        public bool ShouldLock { get; set; }
         public Func<bool> Trigger { get; set; }
 
         public List<SoundEffect> Sounds { get; } = new List<SoundEffect>();
@@ -65,7 +66,10 @@ namespace SandPerSand
 
             var sound = this.Sounds[this.random.Next(0, this.Sounds.Count)];
             sound.Play(this.Volume, this.Pitch, this.Pan);
-            this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
+            if (ShouldLock)
+            {
+                this.lockTime = Time.GameTime + (float)sound.Duration.TotalSeconds;
+            }
         }
 
         /// <inheritdoc />
