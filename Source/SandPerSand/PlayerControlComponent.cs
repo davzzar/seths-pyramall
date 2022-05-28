@@ -321,6 +321,8 @@ namespace SandPerSand
                     if (player != null)
                     {
                         player.IsPlayerAlive = false;
+                        // remove on screen controls as well
+                        onScreenControls.Owner.IsEnabled = false;
                         Debug.WriteLine("Player IsAlive set to false.");
                     } else
                     {

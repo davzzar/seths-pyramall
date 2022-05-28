@@ -98,7 +98,7 @@ namespace SandPerSand
             PlayerIndexToColor = new Dictionary<PlayerIndex, Color>();
 
             int i = 0;
-            int[] order = { 0, 3, 1, 2 };
+            int[] order = { 0, 1, 2, 3 };
             Color[] CharColors = {new Color(160, 132, 254), new Color(165, 255, 21), new Color(255,17,108), new Color(33,187,255)};
             foreach(PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
             {
