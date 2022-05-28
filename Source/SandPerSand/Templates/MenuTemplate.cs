@@ -69,13 +69,8 @@ namespace SandPerSand
             };
         }
 
-        public static void ShowMainMenu()
+        private static VerticalStackPanel createVerticalStackPanel()
         {
-            var rootPanel = new Panel
-            {
-                Background = BackgroundBrush
-            };
-
             var panel = new VerticalStackPanel()
             {
                 Spacing = 20,
@@ -83,6 +78,18 @@ namespace SandPerSand
                 VerticalAlignment = VerticalAlignment.Center,
                 Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;"),
             };
+
+            return panel;
+        }
+
+        public static void ShowMainMenu()
+        {
+            var rootPanel = new Panel
+            {
+                Background = BackgroundBrush
+            };
+
+            var panel = createVerticalStackPanel();
 
             var GameTitle = createTitleLabel("Seth's Pyramall");
 
@@ -132,53 +139,41 @@ namespace SandPerSand
 
         public static void RemovePauseMenu()
         {
+            // unpause game
+            var pauseController = GameObject.FindComponent<PauseMenuController>();
+            PauseMenuController.UnpauseGame();
             // Reset the GUI
             UI.Root = GraphicalUserInterface.Instance.rootPanel;
+            MenuControlsManager.Instance.ClearControls();
         }
 
         public static void ShowPauseMenu()
         {
-            var _Resume = new MenuItem();
-            _Resume.Text = "Resume";
-            _Resume.Color = Color.White;
-            _Resume.Id = "_Resume";
-            _Resume.Selected += (sender, e) =>
+            var pausedLabel = createTitleLabel("Game Paused");
+
+            var resumeButton = createTextButton("Resume Game");
+            resumeButton.Click += (sender, e) =>
             {
                 RemovePauseMenu();
             };
 
-            var menuSeparator1 = new MenuSeparator();
-
-            var _ItemWiki = new MenuItem();
-            _ItemWiki.Text = "Item Wiki";
-            _ItemWiki.Color = Color.White;
-            _ItemWiki.Id = "_ItemWiki";
-            _ItemWiki.Selected += (sender, e) =>
+            var itemWikiButton = createTextButton("Item Wiki");
+            itemWikiButton.Click += (sender, e) =>
             {
                 ShowItemWiki();
             };
 
-            var menuSeparator2 = new MenuSeparator();
-
-            var _SoundSettings = new MenuItem();
-            _SoundSettings.Text = "Sound Settings";
-            _SoundSettings.Color = Color.White;
-            _SoundSettings.Id = "_SoundSettings";
-            _SoundSettings.Selected += (sender, e) =>
+            var settingsButton = createTextButton("Settings");
+            settingsButton.Click += (sender, e) =>
             {
                 ShowSettings();
             };
 
-            var _RestartGame = new MenuItem();
-            _RestartGame.Text = "Restart Game";
-            _RestartGame.Color = Color.White;
-            _RestartGame.Id = "_RestartGame";
+            var restartGameButton = createTextButton("Restart Game");
 
-            var _ExitToMenu = new MenuItem();
-            _ExitToMenu.Text = "Exit to Main Menu";
-            _ExitToMenu.Color = Color.White;
-            _ExitToMenu.Id = "_ExitToMenu";
-            _ExitToMenu.Selected += (sender, e) =>
+            var exitToMenuButton = createTextButton("Exit to Main Menu");
+            exitToMenuButton.Id = "_ExitToMenu";
+            exitToMenuButton.Click += (sender, e) =>
             {
                 // exit game, unload scene, show menu
                 var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
@@ -186,27 +181,22 @@ namespace SandPerSand
                 sceneManager.LoadAt(0);
             };
 
-            var verticalMenu1 = new VerticalMenu();
-            verticalMenu1.HorizontalAlignment = Myra.Graphics2D.UI.HorizontalAlignment.Center;
-            verticalMenu1.VerticalAlignment = Myra.Graphics2D.UI.VerticalAlignment.Center;
-            verticalMenu1.SelectionHoverBackground = new SolidBrush("#B02921FF");
-            verticalMenu1.SelectionBackground = new SolidBrush("#FF9503FF");
-            verticalMenu1.BorderThickness = new Thickness(2);
-            verticalMenu1.Padding = new Thickness(0, 4);
-            verticalMenu1.Border = new SolidBrush("#202020FF");
-            verticalMenu1.Items.Add(_Resume);
-            verticalMenu1.Items.Add(menuSeparator1);
-            verticalMenu1.Items.Add(_ItemWiki);
-            verticalMenu1.Items.Add(menuSeparator2);
-            verticalMenu1.Items.Add(_SoundSettings);
-            verticalMenu1.Items.Add(_RestartGame);
-            verticalMenu1.Items.Add(_ExitToMenu);
+            var pauseMenuPanel = createVerticalStackPanel();
 
-            var _menuPanel = new Panel();
-            _menuPanel.Background = new SolidBrush("#000000AA");
-            _menuPanel.Widgets.Add(verticalMenu1);
+            pauseMenuPanel.AddChild(pausedLabel);
+            pauseMenuPanel.AddChild(resumeButton);
+            pauseMenuPanel.AddChild(itemWikiButton);
+            pauseMenuPanel.AddChild(settingsButton);
+            pauseMenuPanel.AddChild(restartGameButton);
+            pauseMenuPanel.AddChild(exitToMenuButton);
 
-            UI.Root = _menuPanel;
+            MenuControlsManager.Instance.SetControls(resumeButton, itemWikiButton, settingsButton, restartGameButton, exitToMenuButton);
+
+            var rootPanel = new Panel();
+            rootPanel.Background = new SolidBrush("#000000AA");
+            rootPanel.AddChild(pauseMenuPanel);
+
+            UI.Root = rootPanel;
         }
 
         public static void ShowPlayModeMenu()
@@ -216,13 +206,7 @@ namespace SandPerSand
                 Background = BackgroundBrush
             };
 
-            var levelSelectorPanel = new VerticalStackPanel()
-            {
-                Spacing = 20,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;"),
-            };
+            var levelSelectorPanel = createVerticalStackPanel();
 
             var titleModeSelection = createTitleLabel("Select Play Mode");
 
@@ -247,6 +231,9 @@ namespace SandPerSand
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 loadManager.LoadAt(1);
                 UI.Root = GraphicalUserInterface.Instance.rootPanel;
+                // disable menu controls
+                // TODO May be move this to a game state OnEnter?
+                MenuControlsManager.Instance.ClearControls();
             };
 
             // Create Exit to Menu
@@ -254,7 +241,7 @@ namespace SandPerSand
 
             ExitToMenuButton.Click += (sender, e) =>
             {
-                ShowMainMenu();
+                ShowPreviousMenu();
             };
 
             levelSelectorPanel.AddChild(titleModeSelection);
@@ -279,22 +266,18 @@ namespace SandPerSand
 
             var titleSettings = createTitleLabel("Settings");
 
-            var SettingsPanel = new VerticalStackPanel()
-            {
-                Spacing = 20,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                GridColumn = 0,
-                GridRow = 0,
-                Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/2;"),
-            };
+            var settingsPanel = createVerticalStackPanel();
+            settingsPanel.GridColumn = 0;
+            settingsPanel.GridRow = 0;
+            settingsPanel.Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/2;");
+            
 
-            var VolumeSliderText = createTextLabel("Music");
-            VolumeSliderText.GridRow = 0;
-            VolumeSliderText.GridColumn = 0;
-            VolumeSliderText.HorizontalAlignment = HorizontalAlignment.Left;
+            var volumeSliderText = createTextLabel("Music");
+            volumeSliderText.GridRow = 0;
+            volumeSliderText.GridColumn = 0;
+            volumeSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
-            var VolumeSlider = new HorizontalSlider()
+            var volumeSlider = new HorizontalSlider()
             {
                 Value = 50,
                 Minimum = 0,
@@ -303,17 +286,17 @@ namespace SandPerSand
                 GridColumn = 1,
             };
 
-            VolumeSlider.ValueChanged += (sender, e) =>
+            volumeSlider.ValueChanged += (sender, e) =>
             {
                 // not implemented yet
             };
 
-            var SoundSliderText = createTextLabel("Sounds");
-            SoundSliderText.GridRow = 1;
-            SoundSliderText.GridColumn = 0;
-            SoundSliderText.HorizontalAlignment = HorizontalAlignment.Left;
+            var soundSliderText = createTextLabel("Sounds");
+            soundSliderText.GridRow = 1;
+            soundSliderText.GridColumn = 0;
+            soundSliderText.HorizontalAlignment = HorizontalAlignment.Left;
 
-            var SoundsSlider = new HorizontalSlider()
+            var soundsSlider = new HorizontalSlider()
             {
                 Value = 50,
                 Minimum = 0,
@@ -322,17 +305,17 @@ namespace SandPerSand
                 GridColumn = 1,
             };
 
-            SoundsSlider.ValueChanged += (sender, e) =>
+            soundsSlider.ValueChanged += (sender, e) =>
             {
                 // not implemented yet
             };
 
-            var ResolutionSelectorText = createTextLabel("Resolution");
-            ResolutionSelectorText.GridRow = 2;
-            ResolutionSelectorText.GridColumn = 0;
-            ResolutionSelectorText.HorizontalAlignment = HorizontalAlignment.Left;
+            var resolutionSelectorText = createTextLabel("Resolution");
+            resolutionSelectorText.GridRow = 2;
+            resolutionSelectorText.GridColumn = 0;
+            resolutionSelectorText.HorizontalAlignment = HorizontalAlignment.Left;
 
-            var ResolutionSelector = new ComboBox()
+            var resolutionSelector = new ComboBox()
             {
                 GridRow = 2,
                 GridColumn = 1,
@@ -348,24 +331,24 @@ namespace SandPerSand
                     continue;
                 }
                 var item = new ListItem() { Text = res.text };
-                ResolutionSelector.Items.Add(item);
+                resolutionSelector.Items.Add(item);
             }
 
-            ResolutionSelector.SelectedIndex = 0;
-            ResolutionSelector.HorizontalAlignment = HorizontalAlignment.Right;
+            resolutionSelector.SelectedIndex = 0;
+            resolutionSelector.HorizontalAlignment = HorizontalAlignment.Right;
 
-            ResolutionSelector.SelectedIndexChanged += (sender, e) =>
+            resolutionSelector.SelectedIndexChanged += (sender, e) =>
             {
-                var index = ResolutionSelector.SelectedIndex.Value;
+                var index = resolutionSelector.SelectedIndex.Value;
                 BackgroundBrush = new TextureRegion(BackgroundTexture, new Rectangle(0, 0, resolutions[index].x, resolutions[index].y));
                 var res = new Engine.Int2(resolutions[index].x, resolutions[index].y);
                 GameEngine.Instance.Resolution = res;
             };
 
-            var ToggleFullscreenText = createTextLabel("Fullscreen");
-            ToggleFullscreenText.GridRow = 3;
-            ToggleFullscreenText.GridColumn = 0;
-            ToggleFullscreenText.HorizontalAlignment = HorizontalAlignment.Left;
+            var toggleFullscreenText = createTextLabel("Fullscreen");
+            toggleFullscreenText.GridRow = 3;
+            toggleFullscreenText.GridColumn = 0;
+            toggleFullscreenText.HorizontalAlignment = HorizontalAlignment.Left;
 
             var ToggleFullscreen = new CheckBox()
             {
@@ -386,37 +369,37 @@ namespace SandPerSand
             };
 
             // Create Exit to Menu
-            var ExitToMenuSettings = createTextButton("Back");
-            ExitToMenuSettings.Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;");
-            ExitToMenuSettings.HorizontalAlignment = HorizontalAlignment.Center;
+            var exitToMenuButton = createTextButton("Back");
+            exitToMenuButton.Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/3;");
+            exitToMenuButton.HorizontalAlignment = HorizontalAlignment.Center;
 
-            ExitToMenuSettings.Click += (sender, e) =>
+            exitToMenuButton.Click += (sender, e) =>
             {
-                ShowMainMenu();
+                ShowPreviousMenu();
             };
 
-            var SettingsGrid = new Grid()
+            var grid = new Grid()
             {
                 ColumnSpacing = 2,
                 RowSpacing = 4,
             };
 
-            SettingsGrid.AddChild(VolumeSliderText);
-            SettingsGrid.AddChild(VolumeSlider);
-            SettingsGrid.AddChild(SoundSliderText);
-            SettingsGrid.AddChild(SoundsSlider);
-            SettingsGrid.AddChild(ResolutionSelectorText);
-            SettingsGrid.AddChild(ResolutionSelector);
-            SettingsGrid.AddChild(ToggleFullscreenText);
-            SettingsGrid.AddChild(ToggleFullscreen);
+            grid.AddChild(volumeSliderText);
+            grid.AddChild(volumeSlider);
+            grid.AddChild(soundSliderText);
+            grid.AddChild(soundsSlider);
+            grid.AddChild(resolutionSelectorText);
+            grid.AddChild(resolutionSelector);
+            grid.AddChild(toggleFullscreenText);
+            grid.AddChild(ToggleFullscreen);
 
-            SettingsPanel.AddChild(titleSettings);
-            SettingsPanel.AddChild(SettingsGrid);
-            SettingsPanel.AddChild(ExitToMenuSettings);
+            settingsPanel.AddChild(titleSettings);
+            settingsPanel.AddChild(grid);
+            settingsPanel.AddChild(exitToMenuButton);
 
-            MenuControlsManager.Instance.SetControls(VolumeSlider, SoundsSlider, ResolutionSelector, ToggleFullscreen, ExitToMenuSettings);
+            MenuControlsManager.Instance.SetControls(volumeSlider, soundsSlider, resolutionSelector, ToggleFullscreen, exitToMenuButton);
 
-            rootPanel.AddChild(SettingsPanel);
+            rootPanel.AddChild(settingsPanel);
 
             UI.Root = rootPanel;
         }
@@ -564,8 +547,7 @@ namespace SandPerSand
             ExitToMenu.Click += (sender, e) =>
             {
                 itemWikiGo.Destroy();
-
-                ShowMainMenu();
+                ShowPreviousMenu();
             };
 
             itemNavGrid.AddChild(leftButton);
@@ -580,6 +562,20 @@ namespace SandPerSand
             MenuControlsManager.Instance.SetControls(leftButton, rightButton, ExitToMenu);
 
             UI.Root = rootPanel;
+        }
+
+        private static void ShowPreviousMenu()
+        {
+            var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+            var sceneIdx = loadManager.LoadedSceneIndex;
+            if (sceneIdx == 0) // in menu
+            {
+                ShowMainMenu();
+            }
+            else
+            {
+                ShowPauseMenu();
+            }
         }
 
         private static void ShowItem(int index, ItemWiki itemWiki, Image image, Label title, Label description)

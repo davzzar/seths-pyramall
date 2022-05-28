@@ -2,7 +2,7 @@
 
 namespace SandPerSand
 {
-    public class MainMenu : Behaviour
+    public class MainMenu : Component
     {
         protected override void OnAwake()
         {

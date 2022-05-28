@@ -100,6 +100,11 @@ namespace SandPerSand
             FocusControl();
         }
 
+        public void ClearControls()
+        {
+            SetControls();
+        }
+
         protected override void OnAwake()
         {
             if (instance != null && instance != this)
