@@ -440,6 +440,186 @@
 /processorParam:Quality=Best
 /build:Sounds/go.ogg
 
+#begin Sounds/InterfaceSounds/back_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/back_001.ogg
+
+#begin Sounds/InterfaceSounds/back_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/back_002.ogg
+
+#begin Sounds/InterfaceSounds/back_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/back_003.ogg
+
+#begin Sounds/InterfaceSounds/back_004.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/back_004.ogg
+
+#begin Sounds/InterfaceSounds/click_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/click_001.ogg
+
+#begin Sounds/InterfaceSounds/click_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/click_002.ogg
+
+#begin Sounds/InterfaceSounds/click_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/click_003.ogg
+
+#begin Sounds/InterfaceSounds/click_004.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/click_004.ogg
+
+#begin Sounds/InterfaceSounds/click_005.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/click_005.ogg
+
+#begin Sounds/InterfaceSounds/pause_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/pause_001.ogg
+
+#begin Sounds/InterfaceSounds/pause_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/pause_002.ogg
+
+#begin Sounds/InterfaceSounds/pause_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/pause_003.ogg
+
+#begin Sounds/InterfaceSounds/pause_004.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/pause_004.ogg
+
+#begin Sounds/InterfaceSounds/pause_005.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/pause_005.ogg
+
+#begin Sounds/InterfaceSounds/select_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/select_001.ogg
+
+#begin Sounds/InterfaceSounds/select_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/select_002.ogg
+
+#begin Sounds/InterfaceSounds/select_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/select_003.ogg
+
+#begin Sounds/InterfaceSounds/startgame_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/startgame_001.ogg
+
+#begin Sounds/InterfaceSounds/startgame_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/startgame_002.ogg
+
+#begin Sounds/InterfaceSounds/startgame_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/startgame_003.ogg
+
+#begin Sounds/InterfaceSounds/startgame_004.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/startgame_004.ogg
+
+#begin Sounds/InterfaceSounds/tick_left.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/tick_left.ogg
+
+#begin Sounds/InterfaceSounds/tick_right.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/tick_right.ogg
+
+#begin Sounds/InterfaceSounds/toggle_off.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/toggle_off.ogg
+
+#begin Sounds/InterfaceSounds/toggle_on.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/toggle_on.ogg
+
+#begin Sounds/InterfaceSounds/unpause_001.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/unpause_001.ogg
+
+#begin Sounds/InterfaceSounds/unpause_002.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/unpause_002.ogg
+
+#begin Sounds/InterfaceSounds/unpause_003.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/unpause_003.ogg
+
+#begin Sounds/InterfaceSounds/unpause_004.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/unpause_004.ogg
+
+#begin Sounds/InterfaceSounds/unpause_005.ogg
+/importer:OggImporter
+/processor:SongProcessor
+/processorParam:Quality=Best
+/build:Sounds/InterfaceSounds/unpause_005.ogg
+
 #begin Sounds/item_use01.ogg
 /importer:OggImporter
 /processor:SoundEffectProcessor
