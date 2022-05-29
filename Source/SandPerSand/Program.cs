@@ -322,6 +322,8 @@ namespace SandPerSand
 
             private int loadedSceneIndex = -1;
 
+            public int LoadedSceneIndex => loadedSceneIndex;
+
             private Scene loadedScene;
 
             protected override void OnAwake()
@@ -488,6 +490,8 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
             }
         }
 

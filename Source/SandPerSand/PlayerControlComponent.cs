@@ -57,9 +57,12 @@ namespace SandPerSand
                     x < Transform.Position.X + rightBound; x += sandGridStep)
                 {
                     var detectPosition = new Vector2(x, Transform.Position.Y);
-                    var index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    SandSim.Int2 index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    SandSim.Int2 index2 = new SandSim.Int2(index.X, index.Y-1);
                     var sandGrid = sandSimulation.SandData[index];
-                    if (sandGrid.HasSand && !sandGrid.IsSandStable)
+                    var sandGrid2 = sandSimulation.SandData[index2];
+                    if (sandGrid.HasSand && !sandGrid.IsSandStable
+                        && sandGrid2.HasSand && !sandGrid2.IsSandStable)
                     {
                         // TODO create HaloGo at THAT place.
                         // activate Halo Animation
@@ -90,16 +93,29 @@ namespace SandPerSand
                     return false;
                 }
                 // set up sand detector vector
-                var xVelo = rigidBody.LinearVelocity.X;
-                var sandDetector = new Vector2(0.2f, 0);
-                if (xVelo < 0)
+                var sandDetector = Conf.SandDetectVec;
+                if (!wasFacingRight)
                 {
                     sandDetector = -sandDetector;
                 }
-                var index = sandSimulation.SandData.PointToIndex(Transform.Position + sandDetector);
-                var sandGrid = sandSimulation.SandData[index];
 
-                return sandGrid.HasSand && !sandGrid.IsSandStable;
+                // detect sand
+                var detectPosition = Transform.Position + sandDetector;
+                Gizmos.DrawLine(detectPosition,
+                    detectPosition + new Vector2(0, 0.1f),Color.LimeGreen,2);
+
+                var index = sandSimulation.SandData.PointToIndex(detectPosition);
+                var sandGrid = sandSimulation.SandData[index];
+                if(sandGrid.HasSand && !sandGrid.IsSandStable)
+                {
+                    // delete sands
+                    var deleteSandPosition = Transform.Position - sandDetector;
+                    Circle circle = new Circle(deleteSandPosition,
+                        Conf.SandDetectRemoveRadius);
+                    sandSimulation.RemoveSand(circle);
+                    return true;
+                }
+                return false;
             }
         }
         
@@ -321,6 +337,8 @@ namespace SandPerSand
                     if (player != null)
                     {
                         player.IsPlayerAlive = false;
+                        // remove on screen controls as well
+                        onScreenControls.Owner.IsEnabled = false;
                         Debug.WriteLine("Player IsAlive set to false.");
                     } else
                     {
