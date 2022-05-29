@@ -185,6 +185,8 @@ namespace Engine
                 scenesToRemove.Clear();
                 scenesToAddBackBuffer.Clear();
                 scenesToRemoveBackBuffer.Clear();
+
+                GC.Collect(2, GCCollectionMode.Forced, false, true);
             }
 
             // Finally, just do a normal update on all open scenes
