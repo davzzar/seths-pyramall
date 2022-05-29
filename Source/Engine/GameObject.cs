@@ -401,10 +401,12 @@ namespace Engine
         /// <seealso cref="FindComponents{T}(IList{T})"/>
         public static T FindComponent<T>() where T : Component
         {
-            foreach (var scene in SceneManager.OpenScenes)
+            for (var si = 0; si < SceneManager.OpenScenes.Count; si++)
             {
-                foreach (var go in scene.Objects)
+                var scene = SceneManager.OpenScenes[si];
+                for (var gi = 0; gi < scene.Objects.Count; gi++)
                 {
+                    var go = scene.Objects[gi];
                     var t = go.GetComponent<T>();
 
                     if (t != null)
@@ -443,10 +445,12 @@ namespace Engine
                 throw new ArgumentNullException(nameof(items));
             }
 
-            foreach (var scene in SceneManager.OpenScenes)
+            for (var si = 0; si < SceneManager.OpenScenes.Count; si++)
             {
-                foreach (var go in scene.Objects)
+                var scene = SceneManager.OpenScenes[si];
+                for (var gi = 0; gi < scene.Objects.Count; gi++)
                 {
+                    var go = scene.Objects[gi];
                     go.GetComponents<T>(items);
                 }
             }

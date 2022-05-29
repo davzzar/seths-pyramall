@@ -16,6 +16,8 @@ namespace SandPerSand
         private float avgDeltaTime;
         private float fontSize;
 
+        private StringBuilder builder = new StringBuilder();
+
         public float Fps { get; private set; }
 
         public static float SandTime { get; set; }
@@ -40,11 +42,34 @@ namespace SandPerSand
             this.avgDeltaTime = (Time.UnscaledDeltaTime + this.avgDeltaTime * 9f) / 10f;
             this.Fps = 1f / this.avgDeltaTime;
 
-            this.textRenderer.Text = $"Total FPS: {MathF.Round(1f / this.avgDeltaTime, 3)}\n" +
-                                     $"Update: {MathF.Round(Time.AvgFrameUpdateTime * 1000, 3)}ms\n" +
-                                     $"Draw: {MathF.Round(Time.AvgFrameDrawTime * 1000, 3)}ms\n" +
-                                     $"Sand: {MathF.Round(SandTime * 1000, 3)}ms\n" +
-                                     $"Memory: {this.GetMemoryString()}";
+            this.builder.Clear();
+            
+            this.builder.Append("Total FPS: ");
+            this.builder.Append(MathF.Round(1f / this.avgDeltaTime, 3));
+            this.builder.AppendLine("ms");
+
+            this.builder.Append("Update: ");
+            this.builder.Append(MathF.Round(Time.AvgFrameUpdateTime * 1000, 3));
+            this.builder.AppendLine("ms");
+
+            this.builder.Append("Draw: ");
+            this.builder.Append(MathF.Round(Time.AvgFrameDrawTime * 1000, 3));
+            this.builder.AppendLine("ms");
+
+            this.builder.Append("Sand: ");
+            this.builder.Append(MathF.Round(SandTime * 1000, 3));
+            this.builder.AppendLine("ms");
+
+            this.builder.Append("Memory: ");
+            this.AppendMemoryString();
+            this.builder.AppendLine();
+
+            this.textRenderer.Text = this.builder.ToString();
+            //$"Total FPS: {MathF.Round(1f / this.avgDeltaTime, 3)}\n" +
+            //$"Update: {MathF.Round(Time.AvgFrameUpdateTime * 1000, 3)}ms\n" +
+            //$"Draw: {MathF.Round(Time.AvgFrameDrawTime * 1000, 3)}ms\n" +
+            //$"Sand: {MathF.Round(SandTime * 1000, 3)}ms\n" +
+            //$"Memory: {this.AppendMemoryString()}";
         }
 
         /// <inheritdoc />
@@ -55,7 +80,7 @@ namespace SandPerSand
             this.textRenderer.ScreenPosition = Vector2.One * 20;
         }
 
-        private string GetMemoryString()
+        private void AppendMemoryString()
         {
             var bytes = (double)GC.GetTotalMemory(false);
             int postFixIndex;
@@ -70,7 +95,10 @@ namespace SandPerSand
                 bytes /= 1024;
             }
 
-            return Math.Round(bytes, 2).ToString(CultureInfo.InvariantCulture) + postFixes[postFixIndex];
+            this.builder.Append(Math.Round(bytes, 2).ToString(CultureInfo.InvariantCulture));
+            this.builder.Append(postFixes[postFixIndex]);
+
+            //return Math.Round(bytes, 2).ToString(CultureInfo.InvariantCulture) + postFixes[postFixIndex];
         }
     }
 }

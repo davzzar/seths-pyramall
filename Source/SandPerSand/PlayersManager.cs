@@ -370,8 +370,10 @@ namespace SandPerSand
         public void CheckConnections()
         {
             // check for new connection / disconnection
-            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
+            //foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
+            for(var i = 0; i < 4; i++)
             {
+                var playerIndex = (PlayerIndex)i;
                 var capabilities = GamePad.GetCapabilities(playerIndex);
                 if (capabilities.IsConnected)
                 {

@@ -83,7 +83,8 @@ namespace SandPerSand
         {
             get
             {
-                if (GameStateManager.Instance.CurrentState != GameState.InRound
+                if (GameStateManager.Instance.CurrentState != GameState.InRound  &&
+                    GameStateManager.Instance.CurrentState != GameState.CountDown
                     || sandSimulation == null)
                 {
                     return false;
@@ -101,8 +102,7 @@ namespace SandPerSand
                 return sandGrid.HasSand && !sandGrid.IsSandStable;
             }
         }
-
-
+        
         // State
         public bool IsGrounded { get; private set; }
         public bool WasGrounded { get; private set; }

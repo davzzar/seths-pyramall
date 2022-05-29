@@ -12,6 +12,12 @@ namespace SandPerSand.SandSim
 {
     public sealed class SandRenderer : Renderer
     {
+        private Task[] taskBuffer = Array.Empty<Task>();
+
+        private readonly List<RenderTaskEntry> renderTaskEntryCache = new List<RenderTaskEntry>();
+
+        private readonly Stopwatch stopwatch = new Stopwatch();
+
         private Texture2D sandTexture;
 
         private Color[] sandTextureData;
@@ -53,7 +59,8 @@ namespace SandPerSand.SandSim
                 return;
             }
             
-            var stopwatch = Stopwatch.StartNew();
+            this.stopwatch.Restart();
+
             this.DrawGizmos();
             
             if (this.sandTexture == null || this.sandTexture.Width != this.SandGrid.ResolutionX ||
@@ -87,16 +94,34 @@ namespace SandPerSand.SandSim
 
             var tc = Math.Min(4, ThreadPool.ThreadCount);
             var range = this.SandGrid.ResolutionY / tc;
-            var tasks = new Task[tc - 1];
+
+            if (this.taskBuffer.Length != tc - 1)
+            {
+                this.taskBuffer = new Task[tc - 1];
+            }
+
+            while (this.renderTaskEntryCache.Count < tc - 1)
+            {
+                this.renderTaskEntryCache.Add(new RenderTaskEntry(this));
+            }
 
             for (var i = 0; i < tc - 1; i++)
             {
-                var i1 = i;
-                tasks[i] = Task.Run(() => this.DrawSandBufferPart(range * i1, range * (i1 + 1)));
+                //var i1 = i;
+                //tasks[i] = Task.Run(() => this.DrawSandBufferPart(range * i1, range * (i1 + 1)));
+
+                var renderTaskEntry = this.renderTaskEntryCache[i];
+                renderTaskEntry.Start = range * i;
+                renderTaskEntry.End = range * (i + 1);
+                this.taskBuffer[i] = Task.Run(renderTaskEntry.RunAction);
             }
 
             this.DrawSandBufferPart(range * (tc - 1), this.SandGrid.ResolutionY);
-            Task.WaitAll(tasks);
+
+            for (var i = 0; i < this.taskBuffer.Length; i++)
+            {
+                this.taskBuffer[i].Wait();
+            }
 
             this.sandTexture.SetData(this.sandTextureData);
 
@@ -105,8 +130,30 @@ namespace SandPerSand.SandSim
             var matrix = Matrix3x3.CreateTRS(pivot, 0f, size);
             Graphics.Draw(this.sandTexture, Color.White, ref matrix, 0.9f);
 
-            stopwatch.Stop();
-            FpsCounterComponent.SandTime = (float)stopwatch.Elapsed.TotalSeconds;
+            this.stopwatch.Stop();
+            FpsCounterComponent.SandTime = (float)this.stopwatch.Elapsed.TotalSeconds;
+        }
+
+        private class RenderTaskEntry
+        {
+            public int Start, End;
+
+            public readonly SandRenderer Owner;
+
+            public readonly Action RunAction;
+
+            public RenderTaskEntry(SandRenderer owner)
+            {
+                this.Start = 0;
+                this.End = 1;
+                this.Owner = owner;
+                this.RunAction = this.Run;
+            }
+
+            public void Run()
+            {
+                this.Owner.DrawSandBufferPart(this.Start, this.End);
+            }
         }
 
         [Conditional("DEBUG")]
