@@ -8,6 +8,7 @@ namespace Engine
     /// <summary>
     /// Base class for all renderer that need to render with respect to the screen size.
     /// </summary>
+    [Obsolete("Use Myra UI instead.")]
     public abstract class GuiRenderer : Behaviour
     {
         private float depth;

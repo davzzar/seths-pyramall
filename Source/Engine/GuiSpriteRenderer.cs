@@ -10,6 +10,7 @@ namespace Engine
     /// <summary>
     /// Renderer class for rendering a single sprite in screen space
     /// </summary>
+    [Obsolete("Use Myra UI instead.")]
     public sealed class GuiSpriteRenderer : GuiRenderer
     {
         /// <summary>

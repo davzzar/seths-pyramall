@@ -82,7 +82,7 @@ namespace SandPerSand
             OnUpdate?.Invoke();
         }
 
-        protected void ChangeState<State>() where State : State<T>
+        public void ChangeState<State>() where State : State<T>
         {
             var nextState = Owner.Transform.Parent.Owner
                 .GetComponentInChildren<State>() ?? throw

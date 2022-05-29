@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Enumeration;
 using System.Linq;
 using System.Net;
 using Engine;
@@ -228,7 +229,24 @@ namespace SandPerSand
                 uiSelectSfx?.Play();
             };
 
-            var restartGameButton = createTextButton("Restart Game");
+            // BUG: Restart button causes player to disappear, fix this!
+            /*var restartGameButton = createTextButton("Restart Game");
+            restartGameButton.Click += (sender, e) =>
+            {
+                // FIXME Does not actually exit the game, just loads menu
+
+                var playersManager = GameObject.FindComponent<PlayersManager>();
+                playersManager.Reset();
+                
+                // exit game, unload scene, show menu
+                var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                //show menu
+                sceneManager.LoadAt(1);
+
+                RemovePauseMenu();
+                
+                uiBackSfx?.Play();
+            };*/
 
             var exitToMenuButton = createTextButton("Exit to Main Menu");
             exitToMenuButton.Id = "_ExitToMenu";
@@ -240,6 +258,11 @@ namespace SandPerSand
                 var sceneManager = GameObject.FindComponent<Program.SceneManagerComponent>();
                 //show menu
                 sceneManager.LoadAt(0);
+
+                var playersManager = GameObject.FindComponent<PlayersManager>();
+                playersManager.Reset();
+
+                RemovePauseMenu();
                 
                 uiBackSfx?.Play();
             };
@@ -250,10 +273,11 @@ namespace SandPerSand
             pauseMenuPanel.AddChild(resumeButton);
             pauseMenuPanel.AddChild(itemWikiButton);
             pauseMenuPanel.AddChild(settingsButton);
-            pauseMenuPanel.AddChild(restartGameButton);
+            //pauseMenuPanel.AddChild(restartGameButton);
             pauseMenuPanel.AddChild(exitToMenuButton);
 
-            MenuControlsManager.Instance.SetControls(resumeButton, itemWikiButton, settingsButton, restartGameButton, exitToMenuButton);
+            //MenuControlsManager.Instance.SetControls(resumeButton, itemWikiButton, settingsButton, restartGameButton, exitToMenuButton);
+            MenuControlsManager.Instance.SetControls(resumeButton, itemWikiButton, settingsButton, exitToMenuButton);
 
             var rootPanel = new Panel();
             rootPanel.Background = new SolidBrush("#000000AA");

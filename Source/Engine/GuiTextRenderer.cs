@@ -1,4 +1,6 @@
-﻿namespace Engine
+﻿using JetBrains.Annotations;
+
+namespace Engine
 {
     using System;
     using System.Collections.Generic;
@@ -7,6 +9,7 @@
     using Microsoft.Xna.Framework;
     using Microsoft.Xna.Framework.Graphics;
 
+    [Obsolete("Use Myra UI instead.")]
     public sealed class GuiTextRenderer : GuiRenderer
     {
         private string text;

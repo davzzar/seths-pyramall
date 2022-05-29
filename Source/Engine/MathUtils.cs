@@ -172,8 +172,7 @@ namespace Engine
 
             return MathF.Atan2(sin, cos);
         }
-
-
+        
         /// <summary>
         /// Get the angle between two vectors in degrees.
         /// </summary>

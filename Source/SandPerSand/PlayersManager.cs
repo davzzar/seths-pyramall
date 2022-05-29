@@ -64,6 +64,19 @@ namespace SandPerSand
         private SoundEffectPlayer itemPickupSoundEffect;
         private SoundEffectPlayer itemBuySoundEffect;
 
+        public void Reset()
+        {
+            foreach (var player in Players)
+            {
+                player.Value.Destroy();
+            }
+
+            this.Players.Clear();
+            this.InitialPositions.Clear();
+            this.ShopEntryPosition = default;
+            this.GSM.Reset();
+        }
+
         protected override void OnEnable()
         {
             // add components to the manager owner

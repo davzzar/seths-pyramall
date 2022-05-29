@@ -186,6 +186,8 @@ namespace SandPerSand.SandSim
             this.cellBuffer = new List<Int2>();
 
             this.sandGridReader = new SandGridReader();
+
+            this.sandFrontBuffer = this.sandBackBuffer = new SandGrid(1, 1, Vector2.Zero, Vector2.One);
         }
 
         public void AddSandSource(in Aabb rect)

@@ -35,13 +35,26 @@ namespace SandPerSand
 "CurrentGameState all over the place, instead register your code to OnEnter," +
 "OnExit events of corresponding State.")]
         public GameState CurrentGameState => CurrentState.GameState;
+
         protected override void Update()
         {
             base.Update();
         }
+
         public State GetState<State>() where State : State<RealGameStateManager>
         {
             return Owner.GetComponentInChildren<State>();
+        }
+
+        public void Reset()
+        {
+            if (this.CurrentState is PrepareState)
+            {
+                return;
+            }
+
+            var nextState = this.GetState<PrepareState>();
+            this.CurrentState.ChangeState<PrepareState>();
         }
     }
 
