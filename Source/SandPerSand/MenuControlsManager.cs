@@ -29,7 +29,7 @@ namespace SandPerSand
 
         // Input handling
         private InputHandler inputHandler = new InputHandler(PlayerIndex.One);
-        private bool IsConnected => GamePad.GetCapabilities(PlayerIndex.One).IsConnected;
+        private bool IsConnected => GamePad.GetState(PlayerIndex.One).IsConnected;
         private bool DownPressed => inputHandler.getButtonState(Buttons.DPadDown) == ButtonState.Pressed;
         private bool UpPressed => inputHandler.getButtonState(Buttons.DPadUp) == ButtonState.Pressed;
         private bool LeftPressed => inputHandler.getButtonState(Buttons.DPadLeft) == ButtonState.Pressed;
@@ -130,16 +130,16 @@ namespace SandPerSand
 
         protected override void Update()
         {
+            if (controlsList.Count == 0)
+            {
+                return;
+            }
+
             if (!IsConnected)
             {
                 return;
             }
 
-            if (controlsList.Count == 0)
-            {
-                return;
-            }
-            
             inputHandler.UpdateState();
 
             // Handle Input and State

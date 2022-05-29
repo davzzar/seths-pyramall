@@ -42,7 +42,7 @@ namespace SandPerSand
         {
             inputHandler.UpdateState();
 
-            if (!GamePad.GetCapabilities(PlayerIndex.One).IsConnected) return;
+            if (!GamePad.GetState(PlayerIndex.One).IsConnected) return;
 
             if (!IsStartPressed) return;
             if (!IsPaused)

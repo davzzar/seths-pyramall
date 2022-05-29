@@ -374,8 +374,7 @@ namespace SandPerSand
             for(var i = 0; i < 4; i++)
             {
                 var playerIndex = (PlayerIndex)i;
-                var capabilities = GamePad.GetCapabilities(playerIndex);
-                if (capabilities.IsConnected)
+                if (GamePad.GetState(playerIndex).IsConnected)
                 {
                     if (!players.ContainsKey(playerIndex))
                     {
