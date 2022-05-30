@@ -119,9 +119,19 @@ namespace SandPerSand
             size.Y = MathF.Max(size.Y, size.X * aspectRatio);
 
             // Clamp the edges of the rectangles to the bounds
+            if (center.X + size.X / 2f > this.Bounds.Max.X)
+            {
+                center.X = this.Bounds.Max.X - size.X / 2f;
+            }
+
+            if (center.X - size.X / 2f < this.Bounds.Min.X)
+            {
+                center.X = this.Bounds.Min.X + size.X / 2f;
+            }
+
             if (center.Y + size.Y / 2f > this.Bounds.Max.Y)
             {
-                center.Y = this.Bounds.Min.Y - size.Y / 2f;
+                center.Y = this.Bounds.Max.Y - size.Y / 2f;
             }
 
             if (center.Y - size.Y / 2f < this.Bounds.Min.Y)

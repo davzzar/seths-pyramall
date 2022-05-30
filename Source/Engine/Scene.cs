@@ -11,11 +11,11 @@ namespace Engine
     /// </summary>
     public sealed class Scene
     {
-        private readonly List<GameObject> allObjects = new List<GameObject>();
+        private readonly List<GameObject> allObjects;
 
-        private readonly List<GameObject> objectsToAdd = new List<GameObject>();
+        private readonly List<GameObject> objectsToAdd;
 
-        private readonly List<GameObject> objectsToRemove = new List<GameObject>();
+        private readonly List<GameObject> objectsToRemove;
 
         private bool isLoaded;
 
@@ -37,7 +37,7 @@ namespace Engine
         /// <summary>
         /// Gets a read-only accessor to all game objects that are part of this scene.
         /// </summary>
-        public IReadOnlyList<GameObject> Objects => this.allObjects.AsReadOnly();
+        public IReadOnlyList<GameObject> Objects { get; }
 
         /// <summary>
         /// Gets a read-only accessor to all game objects that are part of this scene and don't have a parent.
@@ -50,6 +50,11 @@ namespace Engine
         public Scene()
         {
             this.Name = "New Scene";
+
+            this.allObjects = new List<GameObject>();
+            this.Objects = this.allObjects.AsReadOnly();
+            this.objectsToAdd = new List<GameObject>();
+            this.objectsToRemove = new List<GameObject>();
         }
 
         internal void OnLoad()

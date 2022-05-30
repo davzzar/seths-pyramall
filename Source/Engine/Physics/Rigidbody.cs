@@ -230,17 +230,39 @@ namespace Engine
             this.body.LinearDamping = this.linearDamping;
             this.body.Mass = this.mass;
 
+            this.colliders.Clear();
             this.Owner.GetComponentsInChildren(this.colliders);
 
-            foreach (var collider in this.colliders)
+            for (var i = this.colliders.Count - 1; i >= 0; i--)
             {
-                collider.OwningRigidBody = this;
+                var collider = this.colliders[i];
+
+                if (collider.IsActiveInHierarchy)
+                {
+                    collider.OwningRigidBody = this;
+                }
+                else
+                {
+                    this.colliders.RemoveAt(i);
+                }
             }
         }
 
         /// <inheritdoc />
         protected override void OnDisable()
         {
+            Debug.Assert(this.body != null);
+            
+            foreach (var collider in this.colliders)
+            {
+                collider.OwningRigidBody = null;
+            }
+
+            this.colliders.Clear();
+
+            PhysicsManager.World.Remove(this.body);
+            this.body = null;
+
             PhysicsManager.Remove(this);
         }
 

@@ -21,6 +21,8 @@ namespace Engine
         
         private GameObject owner;
 
+        internal ComponentState componentState = ComponentState.Created;
+
         /// <summary>
         /// Gets the <see cref="GameObject"/> to which this <see cref="Component"/> belongs.
         /// </summary>
@@ -140,6 +142,14 @@ namespace Engine
 
         internal void OnAwakeInternal()
         {
+            Debug.Assert(this.componentState == ComponentState.Created);
+
+            if (this.componentState != ComponentState.Created)
+            {
+                return;
+            }
+
+            this.componentState = ComponentState.Awakened;
             this.OnAwake();
 
 #if DEBUG
@@ -155,10 +165,22 @@ namespace Engine
 
         internal void OnDestroyInternal()
         {
+            Debug.Assert(this.componentState == ComponentState.Awakened);
+
+            var currentState = this.componentState;
+            this.componentState = ComponentState.Destroyed;
+
+            if (currentState != ComponentState.Awakened)
+            {
+                this.owner = null;
+                return;
+            }
+            
+            this.componentState = ComponentState.Destroyed;
             this.OnDestroy();
             this.owner = null;
 
-            #if DEBUG
+#if DEBUG
 
             foreach (var drawGizmosCallback in this.drawGizmosCallbacks)
             {
@@ -168,7 +190,16 @@ namespace Engine
             this.canRegisterGizmosCallbacks = false;
             this.drawGizmosCallbacks.Clear();
 
-            #endif
+#endif
+        }
+
+        internal enum ComponentState
+        {
+            Created,
+
+            Awakened,
+
+            Destroyed
         }
     }
 }

@@ -16,6 +16,7 @@ namespace SandPerSand.SandSim
         private List<Int2> updateFrontBuffer;
         private List<Int2> updateBackBuffer;
         private List<Int2> newSandBuffer;
+        private List<Int2> cellBuffer;
         private HashSet<Int2> updateLookup;
         private HashSet<Int2> newSandLookup;
         private SandRenderer sandRenderer;
@@ -118,7 +119,6 @@ namespace SandPerSand.SandSim
             this.sandBackBuffer.Position.Y + this.sandBackBuffer.Size.Y - this.RaisingSandUpperMargin > this.RaisingSandHeight &&
             !this.PauseRaisingSand && this.RaisingSandHeight > 0.0f;
 
-
         /// <summary>
         /// Gets or sets the speed at which the raising sand raises in world units per second.
         /// </summary>
@@ -183,8 +183,11 @@ namespace SandPerSand.SandSim
             this.updateLookup = new HashSet<Int2>();
             this.newSandBuffer = new List<Int2>();
             this.newSandLookup = new HashSet<Int2>();
+            this.cellBuffer = new List<Int2>();
 
             this.sandGridReader = new SandGridReader();
+
+            this.sandFrontBuffer = this.sandBackBuffer = new SandGrid(1, 1, Vector2.Zero, Vector2.One);
         }
 
         public void AddSandSource(in Aabb rect)
@@ -210,6 +213,30 @@ namespace SandPerSand.SandSim
             }
 
             this.RemoveSandSourceFromSimData(in rect);
+        }
+
+        public void RemoveSand<T>(in T shape) where T : IArea
+        {
+            this.cellBuffer.Clear();
+            this.sandBackBuffer.ShapeCast(in shape, out _, cellBuffer);
+
+            foreach (var cellIndex in this.cellBuffer)
+            {
+                var cell = this.sandFrontBuffer[in cellIndex];
+
+                if (!cell.HasSand || cell.IsSandSource)
+                {
+                    continue;
+                }
+
+                cell.MarkEmpty();
+
+                this.sandFrontBuffer[in cellIndex] = cell;
+                this.sandBackBuffer[in cellIndex] = cell;
+
+                this.MarkForUpdate(cellIndex.X, cellIndex.Y);
+                this.MarkNeighborsForUpdate(cellIndex.X, cellIndex.Y);
+            }
         }
         
         public void ClearSandSources()

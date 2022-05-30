@@ -36,6 +36,8 @@ namespace SandPerSand
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
             managerGo.AddComponent<PlayersManager>();
+            var stateGo = Template.MakeGameStateManager();
+
             var itemwiki = managerGo.AddComponent<ItemWiki>();
             itemwiki.LoadFromContent("TilesetItems");
 
@@ -52,11 +54,16 @@ namespace SandPerSand
 
         private static GameObject CreateCamera()
         {
+            var tileMap = GameObject.FindComponent<TileMapBase>();
+            var min = tileMap.Transform.Position - new Vector2(2, 2);
+            var size = tileMap.Size + new Vector2(2, 2);
+
+
             var cameraGo = new GameObject();
             var cameraComp = cameraGo.AddComponent<Camera>();
             cameraComp.Height = 50;
             var cameraController = cameraGo.AddComponent<CameraController2>();
-            cameraController.Bounds = Aabb.FromMinMax(new Vector2(-2, -2f), new Vector2(51, 100f));
+            cameraController.Bounds = Aabb.FromMinMax(min, size);
             //var cameraSway = cameraGo.AddComponent<SwayComponent>();
             //cameraSway.MaxSway = MathF.PI * 0.25f;
             //cameraSway.SwaySpeed = 0f; //MathF.PI * 0.05f;
@@ -107,6 +114,7 @@ namespace SandPerSand
             sandSim.ResolutionY = (int)(map.Size.Y * 5);
             sandSim.MaxLayer = 1;
             sandSim.ColliderLayerMask = LayerMask.FromLayers(0);
+
 
             //var rightBorderGo = new GameObject("Right border");
             //rightBorderGo.Transform.Position = new Vector2(-2, 0);
@@ -314,7 +322,28 @@ namespace SandPerSand
 
             private int loadedSceneIndex = -1;
 
+            public int LoadedSceneIndex => loadedSceneIndex;
+
             private Scene loadedScene;
+
+            protected override void OnAwake()
+            {
+                base.OnAwake();
+                var realGSM = GameObject.FindComponent<RealGameStateManager>();
+                realGSM.GetState<InShopState>().OnEnter += (sender, fromState) => {
+                    LoadShopScene();
+                };
+                realGSM.GetState<PreRoundState>().OnEnter += (sender, fromState) => {
+                    if (fromState.GetType() == typeof(InShopState))
+                    {
+                        LoadLevelScene();
+                    }
+                    else if (fromState.GetType() == typeof(RoundCheckState))
+                    {
+                        Reload();
+                    }
+                };
+            }
 
             public void LoadAt(int index)
             {
@@ -322,9 +351,26 @@ namespace SandPerSand
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
-                    var guiGo = new GameObject();
+                    var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
+            }
+
+            public void Reload()
+            {
+                if (this.loadedScene != null)
+                {
+                    SceneManager.UnloadScene(this.loadedScene);
+                }
+
+                var scene = new Scene();
+                scene.Name = "Scene " + this.loadedSceneIndex;
+
+                var loaderGo = new GameObject($"Loader for Scene {loadedSceneIndex}", scene);
+                loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
+
+                this.loadedScene = scene;
+                SceneManager.LoadSceneAdditive(this.loadedScene);
             }
 
             /// <inheritdoc />
@@ -362,6 +408,7 @@ namespace SandPerSand
                 }
 
                 var scene = new Scene();
+                scene.Name = "Scene " + index;
 
                 var loaderGo = new GameObject($"Loader for Scene {index}", scene);
                 loaderGo.AddComponent(this.SceneLoaderTypes[index]);
@@ -370,6 +417,17 @@ namespace SandPerSand
                 this.loadedSceneIndex = index;
 
                 SceneManager.LoadSceneAdditive(this.loadedScene);
+            }
+
+            // FIXME hard code 
+            private void LoadShopScene()
+            {
+                LoadAt(3);
+            }
+            // FIXME hard code 
+            private void LoadLevelScene()
+            {
+                LoadAt(1);
             }
         }
 
@@ -432,8 +490,8 @@ namespace SandPerSand
 
                 CreateMap("test_level_1");
                 CreateCamera();
-///HEAD
-                CreateSandPhysics_level_1();
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
             }
         }
 

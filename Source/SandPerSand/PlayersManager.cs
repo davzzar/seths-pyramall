@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -12,6 +12,7 @@ namespace SandPerSand
 {
     public class PlayersManager : Behaviour
     {
+        private RealGameStateManager GSM;
         private static PlayersManager instance;
         internal static PlayersManager Instance
         {
@@ -25,7 +26,7 @@ namespace SandPerSand
             }
         }
 
-        private Dictionary<PlayerIndex, GameObject> players;
+        private static Dictionary<PlayerIndex, GameObject> players;
         public Dictionary<PlayerIndex, GameObject> Players
         {
             get => players;
@@ -56,16 +57,26 @@ namespace SandPerSand
             Debug.Print("player manager created");
         }
 
-        public GameState? LastGameState { get; set; }
-        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
-        // TODO hard coded shopTime
-        public float ShopTime { get; private set; } = 30f;
-        public float ShopTimeCounter { get; private set; } = 0;
+        public float ShopTime { get; private set; } = Conf.Time.ShopTime;
+        public GoTimer ShopTimer { get; private set; } = null;
         public int CurRank { get; private set; }
-        private PlayerIndex[] rankList;
 
         private SoundEffectPlayer itemPickupSoundEffect;
         private SoundEffectPlayer itemBuySoundEffect;
+
+        public void Reset()
+        {
+            foreach (var player in Players)
+            {
+                player.Value.Destroy();
+            }
+
+            this.Players.Clear();
+            this.InitialPositions.Clear();
+            this.ShopEntryPosition = default;
+            this.GSM.Reset();
+        }
+
         protected override void OnEnable()
         {
             // add components to the manager owner
@@ -78,141 +89,189 @@ namespace SandPerSand
             itemBuySoundEffect = Owner.AddComponent<SoundEffectPlayer>();
             itemBuySoundEffect.LoadFromContent("Sounds/shop_payment");
         }
+
+        private void DefPrepare()
+        {
+            GSM.GetState<PrepareState>().OnEnter += (sender, lastState) =>
+            {
+                SetAllPlayerControls(false);
+            };
+            GSM.GetState<PrepareState>().OnUpdate += () =>
+            {
+                CheckConnections();
+            };
+
+        }
+        private void DefPreRound()
+        {
+            bool isEntered = false;
+            GSM.GetState<PreRoundState>().OnEnter += (sender, lastState) =>
+            {
+                foreach (var player in Players.Values)
+                {
+                    PlayerUtils.UnhidePlayer(player);
+                    player.GetComponent<PlayerComponent>()!.IsPlayerAlive = true;
+                }
+                SetAllPlayerControls(false);
+                if (lastState.GetType() == typeof(PrepareState))
+                {
+                    isEntered = true;
+                }
+                else
+                {
+                    isEntered = false;
+                }
+                    
+            };
+            GSM.GetState<PreRoundState>().OnUpdate += () =>
+            {
+                if (!isEntered)
+                {
+                    isEntered = EnterRoundStartCountdownFromShopOrRoundCheck();
+                }
+                else
+                {
+                    //Do real update stuff
+                }
+            };
+        }
+
+        private void DefInRound()
+        {
+            GSM.GetState<InRoundState>().OnEnter += (sender, lastState) =>
+            {
+                SetAllPlayerControls(true);
+            };
+
+        }
+        private void DefRoundCheck()
+        {
+            GSM.GetState<RoundCheckState>().OnEnter += (sender, lastState) => {
+                FinalizeRanks();
+                // hide all players
+                foreach (var item in Players)
+                {
+                    PlayerUtils.HidePlayer(item.Value);
+                    Debug.Print("Player " + item.Key + " : Rank " +
+                        item.Value.GetComponent<PlayerStates>().RoundRank);
+                }
+            };
+            GSM.GetState<RoundCheckState>().OnExit += ( ) => {
+                // clear initial positions when exit a round
+                InitialPositions = new List<Vector2>();
+            };
+            
+        }
+
+        public List<PlayerIndex> ShopQueue;
+        public bool AllFinishedShop => ShopQueue.All(playerIndex => Players[playerIndex].GetComponent<PlayerStates>()!.FinishedShop);
+        private void DefInShop()
+        {
+            ShopQueue = new List<PlayerIndex>();
+            bool isEntered = false;
+
+            InShopState inShop = GSM.GetState<InShopState>();
+            inShop.OnEnter += (sender,preState) => {
+                isEntered = false;
+            };
+            inShop.OnUpdate += () => {
+                if (!isEntered)
+                {
+                    isEntered = EnterShop();
+                }
+                else
+                {
+                    DuringShop();
+                }
+            };
+            inShop.OnExit += () => {
+                GoTimer[] timerList = Owner.GetComponents<GoTimer>();
+                foreach (var timer in timerList)
+                {
+                    timer.Destroy();
+                }
+                ShopQueue = new List<PlayerIndex>();
+                // ShopEntryPsition must be reset after use
+                ShopEntryPosition = Vector2.Zero;
+            };
+        }
+
         protected override void OnAwake()
         {
             base.OnAwake();
-            LastGameState = null;
+            GSM = GameObject.FindComponent<RealGameStateManager>();
+            DefPrepare();
+            DefPreRound();
+            DefInRound();
+            DefRoundCheck();
+            DefInShop();
         }
 
         protected override void Update()
         {
-            if (CurrentGameState == GameState.InRound && LastGameState != GameState.InRound)
+        }
+
+        private void DuringShop()
+        {
+            bool ItsCurrentPlayersTurn =
+    CurRank == 0 || CurRank < ShopQueue.Count &&
+    Players[ShopQueue[CurRank - 1]].GetComponent<PlayerStates>().FinishedShop;
+            if (ItsCurrentPlayersTurn)
             {
-                SetAllPlayerControls(true);
-            }
-            else if ((CurrentGameState == GameState.RoundStartCountdown || CurrentGameState == GameState.Prepare) && LastGameState != CurrentGameState)
-            {
-                SetAllPlayerControls(false);
-            }
-            else if (CurrentGameState == GameState.RoundStartCountdown)
-            {
-                if (LastGameState == GameState.Shop)
-                {
-                    // this holds because we clear initial positions each time we exit a round
-                    // initial positions are round specific
-                    if (InitialPositions.ToArray().Length <= 0)
-                    {
-                        Debug.Print("Cannot respawn Players, because the map is " +
-                            "not loaded or no initial positions on map.");
-                        return;
-                    }
-                    LastGameState = GameState.InRound;
-                    foreach (var playerIndex in Players.Keys)
-                    {
-                        RespawnPlayer(playerIndex, GetRandomInitialPos());
-                    }
-                }
-            }
-            else if (CurrentGameState == GameState.Shop)
-            {
-                var atLeastOneAlive = false;
-                foreach (var player in Players)
-                {
-                    if (player.Value.GetComponentInChildren<PlayerComponent>().IsAlive == true)
-                    {
-                        atLeastOneAlive = true;
-                    }
-                }
-                if (!atLeastOneAlive)
-                {
-                    Debug.WriteLine("No players were alive. No shop.");
-                    foreach (var player in Players)
-                    {
-                        player.Value.GetComponentInChildren<PlayerStates>().FnishedShop = true;
-                    }
-                    LastGameState = GameState.Shop;
-                    return;
-                }
-                if (LastGameState != GameState.Shop)
-                {
-                    // FIXME wait for shop map
-                    if (ShopEntryPosition.X < 4)
-                    {
-                        Debug.Print("Cannot respawn Player in the shop, " +
-                            "because initial position is not yet loaded or invalid.");
-                        return;
-                    }
-                    // clear initial positions when exit a round
-                    // since they are round-specific FIXME better place to do this???
-                    InitialPositions = new List<Vector2>();
+                var curPlayer = Players[ShopQueue[CurRank]];
+                var curPlayerState = curPlayer.GetComponent<PlayerStates>();
+                //Debug.Assert(curPlayerState.FinishedShop == false);
+                PlayerUtils.ResumePlayerControl(curPlayer);
+                // init new timer
+                ShopTimer = Owner.AddComponent<GoTimer>();
+                // bug only canceled the last timer
+                ShopTimer.Init(ShopTime,
+                    () => {
+                        curPlayerState.FinishedShop = true;
+                        PlayerUtils.HidePlayer(curPlayer);
+                    });
 
-                    // calculate rank list
-                    rankList = new PlayerIndex[Players.Count];
-                    foreach (var player in Players)
-                    {
-                        var rank = player.Value.GetComponent<PlayerStates>().RoundRank;
-                        if (rank <= 0)
-                        {
-                            throw new Exception("Invalid rank at end");
-                        }
-                        rankList[rank - 1] = player.Key;
-                    }
-
-                    // respawn players -> queue by rank list
-                    // disable all players controller
-                    var entryX = ShopEntryPosition.X;
-                    foreach (var playerIndex in rankList)
-                    {
-                        if (players[playerIndex].GetComponentInChildren<PlayerComponent>().IsAlive == true)
-                        {
-                            RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
-                            PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
-                        } else
-                        {
-                            players[playerIndex].GetComponentInChildren<PlayerStates>().FnishedShop = true;
-                        }
-                    }
-                    // ShopEntryPsition can be reset right after use
-                    // If not reset, players will be spawned before shop map is
-                    // loaded next time ... then drop
-                    ShopEntryPosition = Vector2.Zero;
-                    LastGameState = GameState.Shop;
-                    ShopTimeCounter = ShopTime;
-                    CurRank = 0;
-                }
-                ShopTimeCounter += Time.DeltaTime;
-
-                // TODO HOY fix for out of bounds exception on line 191
-                if (CurRank - 1 >= rankList.Length || CurRank <= 0)
-                {
-                    CurRank = 0;
-                }
-
-                if (ShopTimeCounter >= ShopTime || Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop)
-                {
-                    // Reset the shop coutner
-                    ShopTimeCounter = 0;
-
-                    // If this was not the first player, set the one before to be finished with the shop
-                    if(CurRank>0)
-                    {
-                        Players[rankList[CurRank - 1]].GetComponent<PlayerStates>().FnishedShop = true;
-                        //Players[rankList[curRank - 1]].GetComponent<PlayerControlComponent>().IsActive = false;
-                    }
-
-                    // Activate the controller of the next player
-                    if(CurRank < rankList.Length) 
-                        PlayerUtils.ResumePlayerControl(Players[rankList[CurRank]]);
-                    CurRank++;
-                }
-
+                CurRank++;
             }
         }
 
+        private bool EnterShop()
+        {
+            // wait for shop map
+            if (ShopEntryPosition.X < 4)
+            {
+                Debug.Print("Cannot respawn Player in the shop, " +
+                    "because initial position is not yet loaded or invalid.");
+                return false;
+            }
+            Debug.Print("PM: -> Shop");
+            // respawn players -> queue by rank list
+            var entryX = ShopEntryPosition.X;
+            foreach (var playerIndex in ShopQueue)
+            {
+                RespawnPlayer(playerIndex, new Vector2(entryX--, ShopEntryPosition.Y));
+                // disable all players controller
+                PlayerUtils.ShieldPlayerControl(Players[playerIndex]);
+            }
+            CurRank = 0;
+            return true;
+        }
 
-
-        public GameObject GetPlayer(PlayerIndex index) {
-            return players[index];
+        private bool EnterRoundStartCountdownFromShopOrRoundCheck()
+        {
+            // make sure initial positions are loaded from the new level
+            if (InitialPositions.ToArray().Length <= 0)
+            {
+                Debug.Print("Cannot respawn Players, because the map is " +
+                    "not loaded or no initial positions on map.");
+                return false;
+            }
+            foreach (var playerIndex in Players.Keys)
+            {
+                RespawnPlayer(playerIndex, GetRandomInitialPos());
+            }
+            SetAllPlayerControls(false);
+            return true;
         }
 
         public bool DestroyPlayer(PlayerIndex index)
@@ -221,7 +280,6 @@ namespace SandPerSand
             {
                 return false;
             }
-            
             GraphicalUserInterface.Instance.destroyPlayerInfo(index);
             players[index].Destroy();
             players.Remove(index);
@@ -250,12 +308,17 @@ namespace SandPerSand
         {
             if (players.ContainsKey(playerIndex))
             {
+                players[playerIndex].IsEnabled = true;
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = false;
                 players[playerIndex].GetComponent<RigidBody>().LinearVelocity = Vector2.Zero;
+                players[playerIndex].GetComponent<RigidBody>()!.IsKinematic = false;
                 players[playerIndex].Transform.Position = position;
+                players[playerIndex].GetComponent<SpriteRenderer>()!.IsActive = true;
                 players[playerIndex].GetComponent<Animator>().Entry();
                 players[playerIndex].GetComponent<PlayerControlComponent>().IsActive = true;
-                players[playerIndex].GetComponent<PlayerComponent>().IsAlive = true;
+                players[playerIndex].GetComponent<PlayerComponent>().IsPlayerAlive = true;
+                players[playerIndex].GetComponent<PlayerComponent>()!.AddCameraControlPoint();
+                players[playerIndex].GetComponentInChildren<Collider>().IsActive = true;
             }
             else
             {
@@ -320,10 +383,11 @@ namespace SandPerSand
         public void CheckConnections()
         {
             // check for new connection / disconnection
-            foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
+            //foreach (PlayerIndex playerIndex in Enum.GetValues(typeof(PlayerIndex)))
+            for(var i = 0; i < 4; i++)
             {
-                var capabilities = GamePad.GetCapabilities(playerIndex);
-                if (capabilities.IsConnected)
+                var playerIndex = (PlayerIndex)i;
+                if (GamePad.GetState(playerIndex).IsConnected)
                 {
                     if (!players.ContainsKey(playerIndex))
                     {
@@ -375,7 +439,7 @@ namespace SandPerSand
             
             foreach (var player in players.Values)
             {
-                if (player.GetComponent<PlayerComponent>()!.IsAlive)
+                if (player.GetComponent<PlayerComponent>()!.IsPlayerAlive)
                 {
                     return false;
                 }
@@ -392,12 +456,7 @@ namespace SandPerSand
                 return false;
             }
 
-            return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsAlive || player.GetComponent<PlayerStates>().Exited);
-        }
-
-        public bool CheckAllFinishedShop()
-        {
-            return players.Values.All(player => player.GetComponent<PlayerStates>()!.FnishedShop);
+            return Players.Values.All(player => !player.GetComponent<PlayerComponent>().IsPlayerAlive || player.GetComponent<PlayerStates>().Exited);
         }
 
         public void FinalizeRanks()
@@ -421,7 +480,7 @@ namespace SandPerSand
 
         public List<GameObject> InGamePlayerGo()
         {
-            return players.Values.Where(player => !player.GetComponent<PlayerStates>()!.Exited && player.GetComponent<PlayerComponent>()!.IsAlive).ToList();
+            return players.Values.Where(player => !player.GetComponent<PlayerStates>()!.Exited && player.GetComponent<PlayerComponent>()!.IsPlayerAlive).ToList();
         }
 
         public void SetAllPlayerControls(bool enabled)
@@ -448,16 +507,24 @@ namespace SandPerSand
         public string MajorItem;
         public int Coins;
         public bool Exited { get; set; }
-        public bool FnishedShop { get; set; }
+        private bool finishedShop;
+        public bool FinishedShop
+        {
+            get => finishedShop;
+            set
+            {
+                finishedShop = value;
+            }
+        }
         public int RoundRank { get; set; }
         public int Score { get; set; }
         public InputHandler InputHandler { get; set; }
         private bool PrepareButtonPressed => InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
         public GameState LastGameState{ get; set; }
-        public GameState CurrentGameState => GameStateManager.Instance.CurrentState;
         public Collider Collider { get; set; }
 
-        public List<(string id, float timeleft, float tot_time, Vector2 pos)> ActiveItems { private set; get; }
+        public List<Items.Item> ActiveItems { private set; get; }
+        public List<Items.Item> PursueItems { private set; get; }
 
         protected override void OnAwake()
         {
@@ -467,10 +534,29 @@ namespace SandPerSand
             MajorItem = null;
             Coins = 0;
             Exited = false;
-            FnishedShop = false;
+            FinishedShop = false;
             RoundRank = -1;
-            ActiveItems = new List<(string id, float timeleft, float tot_time, Vector2 pos)>();
+            ActiveItems = new List<Items.Item>();
+            PursueItems = new List<Items.Item>();
             Score = 0;
+
+            var realGSM = GameObject.FindComponent<RealGameStateManager>();
+            realGSM.GetState<InShopState>().OnExit += () =>
+            {
+                FinishedShop = false;
+            };
+            realGSM.GetState<PreRoundState>().OnEnter += (sender,preState) =>
+            {
+                Exited = false;
+                RoundRank = -1;
+            };
+            realGSM.GetState<PrepareState>().OnUpdate += () =>
+            {
+                if (PrepareButtonPressed)
+                {
+                    TogglePrepared();
+                }
+            };
         }
 
         /// <summary>
@@ -478,85 +564,91 @@ namespace SandPerSand
         /// </summary>
         protected override void Update()
         {
-            //<<<<<<< Yuchen stuff
-            if (PrepareButtonPressed && CurrentGameState == GameState.Prepare)
-            {
-                TogglePrepared();
-            }
-            if (LastGameState != CurrentGameState)
-            {
-                if(LastGameState == GameState.RoundCheck )
-                {
-
-                    FnishedShop = false;
-                }else if(LastGameState == GameState.Shop)
-                {
-                    // reset round states
-                    Exited = false;
-                    RoundRank = -1;
-                }
-                LastGameState = CurrentGameState;
-            }
-            //======= End of Yuchen stuff
-
-            //<<<<<<< Clemens stuff
             var timeDelta = Time.DeltaTime;
 
             var remove = new List<int>();
 
-            //bool lightning = false;
+            bool lightning = false;
 
-            for (var i = 0; i < ActiveItems.Count; i++)
+            for (var i = 0; i < PursueItems.Count; i++)
             {
-                var pos = ActiveItems[i].pos;
-                var time = ActiveItems[i].timeleft;
-                if (ActiveItems[i].id == "position_swap")
+                if (PursueItems[i].Id == ItemId.position_swap)
                 {
-                    Debug.Print((ActiveItems[i].pos - this.Transform.Position).LengthSquared().ToString());
-                    if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.5f)
+                    if (((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed < ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime)
                     {
-                        this.Transform.Position = ActiveItems[i].pos;
-                        time = -1f;
-                        Collider.IsActive = true;
+                        float fraction = - ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed + ((Items.PositionSwapItem)PursueItems[i]).ExchangeTime;
+                        Debug.Print(fraction.ToString());
+                        //fraction = ((float)Math.Log2(fraction + 1d));
+                        fraction = ((float)Math.Pow(0.9d, fraction * 50f));
+                        //fraction = ((float)Math.Pow(2f, -fraction));
+                        Debug.Print(fraction.ToString());
+                        this.Transform.Position = PursueItems[i].Position * fraction + (1 - fraction) * ((Items.PositionSwapItem) PursueItems[i]).Source;
+                        ((Items.PositionSwapItem)PursueItems[i]).ExchangeTimePassed += timeDelta;
+                        Collider.IsActive = false;
                     }
                     else
                     {
-                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
-                        this.Transform.Position = (ActiveItems[i].pos * 0.1f + 0.9f * this.Transform.Position) + vel / 10;
-                        var collider = this.Owner.GetComponent<Collider>();
-                        Collider.IsActive = false;
+                        PursueItems[i].Delete = true;
+                        Collider.IsActive = true;
+                        this.Owner.GetComponent<PlayerControlComponent>().rigidBody.LinearVelocity = ((Items.PositionSwapItem)PursueItems[i]).Velocity;
                     }
                 }
                 else
                 {
-                    if (ActiveItems[i].pos.Y < 0)
+                    if ((PursueItems[i].Position - this.Transform.Position).LengthSquared() < 0.1f)
                     {
-                        pos = ActiveItems[i].pos;
-                        time = ActiveItems[i].timeleft - timeDelta;
-                    }
-                    else if ((ActiveItems[i].pos - this.Transform.Position).LengthSquared() < 0.1f)
-                    {
-                        pos = -Vector2.One;
-                        time = ActiveItems[i].timeleft - timeDelta;
+                        PursueItems[i].pursue = false;
                     }
                     else
                     {
-                        var vel = (ActiveItems[i].pos - this.Transform.Position) / (ActiveItems[i].pos - this.Transform.Position).Length();
-                        pos = ActiveItems[i].pos * 0.9f + 0.1f * this.Transform.Position - vel / 10;
-                        time = ActiveItems[i].timeleft;
+                        var vel = (PursueItems[i].Position - this.Transform.Position) / (PursueItems[i].Position - this.Transform.Position).Length();
+                        PursueItems[i].Position = PursueItems[i].Position * 0.9f + 0.1f * this.Transform.Position - vel / 10;
                     }
                 }
-
-                if (ActiveItems[i].timeleft < 0)
+             }
+            for (var i = PursueItems.Count - 1; i >= 0; i--)
+            {
+                if (PursueItems[i].Delete)
                 {
-                    remove.Add(i);
+                    PursueItems.RemoveAt(i);
                 }
-                ActiveItems[i] = (ActiveItems[i].id, time, ActiveItems[i].tot_time, pos);
+                else if (!PursueItems[i].pursue)
+                {
+                    bool updated = false;
+                    for (var j = 0; j < ActiveItems.Count; j++)
+                    {
+                        if (PursueItems[i].Id == ActiveItems[j].Id)
+                        {
+                            ActiveItems[j].TimeLeft = PursueItems[i].TotTime;
+                            updated = true;
+                            break;
+                        }
+                    }
+                    if (!updated)
+                    {
+                        ActiveItems.Add(PursueItems[i]);
+                    }
+                    PursueItems.RemoveAt(i);
+                }
+            }
 
-                //if(activeItems[i].id == "lightning")
-                //{
-                //    lightning = true;
-                //}
+            for (var i = ActiveItems.Count - 1; i >= 0; i--)
+            {
+                ActiveItems[i].TimeLeft = ActiveItems[i].TimeLeft - timeDelta;
+
+                if(ActiveItems[i].TimeLeft < 0)
+                {
+                    ActiveItems[i].Delete = true;
+                }
+
+                if (ActiveItems[i].Id == ItemId.lightning)
+                {
+                    lightning = true;
+                }
+                if (ActiveItems[i].Delete)
+                {
+                    ActiveItems.RemoveAt(i);
+                }
             }
 
             //if (lightning)
@@ -565,17 +657,6 @@ namespace SandPerSand
             //    Collider.IsActive = false;
             //    Collider.IsActive = true;
             //}
-
-            for (var i = remove.Count - 1; i >= 0; i--)
-            {
-                if (ActiveItems[i].id == "lightning")
-                {
-                    Collider.Owner.GetComponentInParents<PlayerComponent>().Transform.LossyScale = Vector2.One;
-                    Collider.Transform.LossyScale = Vector2.One * 0.8f;
-                }
-                ActiveItems.RemoveAt(remove[i]);
-            }
-            //======= End of Clemens stuff
         }
 
         public void TogglePrepared()
@@ -604,11 +685,8 @@ namespace SandPerSand
             //returns true if item was added
             if (major)
             {
-                if (MajorItem == null)
-                {
-                    MajorItem = item;
-                    return true;
-                }
+                MajorItem = item;
+                return true;
             }
             else
             {
@@ -662,17 +740,17 @@ namespace SandPerSand
             float jumpfactor = 1;
             foreach(var item in ActiveItems)
             {
-                if(item.id == "wings") 
+                if(item.Id == ItemId.wings) 
                 {
-                    jumpfactor *= 1.5f;
+                    jumpfactor *= 2f;
                 }
-                else if(item.id == "ice_block")
+                else if(item.Id == ItemId.ice_block)
                 {
                     jumpfactor *= 0;
                 }
-                else if ((item.id == "lightning"))
+                else if ((item.Id == ItemId.lightning))
                 {
-                    jumpfactor *= 0.8f;
+                    jumpfactor *= 0.5f;
                 }
             }
             return jumpfactor;
@@ -684,17 +762,17 @@ namespace SandPerSand
 
             foreach (var item in ActiveItems)
             {
-                if (item.id == "speedup")
+                if (item.Id == ItemId.speedup)
                 {
                     accelleration *= 1.5f;
                 }
-                else if (item.id == "ice_block")
+                else if (item.Id == ItemId.ice_block)
                 {
                     accelleration *= 0f;
                 }
-                else if ((item.id == "lightning"))
+                else if ((item.Id == ItemId.lightning))
                 {
-                    accelleration *= 0.8f;
+                    accelleration *= 0.5f;
                 }
             }
             return accelleration;
@@ -706,7 +784,7 @@ namespace SandPerSand
 
             foreach (var item in ActiveItems)
             {
-                if (item.id == "dizzy_eyes")
+                if (item.Id == ItemId.dizzy_eyes)
                 {
                     invertedMovement *= -1f;
                 }
@@ -718,7 +796,7 @@ namespace SandPerSand
         {
             foreach (var item in ActiveItems)
             {
-                if (item.id == "position_swap")
+                if (item.Id == ItemId.position_swap)
                 {
                     return false;
                 }
@@ -726,17 +804,24 @@ namespace SandPerSand
             return true;
         }
 
-        public void AddActiveItem(string id, float timeleft, float totTime, Vector2 pos)
+        public void AddActiveItem(Items.Item newItem)
         {
-            for (var i = 0; i < ActiveItems.Count; i++)
-            { 
-                if(id == ActiveItems[i].id)
-                {
-                    ActiveItems[i] = (id, timeleft, totTime, pos);
-                    return;
-                }
+            if (newItem.pursue)
+            {
+                PursueItems.Add(newItem);
             }
-            ActiveItems.Add((id, timeleft, totTime, pos));
+            else
+            {
+                for (var i = 0; i < ActiveItems.Count; i++)
+                {
+                    if (newItem.Id == ActiveItems[i].Id)
+                    {
+                        ActiveItems[i].TimeLeft = newItem.TotTime;
+                        return;
+                    }
+                }
+                ActiveItems.Add(newItem);
+            }
         }
     }
 }
