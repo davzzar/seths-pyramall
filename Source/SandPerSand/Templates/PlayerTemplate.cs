@@ -46,7 +46,8 @@ namespace SandPerSand
             diggingSoundComp.Trigger = () =>
             {
                 var pcc = playerGo.GetComponent<PlayerControlComponent>();
-                return pcc.HasSandReached && pcc.InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
+                var player = playerGo.GetComponent<PlayerComponent>();
+                return player.IsPlayerAlive && pcc.HasSandReached && pcc.InputHandler.getButtonState(Buttons.A) == ButtonState.Pressed;
             };
 
             var stepSoundComp = playerGo.AddComponent<SoundEffectPlayer>();
