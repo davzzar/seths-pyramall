@@ -22,9 +22,15 @@ namespace SandPerSand
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
-        private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
-        private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement();
+        private bool JumpButtonPressed => !this.IgnorePlayerInput && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
+        private bool JumpButtonUp => !this.IgnorePlayerInput && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
+
+        private float HorizontalDirection => !this.IgnorePlayerInput
+            ? InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) *
+              this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement()
+            : 0f;
+
+        public bool IgnorePlayerInput { get; set; }
 
         // Hard Jump
         public bool WillHardJump => CanHardJump&& JumpButtonPressed;
