@@ -22,8 +22,8 @@ namespace SandPerSand
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
-        private bool JumpButtonPressed => !this.IgnorePlayerInput && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
-        private bool JumpButtonUp => !this.IgnorePlayerInput && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
+        private bool JumpButtonPressed => !this.IgnorePlayerInput && !this.IgnorePlayerJump && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
+        private bool JumpButtonUp => !this.IgnorePlayerInput && !this.IgnorePlayerJump && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
 
         private float HorizontalDirection => !this.IgnorePlayerInput
             ? InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) *
@@ -31,6 +31,8 @@ namespace SandPerSand
             : 0f;
 
         public bool IgnorePlayerInput { get; set; }
+
+        public bool IgnorePlayerJump { get; set; }
 
         // Hard Jump
         public bool WillHardJump => CanHardJump&& JumpButtonPressed;
@@ -379,17 +381,13 @@ namespace SandPerSand
                     if (JumpButtonPressed)
                     {
                         sandVelocity.X = MathF.Sign(HorizontalDirection) * pushStrength;
-                        sandVelocity.Y = sandSimulation.RaisingSandSpeed * pushStrength;
+                        sandVelocity.Y = MathF.Max(sandSimulation.RaisingSandSpeed, 0.2f) * pushStrength;
                     }
                     else
                     {
                         sandVelocity.X = 0.0f;
-                        sandVelocity.Y =  sandSimulation.RaisingSandSpeed * restMultiplier;
-                    }
 
-                    if (!sandSimulation.IsSandRising)
-                    {
-                        sandVelocity.Y = 0.0f;
+                        sandVelocity.Y = (this.sandSimulation.IsSandRising ? 1f : -1f) * this.sandSimulation.RaisingSandSpeed * restMultiplier;
                     }
 
                     rigidBody.LinearVelocity = sandVelocity;
