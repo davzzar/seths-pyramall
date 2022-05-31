@@ -508,6 +508,7 @@ namespace Engine
             }
 
             this.state = GameObjectState.Disabled;
+            Statistics.AliveGameObjectCount++;
         }
 
         internal void OnDisableInternal(bool isDestroying)
@@ -546,6 +547,8 @@ namespace Engine
             this.state = GameObjectState.Disabled;
             this.isChangingEnableState = false;
 
+            Statistics.ActiveGameObjectCount--;
+
             if (this.IsEnabledInHierarchy && this.IsAlive)
             {
                 if (isDestroying)
@@ -573,6 +576,7 @@ namespace Engine
             }
 
             this.state = GameObjectState.Destroyed;
+            Statistics.AliveGameObjectCount--;
         }
         
         internal void UpdateEnabledState()
@@ -657,6 +661,8 @@ namespace Engine
 
             this.state = GameObjectState.Enabled;
             this.isChangingEnableState = false;
+
+            Statistics.ActiveGameObjectCount++;
 
             if (!this.IsEnabledInHierarchy && this.IsAlive)
             {

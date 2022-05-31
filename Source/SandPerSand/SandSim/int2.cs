@@ -6,34 +6,34 @@ namespace SandPerSand.SandSim
     /// <summary>
     /// A simple convenience struct to pass around indices.
     /// </summary>
-    public readonly struct Int2 : IEquatable<Int2>
+    public readonly struct Int2_old : IEquatable<Int2_old>
     {
-        public static readonly Int2 Zero = new Int2(0, 0);
+        public static readonly Int2_old Zero = new Int2_old(0, 0);
 
         public readonly int X;
 
         public readonly int Y;
 
-        public Int2(int x, int y)
+        public Int2_old(int x, int y)
         {
             this.X = x;
             this.Y = y;
         }
 
-        public Int2(in int x, in int y)
+        public Int2_old(in int x, in int y)
         {
             this.X = x;
             this.Y = y;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        public static Int2 Clamp(in Int2 value, in Int2 min, in Int2 max)
+        public static Int2_old Clamp(in Int2_old value, in Int2_old min, in Int2_old max)
         {
-            return new Int2(Math.Clamp(value.X, min.X, max.X), Math.Clamp(value.Y, min.Y, max.Y));
+            return new Int2_old(Math.Clamp(value.X, min.X, max.X), Math.Clamp(value.Y, min.Y, max.Y));
         }
 
         /// <inheritdoc />
-        public bool Equals(Int2 other)
+        public bool Equals(Int2_old other)
         {
             return this.X == other.X && this.Y == other.Y;
         }
@@ -41,7 +41,7 @@ namespace SandPerSand.SandSim
         /// <inheritdoc />
         public override bool Equals(object obj)
         {
-            return obj is Int2 other && this.Equals(other);
+            return obj is Int2_old other && this.Equals(other);
         }
 
         /// <inheritdoc />

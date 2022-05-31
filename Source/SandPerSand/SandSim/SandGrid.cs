@@ -371,7 +371,7 @@ namespace SandPerSand.SandSim
         public Int2 PointToIndexClamped(in Vector2 point)
         {
             var index = this.PointToIndex(in point);
-            return Int2.Clamp(in index, in Int2.Zero, in this.maxCellIndex);
+            return Int2.Clamp(index, Int2.Zero, this.maxCellIndex);
         }
 
         #endregion

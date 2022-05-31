@@ -67,6 +67,7 @@ namespace Engine
 
             Debug.Assert(!this.renderers.Contains(renderer));
             renderers.Add(renderer);
+            Statistics.ActiveRendererCount++;
         }
 
         internal void AddGuiRenderer(GuiRenderer renderer)
@@ -88,6 +89,7 @@ namespace Engine
 
             Debug.Assert(!this.guiRenderers.Contains(renderer));
             this.guiRenderers.Add(renderer);
+            Statistics.ActiveRendererCount++;
         }
 
         internal void RemoveCamera(Camera camera)
@@ -120,6 +122,8 @@ namespace Engine
 
             Debug.Assert(this.renderers.Contains(renderer));
             this.renderers.RemoveSwapBack(renderer);
+
+            Statistics.ActiveRendererCount--;
         }
 
         internal void RemoveGuiRenderer(GuiRenderer renderer)
@@ -136,6 +140,8 @@ namespace Engine
 
             Debug.Assert(this.guiRenderers.Contains(renderer));
             this.guiRenderers.RemoveSwapBack(renderer);
+
+            Statistics.ActiveRendererCount--;
         }
 
         internal void Render()
