@@ -10,9 +10,16 @@ public static class RoundsGenerator
         int? index = null;
         while (true)
         {
-            var newIndex = rand.Next(possibleRoundsList.Count - (index == null ? 0 : 1));
-            index = index != null && newIndex >= index ? newIndex + 1 : newIndex;
-            yield return possibleRoundsList[(int) index];
+            if (possibleRoundsList.Count == 1)
+            {
+                yield return possibleRoundsList[0];
+            }
+            else
+            {
+                var newIndex = rand.Next(possibleRoundsList.Count - (index == null ? 0 : 1));
+                index = index != null && newIndex >= index ? newIndex + 1 : newIndex;
+                yield return possibleRoundsList[(int)index];
+            }
         }
     }
 
