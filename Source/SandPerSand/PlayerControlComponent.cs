@@ -245,7 +245,7 @@ namespace SandPerSand
 
                     }
 
-                    if (count >= 20)
+                    if (count >= 16)
                     {
                         return true;
                     }
