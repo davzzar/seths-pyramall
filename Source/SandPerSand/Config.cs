@@ -33,7 +33,7 @@ namespace SandPerSand
 
         public static class Time
         {
-            public static float ShopTime = 10f;
+            public static float ShopTime = 30f;
         }
 
 
