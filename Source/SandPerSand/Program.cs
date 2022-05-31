@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -347,26 +348,28 @@ namespace SandPerSand
                     //}
                 };
 
-                realGSM.GetState<InMenuState>().OnEnter += (sender, fromState) =>
+                realGSM.GetState<InMenuState>().OnEnter += async (sender, fromState) =>
                 {
                     GameObject.FindComponent<PlayersManager>()?.Reset();
-                    LoadMainMenu();
+                    await LoadMainMenu();
                     Template.ShowWinScreen();
                 };
             }
-
-            public void LoadAt(int index)
+            
+            public async Task<Scene> LoadAt(int index)
             {
-                this.RunSceneLoader(index);
+                var scene = await this.RunSceneLoader(index);
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
                     var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
+
+                return scene;
             }
 
-            public void Reload()
+            public async Task<Scene> Reload()
             {
                 if (this.loadedScene != null)
                 {
@@ -380,12 +383,12 @@ namespace SandPerSand
                 loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
 
                 this.loadedScene = scene;
-                SceneManager.LoadSceneAdditive(this.loadedScene);
+                return await SceneManager.LoadSceneAdditive(this.loadedScene);
             }
 
-            private void LoadMainMenu()
+            private async Task<Scene> LoadMainMenu()
             {
-                LoadAt(0);
+                return await LoadAt(0);
             }
 
             /// <inheritdoc />
@@ -410,11 +413,11 @@ namespace SandPerSand
                 }
             }
 
-            private void RunSceneLoader(int index)
+            private async Task<Scene> RunSceneLoader(int index)
             {
                 if (this.loadedSceneIndex == index)
                 {
-                    return;
+                    return null;
                 }
 
                 if (this.loadedScene != null)
@@ -431,7 +434,7 @@ namespace SandPerSand
                 this.loadedScene = scene;
                 this.loadedSceneIndex = index;
 
-                SceneManager.LoadSceneAdditive(this.loadedScene);
+                return await SceneManager.LoadSceneAdditive(this.loadedScene);
             }
 
             // FIXME hard code 
