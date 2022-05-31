@@ -424,11 +424,6 @@ namespace SandPerSand
 
             private async Task<Scene> RunSceneLoader(int index)
             {
-                if (this.loadedSceneIndex == index)
-                {
-                    return null;
-                }
-
                 if (this.loadedScene != null)
                 {
                     SceneManager.UnloadScene(this.loadedScene);
