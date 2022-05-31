@@ -60,6 +60,18 @@ namespace SandPerSand
             this.builder.Append(MathF.Round(SandTime * 1000, 3));
             this.builder.AppendLine("ms");
 
+            this.builder.Append("Alive Game Objects: ");
+            this.builder.Append(Statistics.AliveGameObjectCount);
+            this.builder.AppendLine();
+
+            this.builder.Append("Active Game Objects: ");
+            this.builder.Append(Statistics.ActiveGameObjectCount);
+            this.builder.AppendLine();
+
+            this.builder.Append("Active Renderer: ");
+            this.builder.Append(Statistics.ActiveRendererCount);
+            this.builder.AppendLine();
+
             this.builder.Append("Memory: ");
             this.AppendMemoryString();
             this.builder.AppendLine();
