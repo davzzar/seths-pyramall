@@ -7,9 +7,19 @@ public static class RoundsGenerator
     {
         var possibleRoundsList = new List<int>() { 1, 4, 5 };
         var rand = new Random();
+        int? index = null;
         while (true)
         {
-            yield return possibleRoundsList[rand.Next(possibleRoundsList.Count)];
+            if (possibleRoundsList.Count == 1)
+            {
+                yield return possibleRoundsList[0];
+            }
+            else
+            {
+                var newIndex = rand.Next(possibleRoundsList.Count - (index == null ? 0 : 1));
+                index = index != null && newIndex >= index ? newIndex + 1 : newIndex;
+                yield return possibleRoundsList[(int)index];
+            }
         }
     }
 
