@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Enumeration;
 using System.Linq;
@@ -359,7 +360,7 @@ namespace SandPerSand
             UI.Root = rootPanel;
         }
 
-        public static void ShowWinScreen()
+        public static void ShowWinScreen(List<(int score, PlayerIndex index)> scores)
         {
             var rootPanel = new Panel
             {
@@ -368,7 +369,7 @@ namespace SandPerSand
 
             var winScreenPanel = createVerticalStackPanel();
 
-            var winner = "Player";
+            var winner = $"Player {scores[0].index}";
 
             var titleModeSelection = createTitleLabel($"{winner} wins!");
 

@@ -350,9 +350,18 @@ namespace SandPerSand
 
                 realGSM.GetState<InMenuState>().OnEnter += async (sender, fromState) =>
                 {
-                    GameObject.FindComponent<PlayersManager>()?.Reset();
+                    var playersManager = GameObject.FindComponent<PlayersManager>();
+                    
+                    var scores = new List<(int score, PlayerIndex index)>();
+                    foreach (var (playerIndex, playerObject) in PlayersManager.Instance.Players)
+                    {
+                        scores.Add((playerObject.GetComponent<PlayerStates>().Score, playerIndex));
+                    }
+                    scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+                    
+                    playersManager.Reset();
                     await LoadMainMenu();
-                    Template.ShowWinScreen();
+                    Template.ShowWinScreen(scores);
                 };
             }
             
