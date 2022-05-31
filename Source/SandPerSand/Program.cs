@@ -330,18 +330,28 @@ namespace SandPerSand
             {
                 base.OnAwake();
                 var realGSM = GameObject.FindComponent<RealGameStateManager>();
+                
                 realGSM.GetState<InShopState>().OnEnter += (sender, fromState) => {
                     LoadShopScene();
                 };
+                
                 realGSM.GetState<PreRoundState>().OnEnter += (sender, fromState) => {
-                    if (fromState.GetType() == typeof(InShopState))
-                    {
-                        LoadLevelScene();
-                    }
-                    else if (fromState.GetType() == typeof(RoundCheckState))
-                    {
-                        Reload();
-                    }
+                    LoadLevelScene();
+                    //if (fromState.GetType() == typeof(InShopState))
+                    //{
+                    //    LoadLevelScene();
+                    //}
+                    //else if (fromState.GetType() == typeof(RoundCheckState))
+                    //{
+                    //    Reload();
+                    //}
+                };
+
+                realGSM.GetState<InMenuState>().OnEnter += (sender, fromState) =>
+                {
+                    GameObject.FindComponent<PlayersManager>()?.Reset();
+                    LoadMainMenu();
+                    Template.ShowWinScreen();
                 };
             }
 
@@ -371,6 +381,11 @@ namespace SandPerSand
 
                 this.loadedScene = scene;
                 SceneManager.LoadSceneAdditive(this.loadedScene);
+            }
+
+            private void LoadMainMenu()
+            {
+                LoadAt(0);
             }
 
             /// <inheritdoc />
@@ -425,9 +440,10 @@ namespace SandPerSand
                 LoadAt(3);
             }
             // FIXME hard code 
-            private void LoadLevelScene()
+            internal void LoadLevelScene()
             {
-                LoadAt(1);
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                LoadAt(gsm.Rounds.Current);
             }
         }
 

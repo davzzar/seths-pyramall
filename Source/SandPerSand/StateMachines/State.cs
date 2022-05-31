@@ -90,6 +90,12 @@ namespace SandPerSand
                 $"has no state of type {typeof(State)}");
 
             var lastState = stateManager.CurrentState;
+
+            if (nextState == lastState)
+            {
+                return;
+            }
+            
             stateManager.CurrentState.Exit();
             stateManager.CurrentState = nextState;
             stateManager.CurrentState.EnterFrom(lastState);

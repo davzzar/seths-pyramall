@@ -73,5 +73,6 @@ namespace SandPerSand
         CountDown,
         RoundCheck,
         Shop,
+        Menu,
     }
 }

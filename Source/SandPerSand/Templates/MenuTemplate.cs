@@ -310,13 +310,19 @@ namespace SandPerSand
             };*/
 
             // Create Mode 2 Button
-            var InfinityModeButton = createTextButton("Infinity Mode");
+            var infinityModeButton = createTextButton("Infinity Mode");
 
             // When the start button is clicked, remove the GUI by setting UI.Root to null
-            InfinityModeButton.Click += (sender, e) =>
+            infinityModeButton.Click += (sender, e) =>
             {
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                gsm.GetState<InMenuState>().ChangeState<PrepareState>();
+                gsm.Rounds = RoundsGenerator.InfiniteRounds();
+                gsm.Rounds.MoveNext();
+                
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                loadManager.LoadAt(1);
+                loadManager.LoadLevelScene();
+                
                 UI.Root = GraphicalUserInterface.Instance.rootPanel;
                 // disable menu controls
                 // TODO May be move this to a game state OnEnter?
@@ -326,10 +332,15 @@ namespace SandPerSand
                 uiStartGameSfx?.Play();
             };
 
-            // Create Exit to Menu
-            var ExitToMenuButton = createTextButton("Back");
+            // Create Mode 3 Button
+            var roundModeButton = createTextButton("Rounds Game");
 
-            ExitToMenuButton.Click += (sender, e) =>
+            AddRoundsGameClickListener(roundModeButton);
+
+            // Create Exit to Menu
+            var exitToMenuButton = createTextButton("Back");
+
+            exitToMenuButton.Click += (sender, e) =>
             {
                 ShowPreviousMenu();
                 uiBackSfx?.Play();
@@ -337,14 +348,73 @@ namespace SandPerSand
 
             levelSelectorPanel.AddChild(titleModeSelection);
             //levelSelectorPanel.AddChild(Mode1Button);
-            levelSelectorPanel.AddChild(InfinityModeButton);
-            levelSelectorPanel.AddChild(ExitToMenuButton);
+            levelSelectorPanel.AddChild(infinityModeButton);
+            levelSelectorPanel.AddChild(roundModeButton);
+            levelSelectorPanel.AddChild(exitToMenuButton);
 
-            MenuControlsManager.Instance.SetControls(InfinityModeButton, ExitToMenuButton);
+            MenuControlsManager.Instance.SetControls(infinityModeButton, roundModeButton, exitToMenuButton);
 
             rootPanel.AddChild(levelSelectorPanel);
 
             UI.Root = rootPanel;
+        }
+
+        public static void ShowWinScreen()
+        {
+            var rootPanel = new Panel
+            {
+                Background = BackgroundBrush
+            };
+
+            var winScreenPanel = createVerticalStackPanel();
+
+            var winner = "Player";
+
+            var titleModeSelection = createTitleLabel($"{winner} wins!");
+
+            var replayButton = createTextButton("Replay");
+
+            AddRoundsGameClickListener(replayButton);
+
+            var exitToMenuButton = createTextButton("Back To Menu");
+
+            exitToMenuButton.Click += (sender, e) =>
+            {
+                ShowPlayModeMenu();
+                uiBackSfx?.Play();
+            };
+
+            winScreenPanel.AddChild(titleModeSelection);
+            winScreenPanel.AddChild(replayButton);
+            winScreenPanel.AddChild(exitToMenuButton);
+
+            MenuControlsManager.Instance.SetControls(replayButton, exitToMenuButton);
+
+            rootPanel.AddChild(winScreenPanel);
+
+            UI.Root = rootPanel;
+        }
+
+        private static void AddRoundsGameClickListener(TextButton button)
+        {
+            button.Click += (sender, e) =>
+            {
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                gsm.GetState<InMenuState>().ChangeState<PrepareState>();
+                gsm.Rounds = RoundsGenerator.Rounds(3);
+                gsm.Rounds.MoveNext();
+
+                var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                loadManager.LoadLevelScene();
+
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
+                // disable menu controls
+                // TODO May be move this to a game state OnEnter?
+                MenuControlsManager.Instance.ClearControls();
+
+                // start game sfx
+                uiStartGameSfx?.Play();
+            };
         }
 
         public static void ShowSettings()
