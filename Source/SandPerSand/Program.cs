@@ -32,7 +32,7 @@ namespace SandPerSand
 #endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2), typeof(LoadSceneLevel3) });
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -503,7 +503,7 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene 1");
                 Debug.Print("Loaded Scene Multiplayer");
                 for (int i = 0; i < 4; ++i)
                 {
@@ -533,7 +533,28 @@ namespace SandPerSand
                 CreateMap("level_2");
                 CreateCamera();
                 ///HEAD
-                CreateSandPhysics_level_1();
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
+            }
+        }
+
+        private class LoadSceneLevel3 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 3");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("level_3");
+                CreateCamera();
+                ///HEAD
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
             }
         }
         private class ShopScene : Component
