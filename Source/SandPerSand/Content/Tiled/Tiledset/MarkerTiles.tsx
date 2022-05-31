@@ -7,7 +7,7 @@
  <tile id="0" type="Entry"/>
  <tile id="1" type="Exit"/>
  <tile id="2" type="Stone"/>
- <tile id="3" type="Marker"/>
+ <tile id="3" type="SandScooper"/>
  <tile id="4" type="Marker"/>
  <tile id="5" type="Marker">
   <objectgroup draworder="index" id="2">
