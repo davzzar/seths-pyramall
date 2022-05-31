@@ -488,7 +488,7 @@ namespace SandPerSand
                     Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
                 }
 
-                CreateMap("test_level_1");
+                CreateMap("biglevel2");
                 CreateCamera();
                 var pauseGO = new GameObject("Pause Menu Controller");
                 pauseGO.AddComponent<PauseMenuController>();
