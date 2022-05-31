@@ -128,6 +128,9 @@ namespace SandPerSand
                     // Add Renderer
                     _ = AddTileRenderer(newTileGo, tile);
                     break;
+                case "SandScooper":
+                    _ = newTileGo.AddComponent<SandScooper>();
+                    break;
             }
         }
     }

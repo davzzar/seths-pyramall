@@ -920,6 +920,18 @@
 /processorParam:TextureFormat=Color
 /build:Tiled/TiledsetTexture/PlayerAnimated4.png
 
+#begin Tiled/TiledsetTexture/Temple.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Tiled/TiledsetTexture/Temple.png
+
 #begin Tiled/TiledsetTexture/TilesetCoins.png
 /importer:TextureImporter
 /processor:TextureProcessor
