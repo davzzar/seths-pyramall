@@ -46,7 +46,8 @@ namespace SandPerSand
             {
                 var xVelo = rigidBody.LinearVelocity.X;
                 var haloGo = Owner.GetComponentInChildren<EffectAnimatorController>().Owner;
-                if (GameStateManager.Instance.CurrentState != GameState.InRound
+                if (GameStateManager.Instance.CurrentState != GameState.InRound &&
+                    GameStateManager.Instance.CurrentState != GameState.CountDown
                     || sandSimulation == null || IsGrounded || xVelo==0)
                 {
                     // TODO disable HaloGo.
