@@ -369,6 +369,89 @@ namespace SandPerSand
 
             var winScreenPanel = createVerticalStackPanel();
 
+            // clemens hack stuff from gui
+            var FontSize = (int)64 * GameEngine.Instance.Resolution.X / 1920;
+            var InvSize = 1f / 8f;
+            var ScoreBoard = new Grid()
+            {
+                ColumnSpacing = 9,
+                RowSpacing = PlayersManager.Instance.Players.Count,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Background = new SolidBrush(new Color(38, 12, 26)),
+            };
+            //display ranks on screen
+
+            var PlayerIndexToInt = new Dictionary<PlayerIndex, int>();
+            var PlayerIndexToColor = new Dictionary<PlayerIndex, Color>();
+
+            int i = 0;
+            int[] order = { 0, 1, 2, 3 };
+            Color[] CharColors = { new Color(160, 132, 254), new Color(165, 255, 21), new Color(255, 17, 108), new Color(33, 187, 255) };
+            foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
+            {
+                PlayerIndexToInt[index] = order[i];
+                PlayerIndexToColor[index] = CharColors[i];
+                i++;
+            }
+
+
+            for (i = 0; i < scores.Count; i++)
+            {
+                Label pos = new Label()
+                {
+                    Text = (i + 1).ToString(),
+                    GridColumn = 0,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index]
+                };
+
+                Panel image = new Panel()
+                {
+                    GridColumn = 1,
+                    GridRow = i,
+                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + scores[i].index.ToString())),
+                    Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+
+                Label name = new Label()
+                {
+                    Text = "Player" + scores[i].index.ToString(),
+                    GridColumn = 2,
+                    GridColumnSpan = 5,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index],
+                };
+
+                Label score = new Label()
+                {
+                    Text = scores[i].score.ToString(),
+                    GridColumn = 8,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index],
+                };
+
+                ScoreBoard.AddChild(pos);
+                ScoreBoard.AddChild(image);
+                ScoreBoard.AddChild(name);
+                ScoreBoard.AddChild(score);
+            }
+            winScreenPanel.AddChild(ScoreBoard);
+
             var winner = $"Player {scores[0].index}";
 
             var titleModeSelection = createTitleLabel($"{winner} wins!");
