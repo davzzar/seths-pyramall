@@ -100,7 +100,8 @@
    <property name="AnimName" value="Idle"/>
   </properties>
   <animation>
-   <frame tileid="72" duration="100"/>
+   <frame tileid="72" duration="800"/>
+   <frame tileid="73" duration="300"/>
   </animation>
  </tile>
  <tile id="80">
