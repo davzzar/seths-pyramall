@@ -32,7 +32,7 @@ namespace SandPerSand
 #endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2), typeof(LoadSceneLevel3) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2), typeof(LoadSceneLevel3), typeof(LoadSceneLevel4)});
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -557,6 +557,27 @@ namespace SandPerSand
                 pauseGO.AddComponent<PauseMenuController>();
             }
         }
+
+        private class LoadSceneLevel4 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 3");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("biglevel2");
+                CreateCamera();
+                ///HEAD
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
+            }
+        }
+
         private class ShopScene : Component
         {
             protected override void OnAwake()

@@ -5,7 +5,7 @@ public static class RoundsGenerator
 {
     public static IEnumerator<int> InfiniteRounds()
     {
-        var possibleRoundsList = new List<int>() { 1, 4, 5 };
+        var possibleRoundsList = new List<int>() { 1, 4, 5, 6};
         var rand = new Random();
         int? index = null;
         while (true)
