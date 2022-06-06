@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Diagnostics;
+using System.Dynamic;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
@@ -20,7 +21,8 @@ namespace SandPerSand
                 typeof(InRoundState),
                 typeof(CountDownState),
                 typeof(RoundCheckState),
-                typeof(InShopState)
+                typeof(InShopState),
+                typeof(InMenuState)
                 );
             // TODO another place to set up initial CurrentState
             managerComponent.CurrentState = stateList[0];
@@ -31,9 +33,11 @@ namespace SandPerSand
 
     public class RealGameStateManager : StateManager<RealGameStateManager>
     {
+        public IEnumerator<int> Rounds { get; set; }
+
         [Obsolete("CurrentGameState is deprecated; Please stop querying " +
-"CurrentGameState all over the place, instead register your code to OnEnter," +
-"OnExit events of corresponding State.")]
+                  "CurrentGameState all over the place, instead register your code to OnEnter," +
+                  "OnExit events of corresponding State.")]
         public GameState CurrentGameState => CurrentState.GameState;
 
         protected override void Update()
@@ -153,16 +157,24 @@ namespace SandPerSand
         {
             base.Update();
             CountDowncounter += Time.DeltaTime;
-            if (CountDowncounter >= 2f)
+            if (!(CountDowncounter >= 2f))
             {
-                if (PlayersManager.Instance.CheckAllDead())
-                {
-                    ChangeState<PreRoundState>();
-                }
-                else
-                {
-                    ChangeState<InShopState>();
-                }
+                return;
+            }
+
+            if (!stateManager.Rounds.MoveNext())
+            {
+                ChangeState<InMenuState>();
+                return;
+            }
+
+            if (PlayersManager.Instance.CheckAllDead())
+            {
+                ChangeState<PreRoundState>();
+            }
+            else
+            {
+                ChangeState<InShopState>();
             }
         }
     }
@@ -182,6 +194,15 @@ namespace SandPerSand
             {
                 ChangeState<PreRoundState>();
             }
+        }
+    }
+
+    public class InMenuState : State<RealGameStateManager>
+    {
+        protected override void OnAwake()
+        {
+            base.OnAwake();
+            GameState = GameState.Menu;
         }
     }
 }

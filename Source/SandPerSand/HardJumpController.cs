@@ -83,13 +83,14 @@ namespace SandPerSand
             }
             // delete sands
             Circle circle = new Circle(Transform.Position, 1.5f);
-            SandSimulation.RemoveSand(circle);
+            SandSimulation?.RemoveSand(circle);
 
             // if collision happen or reached the goal
             // stop hard jumping and hand over control to PlayerControlComponent
             if(Math.Abs(Owner.Transform.Position.X - StartPosition.X) > JumpDistance ||
                 // collision happening TODO better way of handling collision
-                rigidBody.LinearVelocity != JumpVelo)
+                rigidBody.LinearVelocity != JumpVelo ||
+                SandSimulation == null)
             {
                 IsActive = false;
             }

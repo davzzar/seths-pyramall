@@ -15,17 +15,19 @@ namespace SandPerSand
         public static void ShieldPlayerControl(GameObject playerGo)
         {
             var controlComp = playerGo.GetComponent<PlayerControlComponent>();
-            controlComp.IsActive = false;
-            var playerRB = playerGo.GetComponent<RigidBody>();
-            playerRB.IgnoreGravity = false;
+            controlComp.IgnorePlayerInput = true;
+            //controlComp.IsActive = false;
+            //var playerRB = playerGo.GetComponent<RigidBody>();
+            //playerRB.IgnoreGravity = false;
 
         }
         public static void ResumePlayerControl(GameObject playerGo)
         {
             var controlComp = playerGo.GetComponent<PlayerControlComponent>();
-            controlComp.IsActive = true;
-            var playerRB = playerGo.GetComponent<RigidBody>();
-            playerRB.IgnoreGravity = true;
+            controlComp.IgnorePlayerInput = false;
+            //controlComp.IsActive = true;
+            //var playerRB = playerGo.GetComponent<RigidBody>();
+            //playerRB.IgnoreGravity = true;
         }
 
         public static void StopPlayer(GameObject playerGo)

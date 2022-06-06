@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace Engine
@@ -12,9 +14,9 @@ namespace Engine
 
         private static readonly List<Scene> openScenes;
 
-        private static readonly List<Scene> scenesToAdd;
+        private static readonly Dictionary<Scene, TaskCompletionSource<Scene>> scenesToAdd;
 
-        private static readonly List<Scene> scenesToAddBackBuffer;
+        private static readonly List<(Scene, TaskCompletionSource<Scene>)> scenesToAddBackBuffer;
 
         private static readonly List<Scene> scenesToRemove;
 
@@ -66,8 +68,8 @@ namespace Engine
             openScenes = new List<Scene>();
             OpenScenes = openScenes.AsReadOnly();
 
-            scenesToAdd = new List<Scene>();
-            scenesToAddBackBuffer = new List<Scene>();
+            scenesToAdd = new Dictionary<Scene, TaskCompletionSource<Scene>>();
+            scenesToAddBackBuffer = new List<(Scene, TaskCompletionSource<Scene>)>();
             scenesToRemove = new List<Scene>();
             scenesToRemoveBackBuffer = new List<Scene>();
 
@@ -76,21 +78,26 @@ namespace Engine
             openScenes.Add(activeScene);
         }
 
-        public static void LoadScene(Scene scene)
+        public static Task<Scene> LoadScene(Scene scene)
         {
             if (scene == null)
             {
                 throw new ArgumentNullException(nameof(scene));
             }
 
+            var taskCompletionSource = new TaskCompletionSource<Scene>();
+
+
             scenesToAdd.Clear();
             scenesToRemove.Clear();
 
-            scenesToAdd.Add(scene);
+            scenesToAdd[scene] = taskCompletionSource;
             scenesToRemove.AddRange(openScenes);
+
+            return taskCompletionSource.Task;
         }
 
-        public static void LoadSceneAdditive(Scene scene)
+        public static Task<Scene> LoadSceneAdditive(Scene scene)
         {
             if (scene == null)
             {
@@ -102,12 +109,16 @@ namespace Engine
                 throw new InvalidOperationException("The scene is already loaded.");
             }
 
-            if (scenesToAdd.Contains(scene))
+            if (scenesToAdd.ContainsKey(scene))
             {
                 throw new InvalidOperationException("The scene is already being loaded.");
             }
 
-            scenesToAdd.Add(scene);
+            var taskCompletionSource = new TaskCompletionSource<Scene>();
+
+            scenesToAdd[scene] = taskCompletionSource;
+
+            return taskCompletionSource.Task;
         }
 
         public static void UnloadScene(Scene scene)
@@ -144,7 +155,7 @@ namespace Engine
                 // Work on a local copy in case the scene loading causes another change in the scene graph
                 scenesToAddBackBuffer.Clear();
                 scenesToRemoveBackBuffer.Clear();
-                scenesToAddBackBuffer.AddRange(scenesToAdd);
+                scenesToAddBackBuffer.AddRange(scenesToAdd.Select(kvp => (kvp.Key, kvp.Value)));
                 scenesToRemoveBackBuffer.AddRange(scenesToRemove);
 
                 // First unload all scenes that are no longer needed
@@ -165,7 +176,7 @@ namespace Engine
                 }
 
                 // Then load all new scenes
-                foreach (var scene in scenesToAddBackBuffer)
+                foreach (var (scene, taskComp) in scenesToAddBackBuffer)
                 {
                     Debug.Assert(!openScenes.Contains(scene));
 
@@ -178,6 +189,7 @@ namespace Engine
 
                     scopedScene = scene;
                     scene.OnLoad();
+                    taskComp.SetResult(scene);
                     scopedScene = null;
                 }
 

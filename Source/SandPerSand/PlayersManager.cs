@@ -395,6 +395,7 @@ namespace SandPerSand
                         if (InitialPositions.ToArray().Length > 0)
                         {
                             CreatePlayer(playerIndex, GetRandomInitialPos());
+                            PlayerUtils.ShieldPlayerControl(players[playerIndex]);
                         }
                         else
                         {

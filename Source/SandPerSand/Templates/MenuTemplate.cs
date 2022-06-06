@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Enumeration;
 using System.Linq;
@@ -310,13 +311,19 @@ namespace SandPerSand
             };*/
 
             // Create Mode 2 Button
-            var InfinityModeButton = createTextButton("Infinity Mode");
+            var infinityModeButton = createTextButton("Infinity Mode");
 
             // When the start button is clicked, remove the GUI by setting UI.Root to null
-            InfinityModeButton.Click += (sender, e) =>
+            infinityModeButton.Click += (sender, e) =>
             {
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                gsm.GetState<InMenuState>().ChangeState<PrepareState>();
+                gsm.Rounds = RoundsGenerator.InfiniteRounds();
+                gsm.Rounds.MoveNext();
+                
                 var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
-                loadManager.LoadAt(1);
+                loadManager.LoadLevelScene();
+                
                 UI.Root = GraphicalUserInterface.Instance.rootPanel;
                 // disable menu controls
                 // TODO May be move this to a game state OnEnter?
@@ -326,10 +333,15 @@ namespace SandPerSand
                 uiStartGameSfx?.Play();
             };
 
-            // Create Exit to Menu
-            var ExitToMenuButton = createTextButton("Back");
+            // Create Mode 3 Button
+            var roundModeButton = createTextButton("Rounds Game");
 
-            ExitToMenuButton.Click += (sender, e) =>
+            AddRoundsGameClickListener(roundModeButton);
+
+            // Create Exit to Menu
+            var exitToMenuButton = createTextButton("Back");
+
+            exitToMenuButton.Click += (sender, e) =>
             {
                 ShowPreviousMenu();
                 uiBackSfx?.Play();
@@ -337,14 +349,156 @@ namespace SandPerSand
 
             levelSelectorPanel.AddChild(titleModeSelection);
             //levelSelectorPanel.AddChild(Mode1Button);
-            levelSelectorPanel.AddChild(InfinityModeButton);
-            levelSelectorPanel.AddChild(ExitToMenuButton);
+            levelSelectorPanel.AddChild(infinityModeButton);
+            levelSelectorPanel.AddChild(roundModeButton);
+            levelSelectorPanel.AddChild(exitToMenuButton);
 
-            MenuControlsManager.Instance.SetControls(InfinityModeButton, ExitToMenuButton);
+            MenuControlsManager.Instance.SetControls(infinityModeButton, roundModeButton, exitToMenuButton);
 
             rootPanel.AddChild(levelSelectorPanel);
 
             UI.Root = rootPanel;
+        }
+
+        public static void ShowWinScreen(List<(int score, PlayerIndex index)> scores)
+        {
+            var rootPanel = new Panel
+            {
+                Background = BackgroundBrush
+            };
+
+            var winScreenPanel = createVerticalStackPanel();
+
+            // clemens hack stuff from gui
+            var FontSize = (int)64 * GameEngine.Instance.Resolution.X / 1920;
+            var InvSize = 1f / 8f;
+            var ScoreBoard = new Grid()
+            {
+                ColumnSpacing = 9,
+                RowSpacing = PlayersManager.Instance.Players.Count,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Background = new SolidBrush(new Color(38, 12, 26)),
+            };
+            //display ranks on screen
+
+            var PlayerIndexToInt = new Dictionary<PlayerIndex, int>();
+            var PlayerIndexToColor = new Dictionary<PlayerIndex, Color>();
+
+            int i = 0;
+            int[] order = { 0, 1, 2, 3 };
+            Color[] CharColors = { new Color(160, 132, 254), new Color(165, 255, 21), new Color(255, 17, 108), new Color(33, 187, 255) };
+            foreach (PlayerIndex index in Enum.GetValues(typeof(PlayerIndex)))
+            {
+                PlayerIndexToInt[index] = order[i];
+                PlayerIndexToColor[index] = CharColors[i];
+                i++;
+            }
+
+
+            for (i = 0; i < scores.Count; i++)
+            {
+                Label pos = new Label()
+                {
+                    Text = (i + 1).ToString(),
+                    GridColumn = 0,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index]
+                };
+
+                Panel image = new Panel()
+                {
+                    GridColumn = 1,
+                    GridRow = i,
+                    Background = new TextureRegion(GameEngine.Instance.Content.Load<Texture2D>("GUI/player" + scores[i].index.ToString())),
+                    Layout2d = new Myra.Graphics2D.UI.Properties.Layout2D("this.w = W.w/4*" + InvSize.ToString() + ";this.h = W.w/4*" + InvSize.ToString() + ";"),
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                };
+
+                Label name = new Label()
+                {
+                    Text = "Player" + scores[i].index.ToString(),
+                    GridColumn = 2,
+                    GridColumnSpan = 5,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Left,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index],
+                };
+
+                Label score = new Label()
+                {
+                    Text = scores[i].score.ToString(),
+                    GridColumn = 8,
+                    GridRow = i,
+                    Font = _fontSystem.GetFont(FontSize),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    Padding = new Thickness(FontSize / 5),
+                    TextColor = PlayerIndexToColor[scores[i].index],
+                };
+
+                ScoreBoard.AddChild(pos);
+                ScoreBoard.AddChild(image);
+                ScoreBoard.AddChild(name);
+                ScoreBoard.AddChild(score);
+            }
+            winScreenPanel.AddChild(ScoreBoard);
+
+            var winner = $"Player {scores[0].index}";
+
+            var titleModeSelection = createTitleLabel($"{winner} wins!");
+
+            var replayButton = createTextButton("Replay");
+
+            AddRoundsGameClickListener(replayButton);
+
+            var exitToMenuButton = createTextButton("Back To Menu");
+
+            exitToMenuButton.Click += (sender, e) =>
+            {
+                ShowPlayModeMenu();
+                uiBackSfx?.Play();
+            };
+
+            winScreenPanel.AddChild(titleModeSelection);
+            winScreenPanel.AddChild(replayButton);
+            winScreenPanel.AddChild(exitToMenuButton);
+
+            MenuControlsManager.Instance.SetControls(replayButton, exitToMenuButton);
+
+            rootPanel.AddChild(winScreenPanel);
+
+            UI.Root = rootPanel;
+        }
+
+        private static void AddRoundsGameClickListener(TextButton button)
+        {
+            button.Click += (sender, e) =>
+            {
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                gsm.GetState<InMenuState>().ChangeState<PrepareState>();
+                gsm.Rounds = RoundsGenerator.Rounds(3);
+                gsm.Rounds.MoveNext();
+
+                var loadManager = GameObject.FindComponent<Program.SceneManagerComponent>();
+                loadManager.LoadLevelScene();
+
+                UI.Root = GraphicalUserInterface.Instance.rootPanel;
+                // disable menu controls
+                // TODO May be move this to a game state OnEnter?
+                MenuControlsManager.Instance.ClearControls();
+
+                // start game sfx
+                uiStartGameSfx?.Play();
+            };
         }
 
         public static void ShowSettings()

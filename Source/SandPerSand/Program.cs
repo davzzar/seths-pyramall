@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Engine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -31,7 +32,7 @@ namespace SandPerSand
 #endif
             var sceneManagerGo = new GameObject("Scene Manager");
             var sceneManagerComp = sceneManagerGo.AddComponent<SceneManagerComponent>();
-            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2) });
+            sceneManagerComp.SceneLoaderTypes.AddRange(new[] { typeof(MainMenu), typeof(LoadSceneMultiplayer), typeof(LoadScene1), typeof(ShopScene), typeof(LoadSceneLevel2), typeof(LoadSceneLevel3), typeof(LoadSceneLevel4)});
 
             var managerGo = new GameObject();
             managerGo.AddComponent<GameStateManager>();
@@ -330,33 +331,54 @@ namespace SandPerSand
             {
                 base.OnAwake();
                 var realGSM = GameObject.FindComponent<RealGameStateManager>();
+                
                 realGSM.GetState<InShopState>().OnEnter += (sender, fromState) => {
                     LoadShopScene();
                 };
+                
                 realGSM.GetState<PreRoundState>().OnEnter += (sender, fromState) => {
-                    if (fromState.GetType() == typeof(InShopState))
+                    LoadLevelScene();
+                    //if (fromState.GetType() == typeof(InShopState))
+                    //{
+                    //    LoadLevelScene();
+                    //}
+                    //else if (fromState.GetType() == typeof(RoundCheckState))
+                    //{
+                    //    Reload();
+                    //}
+                };
+
+                realGSM.GetState<InMenuState>().OnEnter += async (sender, fromState) =>
+                {
+                    var playersManager = GameObject.FindComponent<PlayersManager>();
+                    
+                    var scores = new List<(int score, PlayerIndex index)>();
+                    foreach (var (playerIndex, playerObject) in PlayersManager.Instance.Players)
                     {
-                        LoadLevelScene();
+                        scores.Add((playerObject.GetComponent<PlayerStates>().Score, playerIndex));
                     }
-                    else if (fromState.GetType() == typeof(RoundCheckState))
-                    {
-                        Reload();
-                    }
+                    scores.Sort((x, y) => y.Item1.CompareTo(x.Item1));
+                    
+                    playersManager.Reset();
+                    await LoadMainMenu();
+                    Template.ShowWinScreen(scores);
                 };
             }
-
-            public void LoadAt(int index)
+            
+            public async Task<Scene> LoadAt(int index)
             {
-                this.RunSceneLoader(index);
+                var scene = await this.RunSceneLoader(index);
 
                 if(GameObject.FindComponent<GraphicalUserInterface>() == null)
                 {
                     var guiGo = new GameObject("GUI stuff", SceneManager.ActiveScene);
                     var guiComp = guiGo.AddComponent<GraphicalUserInterface>();
                 }
+
+                return scene;
             }
 
-            public void Reload()
+            public async Task<Scene> Reload()
             {
                 if (this.loadedScene != null)
                 {
@@ -370,7 +392,12 @@ namespace SandPerSand
                 loaderGo.AddComponent(this.SceneLoaderTypes[loadedSceneIndex]);
 
                 this.loadedScene = scene;
-                SceneManager.LoadSceneAdditive(this.loadedScene);
+                return await SceneManager.LoadSceneAdditive(this.loadedScene);
+            }
+
+            private async Task<Scene> LoadMainMenu()
+            {
+                return await LoadAt(0);
             }
 
             /// <inheritdoc />
@@ -395,13 +422,8 @@ namespace SandPerSand
                 }
             }
 
-            private void RunSceneLoader(int index)
+            private async Task<Scene> RunSceneLoader(int index)
             {
-                if (this.loadedSceneIndex == index)
-                {
-                    return;
-                }
-
                 if (this.loadedScene != null)
                 {
                     SceneManager.UnloadScene(this.loadedScene);
@@ -416,7 +438,7 @@ namespace SandPerSand
                 this.loadedScene = scene;
                 this.loadedSceneIndex = index;
 
-                SceneManager.LoadSceneAdditive(this.loadedScene);
+                return await SceneManager.LoadSceneAdditive(this.loadedScene);
             }
 
             // FIXME hard code 
@@ -425,9 +447,10 @@ namespace SandPerSand
                 LoadAt(3);
             }
             // FIXME hard code 
-            private void LoadLevelScene()
+            internal void LoadLevelScene()
             {
-                LoadAt(1);
+                var gsm = GameObject.FindComponent<RealGameStateManager>();
+                LoadAt(gsm.Rounds.Current);
             }
         }
 
@@ -480,7 +503,7 @@ namespace SandPerSand
         {
             protected override void OnAwake()
             {
-                Debug.Print("Loaded Scene 2");
+                Debug.Print("Loaded Scene 1");
                 Debug.Print("Loaded Scene Multiplayer");
                 for (int i = 0; i < 4; ++i)
                 {
@@ -510,9 +533,51 @@ namespace SandPerSand
                 CreateMap("level_2");
                 CreateCamera();
                 ///HEAD
-                CreateSandPhysics_level_1();
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
             }
         }
+
+        private class LoadSceneLevel3 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 3");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("level_3");
+                CreateCamera();
+                ///HEAD
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
+            }
+        }
+
+        private class LoadSceneLevel4 : Component
+        {
+            protected override void OnAwake()
+            {
+                Debug.Print("Loaded Scene 3");
+                Debug.Print("Loaded Scene Multiplayer");
+                for (int i = 0; i < 4; ++i)
+                {
+                    Debug.Print("GetState " + i + ":" + GamePad.GetState(i));
+                    Debug.Print("GetCap " + i + ":" + GamePad.GetCapabilities(i));
+                }
+
+                CreateMap("biglevel2");
+                CreateCamera();
+                ///HEAD
+                var pauseGO = new GameObject("Pause Menu Controller");
+                pauseGO.AddComponent<PauseMenuController>();
+            }
+        }
+
         private class ShopScene : Component
         {
             protected override void OnAwake()

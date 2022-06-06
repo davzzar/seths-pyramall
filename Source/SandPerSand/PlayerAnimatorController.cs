@@ -52,7 +52,7 @@ namespace SandPerSand
         protected override void Update()
         {
             var anim = animator.CurrentAnime;
-            xDir = inputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
+            xDir = MathF.Abs(this.playerControler.HorizontalSpeed) >= 0.1f ? this.playerControler.HorizontalSpeed : 0f; //inputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f);
             (xRBVelo,yRBVelo) = rigidBody.LinearVelocity;
             isGrounded = groundChecker.IsGrounded;
             //WillJump => isGrounded && JumpButtonPressed ||

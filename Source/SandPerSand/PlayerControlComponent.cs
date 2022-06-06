@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using SandPerSand.SandSim;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using Int2 = Engine.Int2;
 
 namespace SandPerSand
 {
@@ -22,9 +24,17 @@ namespace SandPerSand
         // Input
         private const Buttons JumpButton = Buttons.A;
         private const Buttons ActionButton = Buttons.A;
-        private bool JumpButtonPressed => InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
-        private bool JumpButtonUp => InputHandler.getButtonState(JumpButton) == ButtonState.Up;
-        private float HorizontalDirection => InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) * this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement();
+        private bool JumpButtonPressed => !this.IgnorePlayerInput && !this.IgnorePlayerJump && InputHandler.getButtonState(JumpButton) == ButtonState.Pressed;
+        private bool JumpButtonUp => !this.IgnorePlayerInput && !this.IgnorePlayerJump && InputHandler.getButtonState(JumpButton) == ButtonState.Up;
+
+        private float HorizontalDirection => !this.IgnorePlayerInput
+            ? InputHandler.getLeftThumbstickDirX(magnitudeThreshold: 0.1f) *
+              this.Owner.GetComponentInChildren<PlayerStates>().GetInvertedMovement()
+            : 0f;
+
+        public bool IgnorePlayerInput { get; set; }
+
+        public bool IgnorePlayerJump { get; set; }
 
         // Hard Jump
         public bool WillHardJump => CanHardJump&& JumpButtonPressed;
@@ -57,8 +67,8 @@ namespace SandPerSand
                     x < Transform.Position.X + rightBound; x += sandGridStep)
                 {
                     var detectPosition = new Vector2(x, Transform.Position.Y);
-                    SandSim.Int2 index = sandSimulation.SandData.PointToIndex(detectPosition);
-                    SandSim.Int2 index2 = new SandSim.Int2(index.X, index.Y-1);
+                    Int2 index = sandSimulation.SandData.PointToIndex(detectPosition);
+                    Int2 index2 = new Int2(index.X, index.Y-1);
                     var sandGrid = sandSimulation.SandData[index];
                     var sandGrid2 = sandSimulation.SandData[index2];
                     if (sandGrid.HasSand && !sandGrid.IsSandStable
@@ -194,6 +204,9 @@ namespace SandPerSand
 
         // Sand Interaction
         private SandSimulation sandSimulation;
+
+        private readonly List<Int2> cellIndexCache = new List<Int2>();
+
         public bool HasSandReached
         {
             get
@@ -203,7 +216,64 @@ namespace SandPerSand
                     this.sandSimulation = GameObject.FindComponent<SandSimulation>();
 
                 }
-                return GameStateManager.Instance.CurrentState != GameState.Shop && this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+
+                if (GameStateManager.Instance.CurrentState == GameState.Shop || this.sandSimulation == null)
+                {
+                    return false;
+                }
+
+                if (this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2f)
+                {
+                    return true;
+                }
+
+                var circle = new Circle(this.Transform.Position, this.Transform.Scale.Y / 2f);
+                this.cellIndexCache.Clear();
+
+                if (this.sandSimulation.SandData.ShapeCast(in circle, out var result, this.cellIndexCache))
+                {
+                    var count = 0;
+
+                    foreach (var index in this.cellIndexCache)
+                    {
+                        var cell = this.sandSimulation.SandData[index];
+
+                        if (cell.HasSand && cell.IsSandStable && !cell.IsSandSource)
+                        {
+                            count++;
+                        }
+
+                    }
+
+                    if (count >= 16)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+
+
+                //return GameStateManager.Instance.CurrentState != GameState.Shop && this.sandSimulation != null && this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2;
+            }
+        }
+
+        public bool IsInRisingSand
+        {
+            get
+            {
+                if (this.sandSimulation == null || !this.sandSimulation.IsAlive)
+                {
+                    this.sandSimulation = GameObject.FindComponent<SandSimulation>();
+
+                }
+
+                if (GameStateManager.Instance.CurrentState == GameState.Shop || this.sandSimulation == null)
+                {
+                    return false;
+                }
+
+                return this.sandSimulation.RaisingSandHeight >= this.Owner.Transform.Position.Y - this.Transform.Scale.Y / 2f;
             }
         }
 
@@ -373,17 +443,23 @@ namespace SandPerSand
                     if (JumpButtonPressed)
                     {
                         sandVelocity.X = MathF.Sign(HorizontalDirection) * pushStrength;
-                        sandVelocity.Y = sandSimulation.RaisingSandSpeed * pushStrength;
+                        sandVelocity.Y = MathF.Max(sandSimulation.RaisingSandSpeed, 0.2f) * pushStrength;
                     }
                     else
                     {
                         sandVelocity.X = 0.0f;
-                        sandVelocity.Y =  sandSimulation.RaisingSandSpeed * restMultiplier;
-                    }
 
-                    if (!sandSimulation.IsSandRising)
-                    {
-                        sandVelocity.Y = 0.0f;
+                        if (this.IsInRisingSand)
+                        {
+                            sandVelocity.Y = (this.sandSimulation.IsSandRising ? 1f : -1f) *
+                                             this.sandSimulation.RaisingSandSpeed * restMultiplier;
+                            this.timerBar.DepletionSpeed = 0.3f;
+                        }
+                        else
+                        {
+                            sandVelocity.Y = 0f;
+                            this.timerBar.DepletionSpeed = 0.1f;
+                        }
                     }
 
                     rigidBody.LinearVelocity = sandVelocity;
