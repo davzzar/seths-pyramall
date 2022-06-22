@@ -1,4 +1,3 @@
-[submodule "Source/TiledCS"]
-	path = Source/TiledCS
-	url = https://github.com/whostheme/TiledCS.git
-	ignore = untracked
+version https://git-lfs.github.com/spec/v1
+oid sha256:f75d24e705077c896cf3674b7e852f4682ece606326b48f0d20e1b3911fdcf14
+size 120

@@ -1,15 +1,3 @@
-﻿using Engine;
-
-namespace SandPerSand
-{
-    public class MainMenu : Component
-    {
-        protected override void OnAwake()
-        {
-            Template.InitializeMenu();
-            Template.ShowMainMenu();
-            
-            UI.IsMouseVisible = true;
-        }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:a3bd116f0ba4ec0e8f19348d370bfcc425648f90a10b084425a422fc7915c4d7
+size 283

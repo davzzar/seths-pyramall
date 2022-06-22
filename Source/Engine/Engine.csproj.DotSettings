@@ -1,4 +1,3 @@
-﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	
-	<s:Boolean x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=physics/@EntryIndexedValue">True</s:Boolean>
-	<s:Boolean x:Key="/Default/CodeInspection/NamespaceProvider/NamespaceFoldersToSkip/=shapes/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
+version https://git-lfs.github.com/spec/v1
+oid sha256:71bfffa13a2d190b483f94ef737b4c14608a4c4e301a7bde40aa9a2feef015b9
+size 566

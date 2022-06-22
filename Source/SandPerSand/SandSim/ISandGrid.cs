@@ -1,26 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Engine;
-using Microsoft.Xna.Framework;
-using tainicom.Aether.Physics2D.Common;
-
-namespace SandPerSand.SandSim
-{
-    public interface ISandGrid : IReadOnlySandGrid
-    {
-        public new ref SandCell this[in int x, in int y] { get; }
-
-        public new ref SandCell this[in Int2 index] { get; }
-
-        /// <summary>
-        /// Marks every cell that is inside the polygon as obstacle, clearing any prior information inside that cell.
-        /// </summary>
-        public void AddPolygonObstacle(Vertices polygon);
-
-        /// <summary>
-        /// Marks every cell that is inside the circle as obstacle, clearing any prior information inside that cell.
-        /// </summary>
-        public void AddCircleObstacle(Vector2 center, float radius);
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:e217ef7e99dacac62db5e8ec53dfd19c10e56ee516b109f922da944f875768e0
+size 835

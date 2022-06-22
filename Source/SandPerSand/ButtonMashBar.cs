@@ -1,28 +1,3 @@
-﻿using System.Diagnostics;
-using Engine;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-
-namespace SandPerSand
-{
-    public class ButtonMashBar : TimerBar
-    {
-        // A Button Mash Bar has a capacity of 1 and deals with percentages.
-
-        public InputHandler InputHandler { get; set; }
-        private const Buttons ActionButton = Buttons.X;
-        private bool ActionButtonPressed => InputHandler.getButtonState(ActionButton) == ButtonState.Pressed;
-
-        public float FillSpeed { get; set; } = 0.1f;
-
-
-        protected override void Update()
-        {
-            if (ActionButtonPressed) FillLevel += FillSpeed;
-
-            base.Update();
-
-            InputHandler.UpdateState();
-        }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:2027b503a980bc574a5f856df938b04c1ba1c0553873c1a2e06bc63af12ebf97
+size 737

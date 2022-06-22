@@ -1,24 +1,3 @@
-﻿using Microsoft.Xna.Framework;
-using tainicom.Aether.Physics2D.Dynamics;
-
-namespace Engine
-{
-    public readonly struct RayCastHit
-    {
-        public readonly Collider Collider;
-
-        public readonly Vector2 Point;
-
-        public readonly Vector2 Normal;
-
-        public readonly float Fraction;
-
-        public RayCastHit(Collider collider, in Vector2 point, in Vector2 normal, float fraction)
-        {
-            this.Collider = collider;
-            this.Point = point;
-            this.Normal = normal;
-            this.Fraction = fraction;
-        }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:e9110366de2c0805d75f5a1f3bee104e06703c91cf3482d987a755edfa4a662c
+size 573

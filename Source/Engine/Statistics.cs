@@ -1,18 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Engine
-{
-    /// <summary>
-    /// Provides information about engine states and usage.
-    /// </summary>
-    public static class Statistics
-    {
-        public static int AliveGameObjectCount { get; internal set; }
-
-        public static int ActiveGameObjectCount { get; internal set; }
-
-        public static int ActiveRendererCount { get; internal set; }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:82e10f19c9f5f7512380bbe5a673918aa3d25e388f51afb3d221939f18d15fab
+size 448

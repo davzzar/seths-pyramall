@@ -1,24 +1,3 @@
-﻿namespace SandPerSand.SandSim
-{
-    /// <summary>
-    /// Stores the collected information of a ShapeCast against sand data.
-    /// </summary>
-    public readonly struct SandCastResult
-    {
-        /// <summary>
-        /// The intersection area in world units squared.
-        /// </summary>
-        public readonly float OverlapArea;
-
-        /// <summary>
-        /// The number of cells that intersected.
-        /// </summary>
-        public readonly int OverlapCellCount;
-
-        public SandCastResult(float overlapArea, int overlapCellCount)
-        {
-            this.OverlapArea = overlapArea;
-            this.OverlapCellCount = overlapCellCount;
-        }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:6c8f433d23f792f2b5484d6c129f771a27200cd7445666f630fffba828890416
+size 680

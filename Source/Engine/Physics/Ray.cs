@@ -1,20 +1,3 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
-
-namespace Engine
-{
-    public readonly struct Ray
-    {
-        public readonly Vector2 Origin;
-
-        public readonly Vector2 Direction;
-
-        public Ray(Vector2 origin, Vector2 direction)
-        {
-            this.Origin = origin;
-            this.Direction = direction / direction.Length();
-        }
-    }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:a14e39c3c2ce723e1dc31bc354e86f86047c4b9a0561047f2411308d7e3282c6
+size 420

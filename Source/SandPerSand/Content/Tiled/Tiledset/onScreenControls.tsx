@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.4" tiledversion="1.4.3" name="onScreenControls" tilewidth="16" tileheight="16" tilecount="64" columns="8">
- <image source="../TiledsetTexture/onScreenControls.png" width="128" height="128"/>
-</tileset>
+version https://git-lfs.github.com/spec/v1
+oid sha256:319a5795954a961457431037ff2faaef0dde7ed556cfdbf70b829cf43c31afa7
+size 261

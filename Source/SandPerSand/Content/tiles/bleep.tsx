@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.8" tiledversion="1.8.2" name="TilesetTexture" tilewidth="32" tileheight="32" tilecount="64" columns="8">
- <image source="TilesetTexture.png" width="256" height="256"/>
-</tileset>
+version https://git-lfs.github.com/spec/v1
+oid sha256:6a7720881d93a14df33a514030b7e79f669daa88516d94ef14d33d2439aee1e4
+size 238
